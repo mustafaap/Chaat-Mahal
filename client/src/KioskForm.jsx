@@ -3,60 +3,193 @@ import axios from 'axios';
 
 const KioskForm = () => {
     const [customerName, setCustomerName] = useState('');
-    const [selectedItems, setSelectedItems] = useState([]);
+    const [selectedItems, setSelectedItems] = useState({});
+    const [step, setStep] = useState(1);
 
     const menuItems = [
-        { id: 1, name: 'Samosa', price: 2 },
-        { id: 2, name: 'Chaat', price: 3 },
-        { id: 3, name: 'Biryani', price: 5 },
-        { id: 4, name: 'Paneer Tikka', price: 4 },
+        { id: 1, name: 'Mango Lassi', price: 3, image: '/images/mango-lassi.jpg' },
+        { id: 2, name: 'Panipuri', price: 3, image: '/images/panipuri.jpg' },
+        { id: 3, name: 'Masala Puri', price: 4, image: '/images/masala-puri.jpg' },
+        { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.jpg' },
+        { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.jpg' },
+        { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.jpg' },
+        { id: 7, name: 'Paneer Wrap', price: 7, image: '/images/paneer-wrap.jpg' },
     ];
 
-    const handleItemSelect = (item) => {
-        setSelectedItems((prevItems) => 
-            prevItems.includes(item) ? prevItems.filter(i => i !== item) : [...prevItems, item]
-        );
+    const handleQuantityChange = (itemName, quantity) => {
+        setSelectedItems(prev => {
+            const updated = { ...prev };
+            if (quantity > 0) {
+                updated[itemName] = quantity;
+            } else {
+                delete updated[itemName];
+            }
+            return updated;
+        });
     };
 
-    const handleSubmit = async (e) => {
+    const handleMenuSubmit = (e) => {
         e.preventDefault();
-        if (customerName && selectedItems.length > 0) {
+        const items = Object.entries(selectedItems)
+            .flatMap(([name, qty]) => Array(Number(qty)).fill(name));
+        if (items.length > 0) {
+            setStep(2);
+        }
+    };
+
+    const handleNameSubmit = async (e) => {
+        e.preventDefault();
+        const items = Object.entries(selectedItems)
+            .flatMap(([name, qty]) => Array(Number(qty)).fill(name));
+        if (customerName.trim() && items.length > 0) {
             const order = {
                 customerName,
-                items: selectedItems,
+                items,
                 status: 'Pending',
             };
             await axios.post('/api/orders', order);
             setCustomerName('');
-            setSelectedItems([]);
+            setSelectedItems({});
+            setStep(1);
         }
     };
 
     return (
         <div>
-            <form onSubmit={handleSubmit}>
-                <input 
-                    type="text" 
-                    placeholder="Enter your name" 
-                    value={customerName} 
-                    onChange={(e) => setCustomerName(e.target.value)} 
-                    required 
-                />
-                <h2>Select Menu Items:</h2>
-                {menuItems.map(item => (
-                    <div key={item.id}>
-                        <input 
-                            type="checkbox" 
-                            id={item.name} 
-                            value={item.name} 
-                            checked={selectedItems.includes(item.name)} 
-                            onChange={() => handleItemSelect(item.name)} 
-                        />
-                        <label htmlFor={item.name}>{item.name} - ${item.price}</label>
+            {step === 1 && (
+                <form onSubmit={handleMenuSubmit}>
+                    <h2>Select Menu Items</h2>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gap: '24px',
+                        margin: '24px 0'
+                    }}>
+                        {menuItems.map(item => (
+                            <div
+                                key={item.id}
+                                style={{
+                                    background: '#f9f9f9',
+                                    borderRadius: '12px',
+                                    padding: '14px',
+                                    textAlign: 'center',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                                }}
+                            >
+                                <img
+                                    src={item.image}
+                                    alt={item.name}
+                                    style={{
+                                        width: '100%',
+                                        height: '185px',
+                                        objectFit: 'cover',
+                                        borderRadius: '8px',
+                                        marginBottom: '10px'
+                                    }}
+                                />
+                                <div style={{ marginTop: 8 }}>
+                                    <hr />
+                                    <label
+                                        htmlFor={`qty-${item.name}`}
+                                        style={{ fontWeight: 'bold', fontSize: '1.25rem', display: 'block', margin: '12px 0 6px 0' }}
+                                    >
+                                        {item.name} - ${item.price}
+                                    </label>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 10 }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleQuantityChange(item.name, Math.max((selectedItems[item.name] || 0) - 1, 0))}
+                                            style={{
+                                                width: 36, height: 36, fontSize: 22, borderRadius: '50%', border: '1px solid #ccc',
+                                                color: '#fff', background: '#b85c38', cursor: 'pointer', marginRight: 8, padding: 0, paddingBottom: '1px'
+                                            }}
+                                        >-</button>
+                                        <span style={{ minWidth: 24, display: 'inline-block', fontSize: 24, fontWeight: 'bold' }}>
+                                            {selectedItems[item.name] || 0}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleQuantityChange(item.name, Math.min((selectedItems[item.name] || 0) + 1, 20))}
+                                            style={{
+                                                width: 36, height: 36, fontSize: 22, borderRadius: '50%', border: '1px solid #ccc',
+                                                color: '#fff', background: 'green', cursor: 'pointer', marginLeft: 8, padding: 0, paddingTop: '2px'
+                                            }}
+                                        >+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                ))}
-                <button type="submit">Place Order</button>
-            </form>
+                    <div style={{ textAlign: 'center'}}>
+                        <button style={{  fontSize: '25px'}} type="submit">Next</button>
+                    </div>
+                </form>
+            )}
+            {step === 2 && (
+                <form onSubmit={handleNameSubmit}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                        <button
+                            type="button"
+                            onClick={() => setStep(1)}
+                            style={{
+                                background: '#fff',
+                                border: '2px solid #b85c38',
+                                color: '#b85c38',
+                                fontSize: 25,
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                marginRight: 18,
+                                padding: '8px 28px',
+                                borderRadius: 8,
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                                transition: 'background 0.2s, color 0.2s'
+                            }}
+                        >
+                            &#8592; Back
+                        </button>
+                    </div>
+                    <div style={{
+                        background: '#f3e9e3',
+                        borderRadius: '10px',
+                        padding: '18px 20px',
+                        marginBottom: '24px',
+                        maxWidth: 400,
+                        marginLeft: 'auto',
+                        marginRight: 'auto'
+                    }}>
+                        <h3 style={{ marginTop: 0, marginBottom: 12, color: '#b85c38', fontSize: '2rem' }}>Your Order</h3>
+                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                            {Object.entries(selectedItems)
+                                .filter(([_, qty]) => qty > 0)
+                                .map(([name, qty]) => (
+                                    <li key={name} style={{ fontSize: '1.4rem', marginBottom: 6 }}>
+                                        <span style={{ fontWeight: 'bold' }}>{name}</span> &times; {qty}
+                                    </li>
+                                ))}
+                        </ul>
+                        <div style={{ marginTop: 10, fontWeight: 'bold', fontSize: '1.8rem' }}>
+                            Total: $
+                            {Object.entries(selectedItems)
+                                .reduce((sum, [name, qty]) => {
+                                    const item = menuItems.find(i => i.name === name);
+                                    return sum + (item ? item.price * qty : 0);
+                                }, 0)
+                            }
+                        </div>
+                    </div>
+                    <h2>Enter Your Name</h2>
+                    <input
+                        type="text"
+                        placeholder="Enter your name"
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        required
+                    />
+                    <div style={{ textAlign: 'center' }}>
+                        <button style={{ fontSize: '30px' }} type="submit">Place Order</button>
+                    </div>
+                </form>
+            )}
         </div>
     );
 };

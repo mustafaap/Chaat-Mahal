@@ -14,8 +14,8 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Get all orders
-router.get('/', async (req, res) => {
+// Get all orders (pending and completed)
+router.get('/all', async (req, res) => {
     try {
         const orders = await Order.find();
         res.json(orders);
