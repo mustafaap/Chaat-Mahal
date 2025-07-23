@@ -21,6 +21,14 @@ mongoose.connect('mongodb+srv://mustafap12:Chaat123@cluster0.hoxvixj.mongodb.net
 // Routes
 app.use('/api/orders', orderRoutes);
 
+const path = require("path");
+
+app.use(express.static(path.join(__dirname, "client", "build")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "client", "build", "index.html"));
+});
+
 // Start server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
