@@ -8,12 +8,12 @@ const KioskForm = () => {
 
     const menuItems = [
         { id: 1, name: 'Mango Lassi', price: 3, image: '/images/mango-lassi.jpg' },
-        { id: 2, name: 'Panipuri', price: 3, image: '/images/panipuri.jpg' },
-        { id: 3, name: 'Masala Puri', price: 4, image: '/images/masala-puri.jpg' },
-        { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.jpg' },
-        { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.jpg' },
-        { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.jpg' },
-        { id: 7, name: 'Paneer Wrap', price: 7, image: '/images/paneer-wrap.jpg' },
+        { id: 2, name: 'Panipuri', price: 3, image: '/images/panipuri.JPG' },
+        { id: 3, name: 'Masala Puri', price: 4, image: '/images/masala-puri.JPG' },
+        { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.JPG' },
+        { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.JPG' },
+        { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.JPG' },
+        { id: 7, name: 'Paneer Wrap', price: 7, image: '/images/paneer-wrap.JPG' },
     ];
 
     const handleQuantityChange = (itemName, quantity) => {
