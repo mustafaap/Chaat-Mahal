@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(bodyParser.json());
-app.use(express.static('client/public'));
+app.use(express.static('client/build'));
 
 // MongoDB connection
 mongoose.connect('mongodb+srv://mustafap12:Chaat123@cluster0.hoxvixj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
