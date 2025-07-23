@@ -1,9 +1,12 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Switch, Link, Redirect } from 'react-router-dom';
 import KioskForm from './KioskForm';
 import OrderList from './OrderList';
+import Login from './Login';
 
 const App = () => {
+  const [loggedIn, setLoggedIn] = useState(false);
+
   return (
     <Router>
       <div>
@@ -15,7 +18,6 @@ const App = () => {
           padding: '12px 32px',
           marginBottom: 32,
         }}>
-          {/* Logo and title on the left */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
             <img
               src="/images/Chaat-Mahal.jpg"
@@ -26,7 +28,6 @@ const App = () => {
               Chaat Mahal Kiosk
             </span>
           </div>
-          {/* Links on the right */}
           <div style={{ display: 'flex', gap: '30px' }}>
             <Link to="/" style={{ color: '#fff', fontWeight: 'bold', fontSize: 22, textDecoration: 'none' }}>
               Menu
@@ -37,8 +38,15 @@ const App = () => {
           </div>
         </nav>
         <Switch>
-          <Route path="/" exact component={KioskForm} />
-          <Route path="/orders" component={OrderList} />
+          <Route path="/login">
+            {loggedIn ? <Redirect to="/" /> : <Login onLogin={() => setLoggedIn(true)} />}
+          </Route>
+          <Route path="/orders">
+            {loggedIn ? <OrderList /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/" exact>
+            {loggedIn ? <KioskForm /> : <Redirect to="/login" />}
+          </Route>
         </Switch>
       </div>
     </Router>
