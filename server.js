@@ -11,7 +11,7 @@ app.use(bodyParser.json());
 app.use(express.static('client/public'));
 
 // MongoDB connection
-mongoose.connect('mongodb://localhost:27017/chaat-mahal', {
+mongoose.connect('mongodb+srv://mustafap12:Chaat123@cluster0.hoxvixj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
