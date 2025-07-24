@@ -139,7 +139,6 @@ const KioskForm = () => {
                                 fontSize: 25,
                                 fontWeight: 'bold',
                                 cursor: 'pointer',
-                                marginRight: 18,
                                 padding: '8px 28px',
                                 borderRadius: 8,
                                 boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
