@@ -1,16 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import io from 'socket.io-client';
+
+const socket = io(); // Automatically uses the same origin
 
 const OrderList = () => {
     const [orders, setOrders] = useState([]);
     const [view, setView] = useState('pending'); // 'pending' or 'completed'
 
+    const fetchOrders = async () => {
+        const response = await axios.get('/api/orders/all'); // new endpoint to get all orders
+        setOrders(response.data);
+    };
+
     useEffect(() => {
-        const fetchOrders = async () => {
-            const response = await axios.get('/api/orders/all'); // new endpoint to get all orders
-            setOrders(response.data);
-        };
         fetchOrders();
+
+        socket.on('ordersUpdated', fetchOrders);
+
+        return () => {
+            socket.off('ordersUpdated', fetchOrders);
+        };
     }, []);
 
     const completeOrder = async (id) => {
