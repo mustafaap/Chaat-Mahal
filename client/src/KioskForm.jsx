@@ -113,7 +113,7 @@ const KioskForm = () => {
                                             onClick={() => handleQuantityChange(item.name, Math.min((selectedItems[item.name] || 0) + 1, 20))}
                                             style={{
                                                 width: 36, height: 36, fontSize: 22, borderRadius: '50%', border: '1px solid #ccc',
-                                                color: '#fff', background: 'green', cursor: 'pointer', marginLeft: 8, padding: 0, paddingTop: '2px'
+                                                color: '#fff', background: 'green', cursor: 'pointer', marginLeft: 8, padding: 0, paddingTop: '1px'
                                             }}
                                         >+</button>
                                     </div>
