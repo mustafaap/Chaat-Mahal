@@ -38,33 +38,73 @@ const OrderList = () => {
         }));
     };
 
+    const deleteOrder = async (id) => {
+        try {
+            await axios.delete(`/api/orders/${id}`);
+            setOrders(orders.map(order =>
+                order._id === id ? { ...order, status: 'Cancelled' } : order
+            ));
+        } catch (error) {
+            console.error('Error deleting order:', error);
+            alert('Failed to delete the order. Please try again.');
+        }
+    };
+
+    const resetAllOrders = async () => {
+        if (window.confirm('Are you sure you want to reset all orders? This action cannot be undone.')) {
+            try {
+                await axios.delete('/api/orders');
+                setOrders([]); // Clear all orders from the state
+            } catch (error) {
+                console.error('Error resetting orders:', error);
+                alert('Failed to reset orders. Please try again.');
+            }
+        }
+    };
+
     const pendingOrders = orders.filter(order => order.status === 'Pending');
     const completedOrders = orders.filter(order => order.status === 'Completed');
 
     return (
         <div className="order-list-container">
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20, gap: '10px' }}>
+            <div className="order-list-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <div style={{ display: 'flex', gap: '10px', width: '100%'}}>
+                    <button
+                        style={{
+                            fontSize: '24px',
+                            textAlign: 'center',
+                        }}
+                        className={view === 'pending' ? 'active-tab' : ''}
+                        onClick={() => setView('pending')}
+                    >
+                        Pending Orders
+                    </button>
+                    <button
+                        style={{
+                            fontSize: '24px',
+                            textAlign: 'center',
+                        }}
+                        className={view === 'completed' ? 'active-tab' : ''}
+                        onClick={() => setView('completed')}
+                    >
+                        Past Orders
+                    </button>
+                </div>
                 <button
+                    onClick={resetAllOrders}
                     style={{
                         fontSize: '24px',
-                        width: '250px', // Set a fixed width
-                        textAlign: 'center',
+                        background: 'firebrick',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        transition: 'background 0.2s',
                     }}
-                    className={view === 'pending' ? 'active-tab' : ''}
-                    onClick={() => setView('pending')}
                 >
-                    Pending Orders
-                </button>
-                <button
-                    style={{
-                        fontSize: '24px',
-                        width: '250px', // Set the same fixed width
-                        textAlign: 'center',
-                    }}
-                    className={view === 'completed' ? 'active-tab' : ''}
-                    onClick={() => setView('completed')}
-                >
-                    Past Orders
+                    Reset All Orders
                 </button>
             </div>
             {view === 'pending' && (
@@ -110,12 +150,10 @@ const OrderList = () => {
                                             Total: ${total}
                                         </div>
                                     </div>
-                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                    <div className="order-controls" style={{ display: 'flex', gap: '10px' }}>
                                         <button
                                             onClick={() => completeOrder(order._id)}
                                             style={{
-                                                height: '120px',
-                                                minWidth: '120px',
                                                 padding: '10px 0',
                                                 fontSize: 18,
                                                 fontWeight: 'bold',
@@ -132,8 +170,6 @@ const OrderList = () => {
                                         <button
                                             onClick={() => markAsPaid(order._id)}
                                             style={{
-                                                height: '120px',
-                                                minWidth: '120px',
                                                 padding: '10px 0',
                                                 fontSize: 18,
                                                 fontWeight: 'bold',
@@ -147,6 +183,22 @@ const OrderList = () => {
                                         >
                                             {paidOrders[order._id] ? 'Paid' : 'Mark as Paid'}
                                         </button>
+                                        <button
+                                            onClick={() => deleteOrder(order._id)}
+                                            style={{
+                                                padding: '10px 0',
+                                                fontSize: 18,
+                                                fontWeight: 'bold',
+                                                background: 'firebrick',
+                                                color: '#fff',
+                                                border: 'none',
+                                                borderRadius: 6,
+                                                cursor: 'pointer',
+                                                transition: 'background 0.2s'
+                                            }}
+                                        >
+                                            Delete
+                                        </button>
                                     </div>
                                 </li>
                             );
@@ -158,8 +210,8 @@ const OrderList = () => {
                 <>
                     <h1>Past Orders</h1>
                     <ul>
-                        {completedOrders.length === 0 && <li>No completed orders.</li>}
-                        {[...completedOrders].reverse().map(order => {
+                        {completedOrders.length === 0 && pendingOrders.length === 0 && <li>No past orders.</li>}
+                        {[...completedOrders, ...orders.filter(order => order.status === 'Cancelled')].reverse().map(order => {
                             const itemCounts = {};
                             order.items.forEach(item => {
                                 itemCounts[item] = (itemCounts[item] || 0) + 1;
@@ -183,24 +235,27 @@ const OrderList = () => {
                                     <div>
                                         <span style={{ fontWeight: 'bold', fontSize: 28 }}>
                                             Order #{order._id.slice(-4)} - {order.customerName}
-                                        </span>
-                                        <ul style={{ margin: '8px 0 0 0', padding: 0 }}>
-                                            {Object.entries(itemCounts).map(([name, qty]) => (
-                                                <li key={name} style={{ background: 'none', padding: 0, margin: 0, fontSize: 24 }}>
-                                                    {name}{qty > 1 ? ` x${qty}` : ''}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        <div style={{ marginTop: 6, fontWeight: 'bold', color: '#b85c38', fontSize: 24 }}>
-                                            Total: ${total}
-                                        </div>
-                                    </div>
-                                </li>
-                            );
-                        })}
-                    </ul>
-                </>
-            )}
+                            </span>
+                            <ul style={{ margin: '8px 0 0 0', padding: 0 }}>
+                                {Object.entries(itemCounts).map(([name, qty]) => (
+                                    <li key={name} style={{ background: 'none', padding: 0, margin: 0, fontSize: 24 }}>
+                                        {name}{qty > 1 ? ` x${qty}` : ''}
+                                    </li>
+                                ))}
+                            </ul>
+                            <div style={{ marginTop: 6, fontWeight: 'bold', color: '#b85c38', fontSize: 24 }}>
+                                Total: ${total}
+                            </div>
+                            <div style={{ marginTop: 6, fontWeight: 'bold', fontSize: 20, color: order.status === 'Completed' ? 'green' : 'red' }}>
+                                Status: {order.status}
+                            </div>
+                        </div>
+                    </li>
+                );
+            })}
+        </ul>
+    </>
+)}
         </div>
     );
 };

@@ -83,7 +83,16 @@ input[type="checkbox"] {
     font-weight: bold;
 }
 
-@media (max-width: 768px) {
+.order-list-nav button {
+        width: 285px;
+}
+
+.order-controls button {
+    height: 120px;
+    width: 120px;
+}
+
+@media (max-width: 880px) {
     .back-button-container {
         justify-content: center;
         padding-bottom: 16px;
@@ -139,8 +148,24 @@ input[type="checkbox"] {
     }
 
     .order-list-container button {
-        width: 48%; /* Make buttons take half the width */
+        width: 200px; /* Make buttons take half the width */
         font-size: 16px; /* Adjust font size for buttons */
         padding: 8px; /* Adjust padding */
+    }
+
+    /* Fix the top buttons layout */
+    .order-list-nav {
+        flex-direction: column; /* Stack buttons vertically */
+        gap: 12px; /* Add spacing between buttons */
+        align-items: center; /* Center align buttons */
+    }
+
+    .order-list-nav button {
+        width: 100%; /* Make buttons take full width */
+        font-size: 18px; /* Adjust font size for smaller screens */
+    }
+
+    .order-controls button {
+        width: 100%;
     }
 }

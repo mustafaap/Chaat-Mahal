@@ -36,4 +36,30 @@ router.patch('/:id', async (req, res) => {
     }
 });
 
+// Delete an order (mark as Cancelled)
+router.delete('/:id', async (req, res) => {
+    try {
+        const deletedOrder = await Order.findByIdAndUpdate(
+            req.params.id,
+            { status: 'Cancelled' },
+            { new: true }
+        );
+        req.io.emit('ordersUpdated'); // Notify all clients
+        res.json(deletedOrder);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Delete all orders
+router.delete('/', async (req, res) => {
+    try {
+        await Order.deleteMany({});
+        req.io.emit('ordersUpdated'); // Notify all clients
+        res.json({ message: 'All orders have been reset.' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
