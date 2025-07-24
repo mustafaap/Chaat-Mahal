@@ -214,6 +214,9 @@ const KioskForm = () => {
                         }, 0)}
                     </div>
                     <div style={{ fontWeight: 'bold', marginTop: "5px", color: '#b85c38' }}>*Taxes applied to card and tap payments only</div>
+                    <p style={{ marginTop: '20px', fontSize: '1.4rem', fontWeight: 'bold', color: '#b85c38' }}>
+                        Please pay at the counter to enter the order preparation line.
+                    </p>
                     <div className="anotherorder-button-container" style={{ marginTop: '20px' }}>
                         <button
                             onClick={() => {
