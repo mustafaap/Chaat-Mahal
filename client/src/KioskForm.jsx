@@ -5,6 +5,7 @@ const KioskForm = () => {
     const [customerName, setCustomerName] = useState('');
     const [selectedItems, setSelectedItems] = useState({});
     const [step, setStep] = useState(1);
+    const [orderNumber, setOrderNumber] = useState(null);
 
     const menuItems = [
         { id: 1, name: 'Mango Lassi', price: 3, image: '/images/mango-lassi.jpg' },
@@ -47,10 +48,10 @@ const KioskForm = () => {
                 items,
                 status: 'Pending',
             };
-            await axios.post('/api/orders', order);
-            setCustomerName('');
-            setSelectedItems({});
-            setStep(1);
+            const response = await axios.post('/api/orders', order);
+            const fullOrderId = response.data._id; // Full ObjectId
+            setOrderNumber(fullOrderId.slice(-4)); // Use the last 4 characters
+            setStep(3);
         }
     };
 
@@ -120,14 +121,14 @@ const KioskForm = () => {
                             </div>
                         ))}
                     </div>
-                    <div style={{ textAlign: 'center'}}>
+                    <div className="next-button-container" style={{ textAlign: 'center'}}>
                         <button style={{  fontSize: '25px'}} type="submit">Next</button>
                     </div>
                 </form>
             )}
             {step === 2 && (
                 <form onSubmit={handleNameSubmit}>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                    <div className="back-button-container" style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
                         <button
                             type="button"
                             onClick={() => setStep(1)}
@@ -186,10 +187,55 @@ const KioskForm = () => {
                         onChange={(e) => setCustomerName(e.target.value)}
                         required
                     />
-                    <div style={{ textAlign: 'center' }}>
-                        <button style={{ fontSize: '30px' }} type="submit">Place Order</button>
+                    <div className="order-button-container" style={{ textAlign: 'center' }}>
+                        <button style={{ fontSize: '25px' }} type="submit">Place Order</button>
                     </div>
                 </form>
+            )}
+            {step === 3 && (
+                <div style={{ textAlign: 'center', marginTop: '50px' }}>
+                    <h2>Order Confirmation</h2>
+                    <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Order Number: {orderNumber}</p>
+                    <p style={{ fontSize: '1.5rem' }}>Name: {customerName}</p>
+                    <h3 style={{ marginTop: '20px' }}>Items Ordered:</h3>
+                    <ul style={{ listStyle: 'none', padding: 0 }}>
+                        {Object.entries(selectedItems)
+                            .filter(([_, qty]) => qty > 0)
+                            .map(([name, qty]) => (
+                                <li key={name} style={{ fontSize: '1.4rem', marginBottom: 6 }}>
+                                    <span style={{ fontWeight: 'bold' }}>{name}</span> &times; {qty}
+                                </li>
+                            ))}
+                    </ul>
+                    <div style={{ marginTop: 10, fontWeight: 'bold', fontSize: '1.8rem', color: '#b85c38' }}>
+                        Total: $
+                        {Object.entries(selectedItems).reduce((sum, [name, qty]) => {
+                            const item = menuItems.find(i => i.name === name);
+                            return sum + (item ? item.price * qty : 0);
+                        }, 0)}
+                    </div>
+                    <div style={{ fontWeight: 'bold', marginTop: "5px", color: '#b85c38' }}>*Taxes applied to card and tap payments only</div>
+                    <div className="anotherorder-button-container" style={{ marginTop: '20px' }}>
+                        <button
+                            onClick={() => {
+                                setStep(1);
+                                setSelectedItems({}); // Reset all selected items
+                                setCustomerName(''); // Reset the customer name
+                            }}
+                            style={{
+                                background: '#b85c38',
+                                color: '#fff',
+                                border: 'none',
+                                padding: '10px 20px',
+                                borderRadius: '8px',
+                                fontSize: '1.2rem',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Place Another Order
+                        </button>
+                    </div>
+                </div>
             )}
         </div>
     );

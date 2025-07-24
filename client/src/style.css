@@ -81,3 +81,65 @@ input[type="checkbox"] {
     color: #fff;
     font-weight: bold;
 }
+
+@media (max-width: 768px) {
+    .back-button-container {
+        justify-content: center;
+        padding-bottom: 16px;
+    }
+    .back-button-container button {
+        width: 100%;
+    }
+    .order-button-container button {
+        width: 100%;
+    }
+    .next-button-container button {
+        width: 100%;
+    }
+    .order-list-container {
+        padding: 16px; /* Reduce padding for smaller screens */
+    }
+
+    .order-list-container h1 {
+        font-size: 28px; /* Adjust heading size */
+    }
+
+    .order-list-container ul {
+        padding: 0;
+    }
+
+    .order-list-container li {
+        flex-direction: column; /* Stack items vertically */
+        align-items: flex-start; /* Align items to the left */
+        padding: 12px; /* Adjust padding */
+    }
+
+    .order-list-container li div {
+        width: 100%; /* Make divs take full width */
+    }
+
+    .order-list-container li span {
+        font-size: 22px; /* Adjust font size for order details */
+    }
+
+    .order-list-container li ul {
+        margin-top: 8px;
+    }
+
+    .order-list-container li ul li {
+        font-size: 20px; /* Adjust font size for item list */
+    }
+
+    .order-list-container li div:last-child {
+        margin-top: 12px; /* Add spacing between buttons and order details */
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .order-list-container button {
+        width: 48%; /* Make buttons take half the width */
+        font-size: 16px; /* Adjust font size for buttons */
+        padding: 8px; /* Adjust padding */
+    }
+}

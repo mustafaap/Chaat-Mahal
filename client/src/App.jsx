@@ -24,9 +24,6 @@ const App = () => {
               alt="Chaat Mahal Logo"
               style={{ height: 78, borderRadius: 8 }}
             />
-            <span style={{ color: '#fff', fontWeight: 'bold', fontSize: 32, marginLeft: 10 }}>
-              Chaat Mahal Kiosk
-            </span>
           </div>
           <div style={{ display: 'flex', gap: '30px' }}>
             <Link to="/" style={{ color: '#fff', fontWeight: 'bold', fontSize: 22, textDecoration: 'none' }}>
@@ -39,13 +36,13 @@ const App = () => {
         </nav>
         <Switch>
           <Route path="/login">
-            {loggedIn ? <Redirect to="/" /> : <Login onLogin={() => setLoggedIn(true)} />}
+            {loggedIn ? <Redirect to="/orders" /> : <Login onLogin={() => setLoggedIn(true)} />}
           </Route>
           <Route path="/orders">
             {loggedIn ? <OrderList /> : <Redirect to="/login" />}
           </Route>
           <Route path="/" exact>
-            {loggedIn ? <KioskForm /> : <Redirect to="/login" />}
+            <KioskForm />
           </Route>
         </Switch>
       </div>

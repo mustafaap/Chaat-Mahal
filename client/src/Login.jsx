@@ -25,7 +25,7 @@ const Login = ({ onLogin }) => {
             boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
             textAlign: 'center'
         }}>
-            <h2 style={{ color: '#b85c38' }}>Login</h2>
+            <h2 style={{ color: '#b85c38', marginBottom: "-30px" }}>Login</h2>
             <form onSubmit={handleSubmit}>
                 <input
                     type="password"
