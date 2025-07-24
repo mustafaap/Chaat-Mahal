@@ -6,6 +6,7 @@ const KioskForm = () => {
     const [selectedItems, setSelectedItems] = useState({});
     const [step, setStep] = useState(1);
     const [orderNumber, setOrderNumber] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
 
     const menuItems = [
         { id: 1, name: 'Mango Lassi', price: 3, image: '/images/mango-lassi.jpg' },
@@ -40,6 +41,9 @@ const KioskForm = () => {
 
     const handleNameSubmit = async (e) => {
         e.preventDefault();
+        if (isSubmitting) return; // Prevent multiple submissions
+
+        setIsSubmitting(true); // Disable the button
         const items = Object.entries(selectedItems)
             .flatMap(([name, qty]) => Array(Number(qty)).fill(name));
         if (customerName.trim() && items.length > 0) {
@@ -48,10 +52,19 @@ const KioskForm = () => {
                 items,
                 status: 'Pending',
             };
-            const response = await axios.post('/api/orders', order);
-            const fullOrderId = response.data._id; // Full ObjectId
-            setOrderNumber(fullOrderId.slice(-4)); // Use the last 4 characters
-            setStep(3);
+            try {
+                const response = await axios.post('/api/orders', order);
+                const fullOrderId = response.data._id; // Full ObjectId
+                setOrderNumber(fullOrderId.slice(-4)); // Use the last 4 characters
+                setStep(3);
+            } catch (error) {
+                console.error('Error placing order:', error);
+                alert('There was an error placing your order. Please try again.');
+            } finally {
+                setIsSubmitting(false); // Re-enable the button
+            }
+        } else {
+            setIsSubmitting(false); // Re-enable the button if validation fails
         }
     };
 
@@ -187,7 +200,13 @@ const KioskForm = () => {
                         required
                     />
                     <div className="order-button-container" style={{ textAlign: 'center' }}>
-                        <button style={{ fontSize: '25px' }} type="submit">Place Order</button>
+                        <button
+                            style={{ fontSize: '25px' }}
+                            type="submit"
+                            disabled={isSubmitting} // Disable the button while submitting
+                        >
+                            {isSubmitting ? 'Placing Order...' : 'Place Order'}
+                        </button>
                     </div>
                 </form>
             )}
