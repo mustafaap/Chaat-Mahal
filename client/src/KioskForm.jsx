@@ -16,6 +16,7 @@ const KioskForm = () => {
         { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.JPG' },
         { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.JPG' },
         { id: 7, name: 'Paneer Wrap', price: 8, image: '/images/paneer-wrap.JPG' },
+        { id: 7, name: 'Chicken Wrap', price: 8, image: '/images/chicken-wrap.JPG' },
     ];
 
     const handleQuantityChange = (itemName, quantity) => {
@@ -90,16 +91,9 @@ const KioskForm = () => {
                                     boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
                                 }}
                             >
-                                <img
+                                <img className='menu-item-image'
                                     src={item.image}
                                     alt={item.name}
-                                    style={{
-                                        width: '100%',
-                                        height: '185px',
-                                        objectFit: 'cover',
-                                        borderRadius: '8px',
-                                        marginBottom: '10px'
-                                    }}
                                 />
                                 <div style={{ marginTop: 8 }}>
                                     <hr />

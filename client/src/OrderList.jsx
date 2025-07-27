@@ -128,7 +128,8 @@ const OrderList = () => {
                                     { name: 'Dahipuri', price: 6 },
                                     { name: 'Sevpuri', price: 6 },
                                     { name: 'Bhelpuri', price: 7 },
-                                    { name: 'Paneer Wrap', price: 7 }
+                                    { name: 'Paneer Wrap', price: 8 },
+                                    { name: 'Chicken Wrap', price: 8 }
                                 ].find(i => i.name === name);
                                 return sum + (menuItem ? menuItem.price * qty : 0);
                             }, 0);
@@ -225,7 +226,8 @@ const OrderList = () => {
                                     { name: 'Dahipuri', price: 6 },
                                     { name: 'Sevpuri', price: 6 },
                                     { name: 'Bhelpuri', price: 7 },
-                                    { name: 'Paneer Wrap', price: 8 }
+                                    { name: 'Paneer Wrap', price: 8 },
+                                    { name: 'Chicken Wrap', price: 8 }
                                 ].find(i => i.name === name);
                                 return sum + (menuItem ? menuItem.price * qty : 0);
                             }, 0);
