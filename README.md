@@ -62,3 +62,9 @@ chaat-mahal-kiosk
 ## License
 
 This project is licensed under the MIT License.
+
+## QR code
+
+<img width="500" height="500" alt="image" src="https://github.com/user-attachments/assets/ea8c32b9-5f27-4c48-8f95-f74067e2d934" />
+
+
