@@ -16,7 +16,7 @@ const KioskForm = () => {
         { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.JPG' },
         { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.JPG' },
         { id: 7, name: 'Paneer Wrap', price: 8, image: '/images/paneer-wrap.JPG' },
-        { id: 7, name: 'Chicken Wrap', price: 8, image: '/images/chicken-wrap.JPG' },
+        { id: 7, name: 'Chicken Wrap', price: 9, image: '/images/chicken-wrap.JPG' },
     ];
 
     const handleQuantityChange = (itemName, quantity) => {
