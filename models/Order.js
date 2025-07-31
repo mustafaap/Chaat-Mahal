@@ -9,6 +9,10 @@ const orderSchema = new mongoose.Schema({
         type: [String],
         required: true
     },
+    notes: {
+        type: String,
+        default: ''
+    },
     status: {
         type: String,
         enum: ['Pending', 'Completed', 'Cancelled'],
