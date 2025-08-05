@@ -13,13 +13,13 @@ const KioskForm = () => {
 
     const menuItems = [
         { id: 1, name: 'Mango Lassi', price: 3, image: '/images/mango-lassi.jpg', options: ['Ice', 'No Ice'] },
-        { id: 2, name: 'Panipuri', price: 3, image: '/images/panipuri.JPG', options: ['Mild', 'Medium', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
-        { id: 3, name: 'Masala Puri', price: 4, image: '/images/masala-puri.JPG', options: ['Mild', 'Medium', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
-        { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.JPG', options: ['Mild', 'Medium', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
-        { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.JPG', options: ['Mild', 'Medium', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
-        { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.JPG', options: ['Mild', 'Medium', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
-        { id: 7, name: 'Paneer Wrap', price: 8, image: '/images/paneer-wrap.JPG', options: ['Mild', 'Medium', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
-        { id: 8, name: 'Chicken Wrap', price: 9, image: '/images/chicken-wrap.JPG', options: ['Mild', 'Medium', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
+        { id: 2, name: 'Panipuri', price: 3, image: '/images/panipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
+        { id: 3, name: 'Masala Puri', price: 4, image: '/images/masala-puri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
+        { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
+        { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
+        { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
+        { id: 7, name: 'Paneer Wrap', price: 8, image: '/images/paneer-wrap.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
+        { id: 8, name: 'Chicken Wrap', price: 9, image: '/images/chicken-wrap.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
     ];
 
     const handleQuantityChange = (itemName, quantity, options = []) => {
@@ -220,7 +220,8 @@ const KioskForm = () => {
                             &#8592; Back
                         </button>
                     </div>
-                    <div style={{
+                    <div id="order-options-card"
+                      style={{
                         background: '#f3e9e3',
                         borderRadius: '10px',
                         padding: '18px 20px',
@@ -229,7 +230,9 @@ const KioskForm = () => {
                         marginLeft: 'auto',
                         marginRight: 'auto'
                     }}>
-                        <h3 style={{ marginTop: 0, marginBottom: 12, color: '#b85c38', fontSize: '2rem' }}>Your Order</h3>
+                        <h3 id="order-options-title" 
+                          style={{ marginTop: 0, marginBottom: 12, color: '#b85c38', fontSize: '2rem' }}>Your Order</h3>
+                        
                         <div style={{
                             maxWidth: '500px',
                             margin: '0 auto',
@@ -276,9 +279,9 @@ const KioskForm = () => {
                         onChange={(e) => setCustomerName(e.target.value)}
                         required
                     />
-                    <h2>Special Requests / Notes (Optional)</h2>
+                    <h2>Allergies /  Special Requests / Notes (Optional)</h2>
                     <textarea
-                        placeholder="Enter any special requests, allergies, or notes here..."
+                        placeholder="Enter any allergies, special requests or notes here..."
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         style={{
@@ -388,50 +391,108 @@ const KioskForm = () => {
                     zIndex: 1000
                 }}>
                     <div style={{
-                        background: '#fff',
+                        background: '#f1e6e1ff',
                         padding: 20,
                         borderRadius: 8,
                         width: '90%',
                         maxWidth: 400,
                         textAlign: 'center'
                     }}>
-                        <h2>{modalItem.name} Options</h2>
-                        {modalItem.options?.map(option => (
-                            <div key={option} style={{ marginBottom: 10 }}>
-                                <label style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <input
-                                        type={['Mild', 'Medium', 'Spicy', 'Extra Spicy'].includes(option) ? 'radio' : 'checkbox'}
-                                        name={['Mild', 'Medium', 'Spicy', 'Extra Spicy'].includes(option) ? 'spice-level' : option}
-                                        checked={itemOptions[modalItem.name]?.includes(option) || false}
-                                        onChange={(e) => {
-                                            const checked = e.target.checked;
-                                            setItemOptions(prev => {
-                                                const currentOptions = prev[modalItem.name] || [];
-                                                if (checked) {
-                                                    if (['Mild', 'Medium', 'Spicy', 'Extra Spicy'].includes(option)) {
-                                                        // Replace any existing spice level with the new one
-                                                        const filteredOptions = currentOptions.filter(opt => !['Mild', 'Medium', 'Spicy', 'Extra Spicy'].includes(opt));
-                                                        return { ...prev, [modalItem.name]: [...filteredOptions, option] };
-                                                    } else {
-                                                        return { ...prev, [modalItem.name]: [...currentOptions, option] };
-                                                    }
-                                                } else {
-                                                    return { ...prev, [modalItem.name]: currentOptions.filter(opt => opt !== option) };
-                                                }
-                                            });
-                                        }}
-                                        style={{
-                                            width: 18,
-                                            height: 18,
-                                            accentColor: '#b85c38'
-                                        }}
-                                    />
-                                    {option}
-                                </label>
+                        <h2 id="item-options-title">{modalItem.name} Options</h2>
+
+                    {/* Slider for Spice Level */}
+                    {modalItem.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)) && (
+                        <div id="spice-slider-container" style={{ marginBottom: 20 }}>
+                            <label htmlFor="spice-slider" style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Spice Level:</label>
+                            <input
+                                type="range"
+                                id="spice-slider"
+                                min={0}
+                                max={3}
+                                step={1}
+                                value={(() => {
+                                    const spiceLevels = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
+                                    const selected = itemOptions[modalItem.name]?.find(opt => spiceLevels.includes(opt));
+                                    return selected ? spiceLevels.indexOf(selected) : 1;
+                                })()}
+                                onChange={(e) => {
+                                    const newLevel = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'][parseInt(e.target.value)];
+                                    setItemOptions(prev => ({
+                                        ...prev,
+                                        [modalItem.name]: [
+                                            ...(prev[modalItem.name]?.filter(opt => !['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)) || []),
+                                            newLevel
+                                        ]
+                                    }));
+                                }}
+                                
+                                style={{width: '85%', marginTop: 10, display: 'block', marginLeft: 'auto', marginRight: 'auto' }}
+                            />
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                gap: '22%',
+                                color: '#b85c38',
+                                fontSize: '1rem',
+                                marginTop: 6,
+                                maxWidth: '90%',
+                                marginLeft: 'auto',
+                                marginRight: 'auto'
+                            }}>
+                                {/* <span title="No Spice">❌</span>
+                                <span title="Mild">🌶️</span>
+                                <span title="Spicy">🌶️🌶️</span>
+                                <span title="Extra Spicy">🌶️🌶️🌶️</span> */}
+
+                                <span title="No Spice">No Spice</span>
+                                <span title="Mild">Mild</span>
+                                <span title="Spicy">Spicy</span>
+                                <span title="Extra Spicy">Extra Spicy</span>
                             </div>
-                        ))}
-                        <button onClick={closeModal} style={{ marginTop: 10, padding: '10px 20px', background: 'firebrick', color: '#fff', border: 'none', borderRadius: 6, marginRight: '10px' }}>Cancel</button>
-                        <button onClick={handleOptionSubmit} style={{ marginTop: 20, padding: '10px 20px', background: 'green', color: '#fff', border: 'none', borderRadius: 6 }}>Add to Order</button>
+
+                        </div>
+                    )}
+
+                    {/* Other Options (checkboxes) */}
+                    {modalItem.options?.filter(opt => !['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)).map(option => (
+                        <div key={option} style={{ marginBottom: 10 }}>
+                            <label style={{ color: '#b85c38', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <input
+                                    type="checkbox"
+                                    name={option}
+                                    checked={itemOptions[modalItem.name]?.includes(option) || false}
+                                    onChange={(e) => {
+                                        const checked = e.target.checked;
+                                        setItemOptions(prev => {
+                                            const currentOptions = prev[modalItem.name] || [];
+                                            if (checked) {
+                                                return { ...prev, [modalItem.name]: [...currentOptions, option] };
+                                            } else {
+                                                return {
+                                                    ...prev,
+                                                    [modalItem.name]: currentOptions.filter(opt => opt !== option)
+                                                };
+                                            }
+                                        });
+                                    }}
+                                    style={{
+                                        width: 18,
+                                        height: 18,
+                                        accentColor: '#b85c38'
+                                    }}
+                                />
+                                {option}
+                            </label>
+                        </div>
+                    ))}
+
+                    {/* Buttons */}
+                        <button onClick={closeModal} style={{ marginTop: 10, padding: '10px 20px', background: 'firebrick', color: '#fff', border: 'none', borderRadius: 6, marginRight: '10px' }}>
+                        Cancel
+                        </button>
+                        <button onClick={handleOptionSubmit} style={{ marginTop: 20, padding: '10px 20px', background: 'green', color: '#fff', border: 'none', borderRadius: 6 }}>
+                        Add to Order
+                        </button>
                     </div>
                 </div>
             )}
