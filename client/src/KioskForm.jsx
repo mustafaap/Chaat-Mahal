@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import './styles/KioskForm.css';
 
 const KioskForm = () => {
     const [customerName, setCustomerName] = useState('');
@@ -9,7 +10,7 @@ const KioskForm = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [modalItem, setModalItem] = useState(null);
     const [itemOptions, setItemOptions] = useState({});
-    const [notes, setNotes] = useState(''); // Add this line
+    const [notes, setNotes] = useState('');
 
     const menuItems = [
         { id: 1, name: 'Mango Lassi', price: 3, image: '/images/mango-lassi.jpg', options: ['Ice', 'No Ice'] },
@@ -25,8 +26,8 @@ const KioskForm = () => {
     const handleQuantityChange = (itemName, quantity, options = []) => {
         setSelectedItems(prev => {
             const updated = { ...prev };
-            const key = `${itemName}-${options.join('-')}`; // Create a unique key for each item-option combination
-            const currentQuantity = updated[key]?.quantity || 0; // Default to 0 if the item is not yet in selectedItems
+            const key = `${itemName}-${options.join('-')}`;
+            const currentQuantity = updated[key]?.quantity || 0;
             if (quantity > 0) {
                 updated[key] = { name: itemName, quantity: currentQuantity + 1, options };
             } else {
@@ -46,20 +47,19 @@ const KioskForm = () => {
 
     const handleOptionSubmit = () => {
         const options = itemOptions[modalItem.name] || [];
-        const key = `${modalItem.name}-${options.join('-')}`; // Create a unique key for the item-option combination
-        const currentQuantity = selectedItems[key]?.quantity || 0; // Default to 0 if the item is not yet in selectedItems
+        const key = `${modalItem.name}-${options.join('-')}`;
+        const currentQuantity = selectedItems[key]?.quantity || 0;
         handleQuantityChange(modalItem.name, currentQuantity + 1, options);
-        setItemOptions(prev => ({ ...prev, [modalItem.name]: [] })); // Reset options for the item
+        setItemOptions(prev => ({ ...prev, [modalItem.name]: [] }));
         closeModal();
     };
 
     const handleMenuSubmit = (e) => {
         e.preventDefault();
 
-        // Ensure quantities are valid positive integers
         const items = Object.entries(selectedItems)
             .flatMap(([name, { quantity }]) => {
-                const validQuantity = Number(quantity) || 0; // Default to 0 if quantity is invalid
+                const validQuantity = Number(quantity) || 0;
                 return Array(validQuantity).fill(name);
             });
 
@@ -72,14 +72,13 @@ const KioskForm = () => {
 
     const handleNameSubmit = async (e) => {
         e.preventDefault();
-        if (isSubmitting) return; // Prevent multiple submissions
+        if (isSubmitting) return;
 
-        setIsSubmitting(true); // Disable the button
+        setIsSubmitting(true);
 
-        // Generate the items array based on the selectedItems structure
         const items = Object.entries(selectedItems)
             .flatMap(([name, { quantity }]) => {
-                const validQuantity = Number(quantity) || 0; // Ensure quantity is a valid number
+                const validQuantity = Number(quantity) || 0;
                 return Array(validQuantity).fill(name);
             });
 
@@ -87,71 +86,52 @@ const KioskForm = () => {
             const order = {
                 customerName,
                 items,
-                notes: notes.trim(), // Add this line
+                notes: notes.trim(),
                 status: 'Pending',
             };
             try {
                 const response = await axios.post('/api/orders', order);
-                const fullOrderId = response.data._id; // Full ObjectId
-                setOrderNumber(fullOrderId.slice(-4)); // Use the last 4 characters
+                const fullOrderId = response.data._id;
+                setOrderNumber(fullOrderId.slice(-4));
                 setStep(3);
             } catch (error) {
                 console.error('Error placing order:', error);
                 alert('There was an error placing your order. Please try again.');
             } finally {
-                setIsSubmitting(false); // Re-enable the button
+                setIsSubmitting(false);
             }
         } else {
             alert('Please enter your name and select at least one item.');
-            setIsSubmitting(false); // Re-enable the button if validation fails
+            setIsSubmitting(false);
         }
     };
 
     return (
-        <div>
+        <div className="kiosk-container">
             {step === 1 && (
                 <form onSubmit={handleMenuSubmit}>
                     <h2>Select Menu Items</h2>
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                        gap: '24px',
-                        margin: '24px 0'
-                    }}>
+                    <div className="menu-grid">
                         {menuItems.map(item => (
-                            <div
-                                key={item.id}
-                                style={{
-                                    background: '#f9f9f9',
-                                    borderRadius: '12px',
-                                    padding: '14px',
-                                    textAlign: 'center',
-                                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-                                }}
-                            >
+                            <div key={item.id} className="menu-item-card">
                                 <img className='menu-item-image'
                                     src={item.image}
                                     alt={item.name}
                                 />
-                                <div style={{ marginTop: 8 }}>
+                                <div className="menu-item-content">
                                     <hr />
-                                    <label
-                                        htmlFor={`qty-${item.name}`}
-                                        style={{ fontWeight: 'bold', fontSize: '1.25rem', display: 'block', margin: '12px 0 6px 0' }}
-                                    >
+                                    <label htmlFor={`qty-${item.name}`} className="menu-item-label">
                                         {item.name} | ${item.price}
                                     </label>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 10 }}>
+                                    <div className="quantity-controls">
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                // Calculate total quantity for this item across all option combinations
                                                 const totalQuantity = Object.entries(selectedItems)
                                                     .filter(([key]) => key.startsWith(`${item.name}-`))
                                                     .reduce((sum, [, itemData]) => sum + itemData.quantity, 0);
                                                 
                                                 if (totalQuantity > 0) {
-                                                    // Find the first entry with this item name and reduce its quantity
                                                     const firstKey = Object.keys(selectedItems).find(key => key.startsWith(`${item.name}-`));
                                                     if (firstKey) {
                                                         const currentItem = selectedItems[firstKey];
@@ -170,12 +150,9 @@ const KioskForm = () => {
                                                     }
                                                 }
                                             }}
-                                            style={{
-                                                width: 36, height: 36, fontSize: 22, borderRadius: '50%', border: '1px solid #ccc',
-                                                color: '#fff', background: '#b85c38', cursor: 'pointer', marginRight: 8, padding: 0, paddingBottom: '1px'
-                                            }}
+                                            className="quantity-btn quantity-btn-minus"
                                         >-</button>
-                                        <span style={{ minWidth: 24, display: 'inline-block', fontSize: 24, fontWeight: 'bold' }}>
+                                        <span className="quantity-display">
                                             {Object.entries(selectedItems)
                                                 .filter(([key]) => key.startsWith(`${item.name}-`))
                                                 .reduce((sum, [, itemData]) => sum + itemData.quantity, 0)}
@@ -183,70 +160,42 @@ const KioskForm = () => {
                                         <button
                                             type="button"
                                             onClick={() => openModal(item)}
-                                            style={{
-                                                width: 36, height: 36, fontSize: 22, borderRadius: '50%', border: '1px solid #ccc',
-                                                color: '#fff', background: 'green', cursor: 'pointer', marginLeft: 8, padding: 0, paddingTop: '1px'
-                                            }}
+                                            className="quantity-btn quantity-btn-plus"
                                         >+</button>
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
-                    <div className="next-button-container" style={{ textAlign: 'center'}}>
-                        <button style={{  fontSize: '25px'}} type="submit">Next</button>
+                    <div className="next-button-container">
+                        <button className="next-button" type="submit">Next</button>
                     </div>
                 </form>
             )}
             {step === 2 && (
                 <form onSubmit={handleNameSubmit}>
-                    <div className="back-button-container" style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                    <div className="back-button-container">
                         <button
                             type="button"
                             onClick={() => setStep(1)}
-                            style={{
-                                background: '#fff',
-                                border: '2px solid #b85c38',
-                                color: '#b85c38',
-                                fontSize: 25,
-                                fontWeight: 'bold',
-                                cursor: 'pointer',
-                                padding: '8px 28px',
-                                borderRadius: 8,
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                                transition: 'background 0.2s, color 0.2s'
-                            }}
+                            className="back-button"
                         >
                             &#8592; Back
                         </button>
                     </div>
-                    <div id="order-options-card"
-                      style={{
-                        background: '#f3e9e3',
-                        borderRadius: '10px',
-                        padding: '18px 20px',
-                        marginBottom: '24px',
-                        maxWidth: 400,
-                        marginLeft: 'auto',
-                        marginRight: 'auto'
-                    }}>
-                        <h3 id="order-options-title" 
-                          style={{ marginTop: 0, marginBottom: 12, color: '#b85c38', fontSize: '2rem' }}>Your Order</h3>
+                    <div className="order-card">
+                        <h3 className="order-title">Your Order</h3>
                         
-                        <div style={{
-                            maxWidth: '500px',
-                            margin: '0 auto',
-                            width: '100%'
-                        }}>
-                            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                        <div className="order-items-container">
+                            <ul className="order-items-list">
                                 {Object.entries(selectedItems)
-                                    .filter(([_, { quantity }]) => quantity > 0) // Ensure quantity is greater than 0
+                                    .filter(([_, { quantity }]) => quantity > 0)
                                     .map(([key, { name, quantity, options }]) => (
-                                        <li key={key} style={{ fontSize: '1.4rem', marginBottom: 0, padding: '6px 10px' }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                                <span style={{ fontWeight: 'bold' }}>{name}</span>
+                                        <li key={key} className="order-item">
+                                            <div className="order-item-content">
+                                                <span className="order-item-name">{name}</span>
                                                 {options.length > 0 && (
-                                                    <span style={{ fontSize: '1rem', color: '#555', marginTop: 4, marginLeft: 20 }}>
+                                                    <span className="order-item-options">
                                                         Options: {options.join(', ')}
                                                     </span>
                                                 )}
@@ -255,7 +204,7 @@ const KioskForm = () => {
                                     ))}
                             </ul>
                         </div>
-                        <div style={{ marginTop: 10, fontWeight: 'bold', fontSize: '1.8rem' }}>
+                        <div className="order-total">
                             Total: $
                             {Object.entries(selectedItems)
                                 .reduce((sum, [key, { name, quantity }]) => {
@@ -265,11 +214,11 @@ const KioskForm = () => {
                             }
                         </div>
                         {notes && (
-                            <div style={{ marginTop: 15, padding: 10, background: '#f9f9f9', borderRadius: 6, fontSize: '1.2rem' }}>
+                            <div className="order-notes">
                                 <strong>Notes:</strong> {notes}
                             </div>
                         )}
-                        <div style={{ fontWeight: 'bold', marginTop: "5px", color: '#b85c38' }}>*Taxes applied to card and tap payments only</div>
+                        <div className="tax-notice">*Taxes applied to card and tap payments only</div>
                     </div>
                     <h2>Enter Your Name</h2>
                     <input
@@ -278,30 +227,20 @@ const KioskForm = () => {
                         value={customerName}
                         onChange={(e) => setCustomerName(e.target.value)}
                         required
+                        className="name-input"
                     />
                     <h2>Allergies /  Special Requests / Notes (Optional)</h2>
                     <textarea
                         placeholder="Enter any allergies, special requests or notes here..."
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        style={{
-                            width: '100%',
-                            padding: 10,
-                            marginBottom: 18,
-                            border: '1px solid #ccc',
-                            borderRadius: 6,
-                            fontSize: '1rem',
-                            minHeight: '80px',
-                            resize: 'vertical',
-                            boxSizing: 'border-box',
-                            fontFamily: 'inherit'
-                        }}
+                        className="notes-textarea"
                     />
-                    <div className="order-button-container" style={{ textAlign: 'center' }}>
+                    <div className="order-button-container">
                         <button
-                            style={{ fontSize: '25px' }}
+                            className="order-button"
                             type="submit"
-                            disabled={isSubmitting} // Disable the button while submitting
+                            disabled={isSubmitting}
                         >
                             {isSubmitting ? 'Placing Order...' : 'Place Order'}
                         </button>
@@ -309,25 +248,21 @@ const KioskForm = () => {
                 </form>
             )}
             {step === 3 && (
-                <div style={{ textAlign: 'center', marginTop: '50px' }}>
+                <div className="confirmation-container">
                     <h2>Order Confirmation</h2>
-                    <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Order Number: {orderNumber}</p>
-                    <p style={{ fontSize: '1.5rem' }}>Name: {customerName}</p>
-                    <h3 style={{ marginTop: '20px' }}>Items Ordered:</h3>
-                    <div style={{
-                        maxWidth: '500px',
-                        margin: '0 auto',
-                        width: '100%'
-                    }}>
-                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                    <p className="confirmation-details">Order Number: {orderNumber}</p>
+                    <p className="confirmation-name">Name: {customerName}</p>
+                    <h3 className="confirmation-items-title">Items Ordered:</h3>
+                    <div className="confirmation-items-container">
+                        <ul className="confirmation-items-list">
                             {Object.entries(selectedItems)
-                                .filter(([_, { quantity }]) => quantity > 0) // Ensure quantity is greater than 0
+                                .filter(([_, { quantity }]) => quantity > 0)
                                 .map(([key, { name, quantity, options }]) => (
-                                    <li key={key} style={{ fontSize: '1.4rem', marginBottom: 0, padding: '6px 10px' }}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                            <span style={{ fontWeight: 'bold' }}>{name}</span>
+                                    <li key={key} className="confirmation-item">
+                                        <div className="confirmation-item-content">
+                                            <span className="confirmation-item-name">{name}</span>
                                             {options.length > 0 && (
-                                                <span style={{ fontSize: '1rem', color: '#555', marginTop: 4, marginLeft: 20 }}>
+                                                <span className="confirmation-item-options">
                                                     Options: {options.join(', ')}
                                                 </span>
                                             )}
@@ -336,7 +271,7 @@ const KioskForm = () => {
                                 ))}
                         </ul>
                     </div>
-                    <div style={{ marginTop: 10, fontWeight: 'bold', fontSize: '1.8rem', color: '#b85c38' }}>
+                    <div className="confirmation-total">
                         Total: $
                         {Object.entries(selectedItems).reduce((sum, [key, { name, quantity }]) => {
                             const item = menuItems.find(i => i.name === name);
@@ -344,31 +279,23 @@ const KioskForm = () => {
                         }, 0)}
                     </div>
                     {notes && (
-                        <div style={{ marginTop: 15, padding: 10, background: '#f9f9f9', borderRadius: 6, fontSize: '1.2rem' }}>
+                        <div className="confirmation-notes">
                             <strong>Notes:</strong> {notes}
                         </div>
                     )}
-                    <div style={{ fontWeight: 'bold', marginTop: "5px", color: '#b85c38' }}>*Taxes applied to card and tap payments only</div>
-                    <p style={{ marginTop: '20px', fontSize: '1.4rem', fontWeight: 'bold', color: '#b85c38' }}>
+                    <div className="confirmation-tax-notice">*Taxes applied to card and tap payments only</div>
+                    <p className="confirmation-payment-notice">
                         Please pay at the counter to enter the order preparation line.
                     </p>
-                    <div className="anotherorder-button-container" style={{ marginTop: '20px', marginBottom: '20px' }}>
+                    <div className="another-order-container">
                         <button
                             onClick={() => {
                                 setStep(1);
                                 setSelectedItems({});
                                 setCustomerName('');
-                                setNotes(''); // Add this line
+                                setNotes('');
                             }}
-                            style={{
-                                background: '#b85c38',
-                                color: '#fff',
-                                border: 'none',
-                                padding: '10px 20px',
-                                borderRadius: '8px',
-                                fontSize: '1.2rem',
-                                cursor: 'pointer'
-                            }}
+                            className="another-order-button"
                         >
                             Place Another Order
                         </button>
@@ -378,120 +305,88 @@ const KioskForm = () => {
 
             {/* Modal */}
             {modalItem && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    background: 'rgba(0, 0, 0, 0.5)',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    zIndex: 1000
-                }}>
-                    <div style={{
-                        background: '#f1e6e1ff',
-                        padding: 20,
-                        borderRadius: 8,
-                        width: '90%',
-                        maxWidth: 400,
-                        textAlign: 'center'
-                    }}>
-                        <h2 id="item-options-title">{modalItem.name} Options</h2>
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2>{modalItem.name} Options</h2>
 
-                    {/* Slider for Spice Level */}
-                    {modalItem.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)) && (
-                        <div id="spice-slider-container" style={{ marginBottom: 20 }}>
-                            <label htmlFor="spice-slider" style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Spice Level:</label>
-                            <input
-                                type="range"
-                                id="spice-slider"
-                                min={0}
-                                max={3}
-                                step={1}
-                                value={(() => {
-                                    const spiceLevels = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
-                                    const selected = itemOptions[modalItem.name]?.find(opt => spiceLevels.includes(opt));
-                                    return selected ? spiceLevels.indexOf(selected) : 1;
-                                })()}
-                                onChange={(e) => {
-                                    const newLevel = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'][parseInt(e.target.value)];
-                                    setItemOptions(prev => ({
-                                        ...prev,
-                                        [modalItem.name]: [
-                                            ...(prev[modalItem.name]?.filter(opt => !['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)) || []),
-                                            newLevel
-                                        ]
-                                    }));
-                                }}
-                                
-                                style={{width: '85%', marginTop: 10, display: 'block', marginLeft: 'auto', marginRight: 'auto' }}
-                            />
-                            <div style={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                gap: '22%',
-                                color: '#b85c38',
-                                fontSize: '1rem',
-                                marginTop: 6,
-                                maxWidth: '90%',
-                                marginLeft: 'auto',
-                                marginRight: 'auto'
-                            }}>
-                                {/* <span title="No Spice">❌</span>
-                                <span title="Mild">🌶️</span>
-                                <span title="Spicy">🌶️🌶️</span>
-                                <span title="Extra Spicy">🌶️🌶️🌶️</span> */}
-
-                                <span title="No Spice">No Spice</span>
-                                <span title="Mild">Mild</span>
-                                <span title="Spicy">Spicy</span>
-                                <span title="Extra Spicy">Extra Spicy</span>
-                            </div>
-
-                        </div>
-                    )}
-
-                    {/* Other Options (checkboxes) */}
-                    {modalItem.options?.filter(opt => !['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)).map(option => (
-                        <div key={option} style={{ marginBottom: 10 }}>
-                            <label style={{ color: '#b85c38', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: 10 }}>
+                        {/* Slider for Spice Level */}
+                        {modalItem.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)) && (
+                            <div className="spice-slider-container">
+                                <label htmlFor="spice-slider" className="spice-slider-label">Spice Level:</label>
                                 <input
-                                    type="checkbox"
-                                    name={option}
-                                    checked={itemOptions[modalItem.name]?.includes(option) || false}
+                                    type="range"
+                                    id="spice-slider"
+                                    min={0}
+                                    max={3}
+                                    step={1}
+                                    value={(() => {
+                                        const spiceLevels = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
+                                        const selected = itemOptions[modalItem.name]?.find(opt => spiceLevels.includes(opt));
+                                        return selected ? spiceLevels.indexOf(selected) : 1;
+                                    })()}
                                     onChange={(e) => {
-                                        const checked = e.target.checked;
-                                        setItemOptions(prev => {
-                                            const currentOptions = prev[modalItem.name] || [];
-                                            if (checked) {
-                                                return { ...prev, [modalItem.name]: [...currentOptions, option] };
-                                            } else {
-                                                return {
-                                                    ...prev,
-                                                    [modalItem.name]: currentOptions.filter(opt => opt !== option)
-                                                };
-                                            }
-                                        });
+                                        const newLevel = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'][parseInt(e.target.value)];
+                                        setItemOptions(prev => ({
+                                            ...prev,
+                                            [modalItem.name]: [
+                                                ...(prev[modalItem.name]?.filter(opt => !['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)) || []),
+                                                newLevel
+                                            ]
+                                        }));
                                     }}
-                                    style={{
-                                        width: 18,
-                                        height: 18,
-                                        accentColor: '#b85c38'
-                                    }}
+                                    className="spice-slider"
                                 />
-                                {option}
-                            </label>
-                        </div>
-                    ))}
+                                <div className="spice-levels">
+                                    <span title="No Spice">No Spice</span>
+                                    <span title="Mild">Mild</span>
+                                    <span title="Spicy">Spicy</span>
+                                    <span title="Extra Spicy">Extra Spicy</span>
+                                </div>
+                            </div>
+                        )}
 
-                    {/* Buttons */}
-                        <button onClick={closeModal} style={{ marginTop: 10, padding: '10px 20px', background: 'firebrick', color: '#fff', border: 'none', borderRadius: 6, marginRight: '10px' }}>
-                        Cancel
+                        {/* Other Options (checkboxes for most items, radio buttons for Mango Lassi) */}
+                        {modalItem.options?.filter(opt => !['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)).map(option => (
+                            <div key={option} className="option-container">
+                                <label className="option-label">
+                                    <input
+                                        type={modalItem.name === 'Mango Lassi' ? 'radio' : 'checkbox'}
+                                        name={modalItem.name === 'Mango Lassi' ? 'mango-lassi-options' : option}
+                                        checked={itemOptions[modalItem.name]?.includes(option) || false}
+                                        onChange={(e) => {
+                                            const checked = e.target.checked;
+                                            setItemOptions(prev => {
+                                                const currentOptions = prev[modalItem.name] || [];
+                                                
+                                                if (modalItem.name === 'Mango Lassi') {
+                                                    // For radio buttons, replace the current option
+                                                    return { ...prev, [modalItem.name]: checked ? [option] : [] };
+                                                } else {
+                                                    // For checkboxes, add/remove from array
+                                                    if (checked) {
+                                                        return { ...prev, [modalItem.name]: [...currentOptions, option] };
+                                                    } else {
+                                                        return {
+                                                            ...prev,
+                                                            [modalItem.name]: currentOptions.filter(opt => opt !== option)
+                                                        };
+                                                    }
+                                                }
+                                            });
+                                        }}
+                                        className="option-checkbox"
+                                    />
+                                    {option}
+                                </label>
+                            </div>
+                        ))}
+
+                        {/* Buttons */}
+                        <button onClick={closeModal} className="modal-cancel-button">
+                            Cancel
                         </button>
-                        <button onClick={handleOptionSubmit} style={{ marginTop: 20, padding: '10px 20px', background: 'green', color: '#fff', border: 'none', borderRadius: 6 }}>
-                        Add to Order
+                        <button onClick={handleOptionSubmit} className="modal-add-button">
+                            Add to Order
                         </button>
                     </div>
                 </div>

@@ -1,0 +1,486 @@
+/* Global styles for KioskForm */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2 {
+    color: #b85c38;
+    text-align: center;
+}
+
+h1 {
+    font-size: 45px;
+}
+
+h2 {
+    font-size: 35px;
+    margin-top: -5px;
+}
+
+form {
+    background: #fff;
+    max-width: 1000px;
+    margin: 32px auto;
+    padding: 24px 32px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 18px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+button {
+    background: #b85c38;
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #a14d2c;
+}
+
+label {
+    margin-left: 8px;
+    font-size: 1rem;
+}
+
+input[type="checkbox"], input[type="radio"] {
+    accent-color: #b85c38;
+}
+
+.kiosk-container {
+}
+
+/* Step 1 - Menu Selection */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin: 24px 0;
+}
+
+.menu-item-card {
+    background: #f9f9f9;
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.menu-item-image {
+    width: 100%;
+    height: 185px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.menu-item-content {
+    margin-top: 8px;
+}
+
+.menu-item-label {
+    font-weight: bold;
+    font-size: 1.25rem;
+    display: block;
+    margin: 12px 0 6px 0;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.quantity-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 22px;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    color: #fff;
+    cursor: pointer;
+    padding: 0;
+}
+
+.quantity-btn-minus {
+    background: #b85c38;
+    margin-right: 8px;
+    padding-bottom: 1px;
+}
+
+.quantity-btn-plus {
+    background: green;
+    margin-left: 8px;
+    padding-top: 1px;
+}
+
+.quantity-display {
+    min-width: 24px;
+    display: inline-block;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.next-button-container {
+    text-align: center;
+}
+
+.next-button {
+    font-size: 25px;
+}
+
+/* Step 2 - Order Details */
+.back-button-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.back-button {
+    background: #fff;
+    border: 2px solid #b85c38;
+    color: #b85c38;
+    font-size: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 8px 28px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: background 0.2s, color 0.2s;
+}
+
+.order-card {
+    background: #f3e9e3;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.order-title {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: #b85c38;
+    font-size: 2rem;
+}
+
+.order-items-container {
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.order-items-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.order-item {
+    font-size: 1.4rem;
+    margin-bottom: 0;
+    padding: 6px 10px;
+}
+
+.order-item-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.order-item-name {
+    font-weight: bold;
+}
+
+.order-item-options {
+    font-size: 1rem;
+    color: #555;
+    margin-top: 4px;
+    margin-left: 20px;
+}
+
+.order-total {
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 1.8rem;
+}
+
+.order-notes {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    font-size: 1.2rem;
+}
+
+.tax-notice {
+    font-weight: bold;
+    margin-top: 5px;
+    color: #b85c38;
+}
+
+.name-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 18px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.notes-textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 18px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    min-height: 80px;
+    resize: vertical;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.order-button-container {
+    text-align: center;
+}
+
+.order-button {
+    font-size: 25px;
+}
+
+/* Step 3 - Order Confirmation */
+.confirmation-container {
+    text-align: center;
+    margin-top: 50px;
+}
+
+.confirmation-details {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.confirmation-name {
+    font-size: 1.5rem;
+}
+
+.confirmation-items-title {
+    margin-top: 20px;
+}
+
+.confirmation-items-container {
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.confirmation-items-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.confirmation-item {
+    font-size: 1.4rem;
+    margin-bottom: 0;
+    padding: 6px 10px;
+}
+
+.confirmation-item-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.confirmation-item-name {
+    font-weight: bold;
+}
+
+.confirmation-item-options {
+    font-size: 1rem;
+    color: #555;
+    margin-top: 4px;
+    margin-left: 20px;
+}
+
+.confirmation-total {
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 1.8rem;
+    color: #b85c38;
+}
+
+.confirmation-notes {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    font-size: 1.2rem;
+}
+
+.confirmation-tax-notice {
+    font-weight: bold;
+    margin-top: 5px;
+    color: #b85c38;
+}
+
+.confirmation-payment-notice {
+    margin-top: 20px;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #b85c38;
+}
+
+.another-order-container {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.another-order-button {
+    background: #b85c38;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #f1e6e1ff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.spice-slider-container {
+    margin-bottom: 20px;
+}
+
+.spice-slider-label {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.spice-slider {
+    width: 85%;
+    margin-top: 10px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.spice-levels {
+    display: flex;
+    justify-content: center;
+    gap: 22%;
+    color: #b85c38;
+    font-size: 1rem;
+    margin-top: 6px;
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.option-container {
+    margin-bottom: 10px;
+}
+
+.option-label {
+    color: #b85c38;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.option-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: #b85c38;
+}
+
+.option-radio {
+    width: 18px;
+    height: 18px;
+    accent-color: #b85c38;
+}
+
+.modal-cancel-button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background: firebrick;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    margin-right: 10px;
+}
+
+.modal-add-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: green;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 880px) {
+    .back-button-container {
+        justify-content: center;
+        padding-bottom: 16px;
+    }
+    
+    .back-button-container button {
+        width: 100%;
+    }
+    
+    .order-button-container button {
+        width: 100%;
+    }
+    
+    .next-button-container button {
+        width: 100%;
+    }
+
+    .menu-item-image {
+        height: 230px;
+    }
+}

@@ -1,4 +1,5 @@
-import './style.css';
+import './styles/KioskForm.css';
+import './styles/OrderList.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
