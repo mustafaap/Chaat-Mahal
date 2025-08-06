@@ -63,9 +63,6 @@ input[type="checkbox"], input[type="radio"] {
     accent-color: #b85c38;
 }
 
-.kiosk-container {
-}
-
 /* Step 1 - Menu Selection */
 .menu-grid {
     display: grid;
