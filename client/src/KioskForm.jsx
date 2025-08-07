@@ -96,10 +96,18 @@ const KioskForm = () => {
                 return Array(validQuantity).fill(name);
             });
 
+        // Calculate total
+        const total = Object.entries(selectedItems)
+            .reduce((sum, [key, { name, quantity }]) => {
+                const item = menuItems.find(i => i.name === name);
+                return sum + (item ? item.price * quantity : 0);
+            }, 0);
+
         if (customerName.trim() && items.length > 0) {
             const order = {
                 customerName,
                 items,
+                total,
                 notes: notes.trim(),
                 status: 'Pending',
             };

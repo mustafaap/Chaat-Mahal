@@ -4,8 +4,14 @@ const Order = require('../models/Order');
 
 // Create a new order
 router.post('/', async (req, res) => {
-    const { customerName, items } = req.body;
-    const newOrder = new Order({ customerName, items, status: 'Pending' });
+    const { customerName, items, total, notes } = req.body;
+    const newOrder = new Order({ 
+        customerName, 
+        items, 
+        total,
+        notes: notes || '',
+        status: 'Pending' 
+    });
     try {
         const savedOrder = await newOrder.save();
         req.io.emit('ordersUpdated'); // Notify all clients

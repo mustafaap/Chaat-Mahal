@@ -9,6 +9,10 @@ const orderSchema = new mongoose.Schema({
         type: [String],
         required: true
     },
+    total: {
+        type: Number,
+        required: true
+    },
     notes: {
         type: String,
         default: ''

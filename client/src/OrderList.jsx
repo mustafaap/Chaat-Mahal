@@ -102,21 +102,6 @@ const OrderList = () => {
                                 itemCounts[item] = (itemCounts[item] || 0) + 1;
                             });
 
-                            // Calculate total
-                            const total = Object.entries(itemCounts).reduce((sum, [name, qty]) => {
-                                const menuItem = [
-                                    { name: 'Mango Lassi', price: 3 },
-                                    { name: 'Panipuri', price: 3 },
-                                    { name: 'Masala Puri', price: 4 },
-                                    { name: 'Dahipuri', price: 6 },
-                                    { name: 'Sevpuri', price: 6 },
-                                    { name: 'Bhelpuri', price: 7 },
-                                    { name: 'Paneer Wrap', price: 8 },
-                                    { name: 'Chicken Wrap', price: 9 }
-                                ].find(i => i.name === name);
-                                return sum + (menuItem ? menuItem.price * qty : 0);
-                            }, 0);
-
                             return (
                                 <li key={order._id} className="order-item">
                                     <div className="order-info">
@@ -131,7 +116,7 @@ const OrderList = () => {
                                             ))}
                                         </ul>
                                         <div className="order-total">
-                                            Total: ${total}
+                                            Total: ${order.total}
                                         </div>
                                         {order.notes && (
                                             <div className="order-notes">
@@ -177,20 +162,6 @@ const OrderList = () => {
                                 itemCounts[item] = (itemCounts[item] || 0) + 1;
                             });
 
-                            const total = Object.entries(itemCounts).reduce((sum, [name, qty]) => {
-                                const menuItem = [
-                                    { name: 'Mango Lassi', price: 3 },
-                                    { name: 'Panipuri', price: 3 },
-                                    { name: 'Masala Puri', price: 4 },
-                                    { name: 'Dahipuri', price: 6 },
-                                    { name: 'Sevpuri', price: 6 },
-                                    { name: 'Bhelpuri', price: 7 },
-                                    { name: 'Paneer Wrap', price: 8 },
-                                    { name: 'Chicken Wrap', price: 9 }
-                                ].find(i => i.name === name);
-                                return sum + (menuItem ? menuItem.price * qty : 0);
-                            }, 0);
-
                             return (
                                 <li key={order._id} className="order-item">
                                     <div className="order-info">
@@ -205,7 +176,7 @@ const OrderList = () => {
                                             ))}
                                         </ul>
                                         <div className="order-total">
-                                            Total: ${total}
+                                            Total: ${order.total}
                                         </div>
                                         <div className={`order-status ${order.status === 'Completed' ? 'completed' : 'cancelled'}`}>
                                             Status: {order.status}
