@@ -331,46 +331,51 @@ const KioskForm = () => {
                     <h1>Order Confirmation</h1>
                     <p className="confirmation-details">Order Number: {orderNumber}</p>
                     <p className="confirmation-name">Name: {customerName}</p>
-                    <h3 className="confirmation-items-title">Items Ordered:</h3>
-                    <div className="confirmation-items-container">
-                        <ul className="confirmation-items-list">
-                            {Object.entries(selectedItems)
-                                .filter(([_, { quantity }]) => quantity > 0)
-                                .map(([key, { name, quantity, options }]) => (
-                                    <li key={key} className="confirmation-item">
-                                        <div className="confirmation-item-content">
-                                            <div className="confirmation-item-details">
-                                                <div className="confirmation-item-info">
-                                                    <span className="confirmation-item-name">{name} {quantity > 1 && `x${quantity}`}</span>
-                                                    {options.length > 0 && (
-                                                        <span className="confirmation-item-options">
-                                                            Options: {options.join(', ')}
-                                                        </span>
-                                                    )}
+                    <div className="confirmation-divider">
+                    <div className="confirmation-order-card">
+                        <h3 className="confirmation-order-title">Items Ordered</h3>
+                        <div className="confirmation-items-container">
+                            <ul className="confirmation-items-list">
+                                {Object.entries(selectedItems)
+                                    .filter(([_, { quantity }]) => quantity > 0)
+                                    .map(([key, { name, quantity, options }]) => (
+                                        <li key={key} className="confirmation-item">
+                                            <div className="confirmation-item-content">
+                                                <div className="confirmation-item-details">
+                                                    <div className="confirmation-item-info">
+                                                        <span className="confirmation-item-name">{name} {quantity > 1 && `x${quantity}`}</span>
+                                                        {options.length > 0 && (
+                                                            <span className="confirmation-item-options">
+                                                                Options: {options.join(', ')}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <span className="confirmation-item-price">
+                                                        ${calculateItemPrice(name, options).toFixed(2)}
+                                                        {quantity > 1 && ` each`}
+                                                    </span>
                                                 </div>
-                                                <span className="confirmation-item-price">
-                                                    ${calculateItemPrice(name, options).toFixed(2)}
-                                                    {quantity > 1 && ` each`}
-                                                </span>
                                             </div>
-                                        </div>
-                                    </li>
-                                ))}
-                        </ul>
-                    </div>
-                    <div className="confirmation-total">
-                        Total: $
-                        {Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
-                            const itemPrice = calculateItemPrice(name, options);
-                            return sum + (itemPrice * quantity);
-                        }, 0)}
-                    </div>
-                    {notes && (
-                        <div className="confirmation-notes">
-                            <strong>Notes:</strong> {notes}
+                                        </li>
+                                    ))}
+                            </ul>
                         </div>
-                    )}
-                    <div className="confirmation-tax-notice">*Taxes applied to card and tap payments only</div>
+                        <div className="confirmation-total">
+                            Total: $
+                            {Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+                                const itemPrice = calculateItemPrice(name, options);
+                                return sum + (itemPrice * quantity);
+                            }, 0)}
+                        </div>
+                        {notes && (
+                            <div className="confirmation-notes">
+                                <strong>Notes:</strong> {notes}
+                            </div>
+                        )}
+                        <div className="confirmation-tax-notice">*Taxes applied to card and tap payments only</div>
+                    </div>
+                    </div>
+                    
                     <p className="confirmation-payment-notice">
                         Please pay at the counter to enter the order preparation line.
                     </p>

@@ -212,7 +212,7 @@ input[type="checkbox"], input[type="radio"] {
 .order-title {
     font-family: 'Poppins', sans-serif;
     margin-top: 0;
-    margin-bottom: 0px;
+    margin-bottom: 12px;
     color: #b85c38;
     font-size: 2rem;
     font-weight: 600;
@@ -288,7 +288,7 @@ input[type="checkbox"], input[type="radio"] {
     font-family: 'Inter', sans-serif;
     width: 100%;
     padding: 10px;
-    margin-bottom: 18px;
+    margin-bottom: 28px !important;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 1rem;
@@ -327,34 +327,54 @@ input[type="checkbox"], input[type="radio"] {
     margin-top: 50px;
 }
 
-.confirmation-details {
-    font-family: 'Poppins', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 600;
+.confirmation-divider{
+    margin: 0px 32px;
 }
 
-.confirmation-name {
-    font-family: 'Poppins', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 500;
+.confirmation-container form {
+    background: #fff;
+    max-width: 1000px;
+    margin: 32px auto;
+    padding: 24px 32px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.confirmation-items-title {
+/* Make confirmation order card match the order card exactly */
+.confirmation-order-card {
+    background: #f3e9e3;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Add subtle shadow like order card */
+}
+
+.confirmation-order-title {
     font-family: 'Poppins', sans-serif;
-    margin-top: 20px;
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: #b85c38;
+    font-size: 2rem;
     font-weight: 600;
+    text-align: center;
 }
 
 .confirmation-items-container {
     max-width: 500px;
     margin: 0 auto;
     width: 100%;
+    text-align: left;
 }
 
 .confirmation-items-list {
     list-style: none;
     padding: 0;
     margin: 0;
+    text-align: left;
 }
 
 .confirmation-item {
@@ -362,12 +382,27 @@ input[type="checkbox"], input[type="radio"] {
     font-size: 1.4rem;
     margin-bottom: 0;
     padding: 6px 10px;
+    text-align: left;
 }
 
 .confirmation-item-content {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+}
+
+.confirmation-item-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.confirmation-item-info {
+    flex: 1;
+    margin-right: 15px;
+    display: flex;
+    flex-direction: column;
 }
 
 .confirmation-item-name {
@@ -384,12 +419,23 @@ input[type="checkbox"], input[type="radio"] {
     font-weight: 400;
 }
 
+.confirmation-item-price {
+    font-weight: bold;
+    color: #333;
+    white-space: nowrap;
+    text-align: right;
+    min-width: 100px;
+    flex-shrink: 0;
+    font-size: 1.2rem;
+}
+
 .confirmation-total {
     font-family: 'Poppins', sans-serif;
     margin-top: 10px;
     font-weight: 700;
-    font-size: 1.8rem;
+    font-size: 24px;
     color: #b85c38;
+    text-align: center;
 }
 
 .confirmation-notes {
@@ -407,6 +453,19 @@ input[type="checkbox"], input[type="radio"] {
     font-weight: 600;
     margin-top: 5px;
     color: #b85c38;
+    text-align: center;
+}
+
+.confirmation-details {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.confirmation-name {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 500;
 }
 
 .confirmation-payment-notice {
@@ -570,24 +629,4 @@ input[type="checkbox"], input[type="radio"] {
     .menu-item-image {
         height: 230px;
     }
-}
-
-/* Add this new class for step 3 order container */
-.confirmation-order-card {
-    background: #f3e9e3;
-    border-radius: 10px;
-    padding: 18px 20px;
-    margin-bottom: 24px;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.confirmation-order-title {
-    font-family: 'Poppins', sans-serif;
-    margin-top: 0;
-    margin-bottom: 12px;
-    color: #b85c38;
-    font-size: 2rem;
-    font-weight: 600;
 }
