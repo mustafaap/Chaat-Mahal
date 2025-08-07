@@ -19,9 +19,42 @@ const KioskForm = () => {
         { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
         { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
         { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
-        { id: 7, name: 'Paneer Wrap', price: 8, image: '/images/paneer-wrap.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
-        { id: 8, name: 'Chicken Wrap', price: 9, image: '/images/chicken-wrap.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
+        { 
+            id: 7, 
+            name: 'Paneer Wrap', 
+            price: 8, 
+            image: '/images/paneer-wrap.JPG', 
+            options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Paneer (+$2)'],
+            extraOptions: { 'Extra Paneer (+$2)': 2 }
+        },
+        { 
+            id: 8, 
+            name: 'Chicken Wrap', 
+            price: 9, 
+            image: '/images/chicken-wrap.JPG', 
+            options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Meat (+$2)'],
+            extraOptions: { 'Extra Meat (+$2)': 2 }
+        },
     ];
+
+    // Helper function to calculate item price with extras
+    const calculateItemPrice = (itemName, options) => {
+        const baseItem = menuItems.find(i => i.name === itemName);
+        if (!baseItem) return 0;
+        
+        let totalPrice = baseItem.price;
+        
+        // Add extra charges
+        if (baseItem.extraOptions) {
+            options.forEach(option => {
+                if (baseItem.extraOptions[option]) {
+                    totalPrice += baseItem.extraOptions[option];
+                }
+            });
+        }
+        
+        return totalPrice;
+    };
 
     const handleQuantityChange = (itemName, quantity, options = []) => {
         setSelectedItems(prev => {
@@ -41,7 +74,6 @@ const KioskForm = () => {
         setModalItem(item);
         
         // Set default spice level for items that have spice options in order to avoid empty options
-        
         if (item.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt))) {
             const currentOptions = itemOptions[item.name] || [];
             const hasSpiceLevel = currentOptions.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt));
@@ -50,6 +82,19 @@ const KioskForm = () => {
                 setItemOptions(prev => ({
                     ...prev,
                     [item.name]: [...currentOptions, 'Mild'] // Default to 'Mild'
+                }));
+            }
+        }
+        
+        // Set default "Ice" option for Mango Lassi
+        if (item.name === 'Mango Lassi') {
+            const currentOptions = itemOptions[item.name] || [];
+            const hasIceOption = currentOptions.some(opt => ['Ice', 'No Ice'].includes(opt));
+            
+            if (!hasIceOption) {
+                setItemOptions(prev => ({
+                    ...prev,
+                    [item.name]: [...currentOptions, 'Ice'] // Default to 'Ice'
                 }));
             }
         }
@@ -98,9 +143,9 @@ const KioskForm = () => {
 
         // Calculate total
         const total = Object.entries(selectedItems)
-            .reduce((sum, [key, { name, quantity }]) => {
-                const item = menuItems.find(i => i.name === name);
-                return sum + (item ? item.price * quantity : 0);
+            .reduce((sum, [key, { name, quantity, options }]) => {
+                const itemPrice = calculateItemPrice(name, options);
+                return sum + (itemPrice * quantity);
             }, 0);
 
         if (customerName.trim() && items.length > 0) {
@@ -215,10 +260,14 @@ const KioskForm = () => {
                                     .map(([key, { name, quantity, options }]) => (
                                         <li key={key} className="order-item">
                                             <div className="order-item-content">
-                                                <span className="order-item-name">{name}</span>
+                                                <span className="order-item-name">{name} {quantity > 1 && `x${quantity}`}</span>
                                                 {options.length > 0 && (
                                                     <span className="order-item-options">
-                                                        Options: {options.join(', ')}
+                                                        Options: {options.map(option => {
+                                                            const baseItem = menuItems.find(i => i.name === name);
+                                                            const hasExtraCharge = baseItem?.extraOptions?.[option];
+                                                            return hasExtraCharge ? `${option}` : option;
+                                                        }).join(', ')}
                                                     </span>
                                                 )}
                                             </div>
@@ -229,9 +278,9 @@ const KioskForm = () => {
                         <div className="order-total">
                             Total: $
                             {Object.entries(selectedItems)
-                                .reduce((sum, [key, { name, quantity }]) => {
-                                    const item = menuItems.find(i => i.name === name);
-                                    return sum + (item ? item.price * quantity : 0);
+                                .reduce((sum, [key, { name, quantity, options }]) => {
+                                    const itemPrice = calculateItemPrice(name, options);
+                                    return sum + (itemPrice * quantity);
                                 }, 0)
                             }
                         </div>
@@ -282,7 +331,7 @@ const KioskForm = () => {
                                 .map(([key, { name, quantity, options }]) => (
                                     <li key={key} className="confirmation-item">
                                         <div className="confirmation-item-content">
-                                            <span className="confirmation-item-name">{name}</span>
+                                            <span className="confirmation-item-name">{name} {quantity > 1 && `x${quantity}`}</span>
                                             {options.length > 0 && (
                                                 <span className="confirmation-item-options">
                                                     Options: {options.join(', ')}
@@ -295,9 +344,9 @@ const KioskForm = () => {
                     </div>
                     <div className="confirmation-total">
                         Total: $
-                        {Object.entries(selectedItems).reduce((sum, [key, { name, quantity }]) => {
-                            const item = menuItems.find(i => i.name === name);
-                            return sum + (item ? item.price * quantity : 0);
+                        {Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+                            const itemPrice = calculateItemPrice(name, options);
+                            return sum + (itemPrice * quantity);
                         }, 0)}
                     </div>
                     {notes && (
