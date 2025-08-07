@@ -22,7 +22,7 @@ h1 {
 }
 
 h2 {
-    font-size: 35px;
+    font-size: 25px;
     margin-top: -5px;
     font-weight: 600;
 }
@@ -68,6 +68,7 @@ button {
 
 button:hover {
     background: #a14d2c;
+    color: #fff;
 }
 
 label {
@@ -186,6 +187,15 @@ input[type="checkbox"], input[type="radio"] {
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     transition: background 0.2s, color 0.2s;
+    position: relative;
+}
+
+/* Move the arrow up slightly */
+.back-button::before {
+    content: '←';
+    position: relative;
+    top: -2px; /* Adjust this value to move arrow up or down */
+    margin-right: 8px;
 }
 
 .order-card {
@@ -201,7 +211,7 @@ input[type="checkbox"], input[type="radio"] {
 .order-title {
     font-family: 'Poppins', sans-serif;
     margin-top: 0;
-    margin-bottom: 12px;
+    margin-bottom: 0px;
     color: #b85c38;
     font-size: 2rem;
     font-weight: 600;

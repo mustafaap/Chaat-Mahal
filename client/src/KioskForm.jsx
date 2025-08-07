@@ -247,7 +247,7 @@ const KioskForm = () => {
                             onClick={() => setStep(1)}
                             className="back-button"
                         >
-                            &#8592; Back
+                            Back
                         </button>
                     </div>
                     <div className="order-card">
