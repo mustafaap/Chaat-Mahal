@@ -177,7 +177,7 @@ const KioskForm = () => {
         <div className="kiosk-container">
             {step === 1 && (
                 <form onSubmit={handleMenuSubmit}>
-                    <h2>Select Menu Items</h2>
+                    <h1>Select Menu Items</h1>
                     <div className="menu-grid">
                         {menuItems.map(item => (
                             <div key={item.id} className="menu-item-card">
@@ -328,7 +328,7 @@ const KioskForm = () => {
             )}
             {step === 3 && (
                 <div className="confirmation-container">
-                    <h2>Order Confirmation</h2>
+                    <h1>Order Confirmation</h1>
                     <p className="confirmation-details">Order Number: {orderNumber}</p>
                     <p className="confirmation-name">Name: {customerName}</p>
                     <h3 className="confirmation-items-title">Items Ordered:</h3>

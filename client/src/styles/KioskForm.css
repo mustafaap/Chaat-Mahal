@@ -17,8 +17,9 @@ h1, h2 {
 }
 
 h1 {
-    font-size: 45px;
+    font-size: 35px;
     font-weight: 700;
+    margin: 0px 12px;
 }
 
 h2 {
@@ -410,7 +411,7 @@ input[type="checkbox"], input[type="radio"] {
 
 .confirmation-payment-notice {
     font-family: 'Poppins', sans-serif;
-    margin-top: 20px;
+    margin: 20px;
     font-size: 1.4rem;
     font-weight: 600;
     color: #b85c38;
@@ -545,6 +546,10 @@ input[type="checkbox"], input[type="radio"] {
 
 /* Mobile Responsive */
 @media (max-width: 880px) {
+    h1{
+        font-size: 30px;
+    }
+    
     .back-button-container {
         justify-content: center;
         padding-bottom: 16px;
@@ -565,4 +570,24 @@ input[type="checkbox"], input[type="radio"] {
     .menu-item-image {
         height: 230px;
     }
+}
+
+/* Add this new class for step 3 order container */
+.confirmation-order-card {
+    background: #f3e9e3;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.confirmation-order-title {
+    font-family: 'Poppins', sans-serif;
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: #b85c38;
+    font-size: 2rem;
+    font-weight: 600;
 }
