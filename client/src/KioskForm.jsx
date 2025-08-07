@@ -39,6 +39,19 @@ const KioskForm = () => {
 
     const openModal = (item) => {
         setModalItem(item);
+        
+        // Set default spice level for items that have spice options
+        if (item.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt))) {
+            const currentOptions = itemOptions[item.name] || [];
+            const hasSpiceLevel = currentOptions.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt));
+            
+            if (!hasSpiceLevel) {
+                setItemOptions(prev => ({
+                    ...prev,
+                    [item.name]: [...currentOptions, 'Mild'] // Default to 'Mild'
+                }));
+            }
+        }
     };
 
     const closeModal = () => {
