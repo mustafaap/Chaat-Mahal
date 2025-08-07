@@ -1,23 +1,35 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 /* Global styles for KioskForm */
 body {
-    font-family: 'Segoe UI', Arial, sans-serif;
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
     background: #f8f9fa;
     margin: 0;
     padding: 0;
 }
 
 h1, h2 {
+    font-family: 'Poppins', sans-serif;
     color: #b85c38;
     text-align: center;
+    font-weight: 600;
 }
 
 h1 {
     font-size: 45px;
+    font-weight: 700;
 }
 
 h2 {
     font-size: 35px;
     margin-top: -5px;
+    font-weight: 600;
+}
+
+h3 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
 }
 
 form {
@@ -30,22 +42,26 @@ form {
 }
 
 input[type="text"] {
+    font-family: 'Inter', sans-serif;
     width: 100%;
     padding: 10px;
     margin-bottom: 18px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 1rem;
+    font-weight: 400;
     box-sizing: border-box;
 }
 
 button {
+    font-family: 'Poppins', sans-serif;
     background: #b85c38;
     color: #fff;
     border: none;
     padding: 10px 22px;
     border-radius: 6px;
     font-size: 1rem;
+    font-weight: 500;
     cursor: pointer;
     transition: background 0.2s;
 }
@@ -55,8 +71,10 @@ button:hover {
 }
 
 label {
+    font-family: 'Inter', sans-serif;
     margin-left: 8px;
     font-size: 1rem;
+    font-weight: 500;
 }
 
 input[type="checkbox"], input[type="radio"] {
@@ -92,7 +110,8 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .menu-item-label {
-    font-weight: bold;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
     font-size: 1.25rem;
     display: block;
     margin: 12px 0 6px 0;
@@ -106,9 +125,11 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .quantity-btn {
+    font-family: 'Poppins', sans-serif;
     width: 36px;
     height: 36px;
     font-size: 22px;
+    font-weight: 600;
     border-radius: 50%;
     border: 1px solid #ccc;
     color: #fff;
@@ -129,10 +150,11 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .quantity-display {
+    font-family: 'Poppins', sans-serif;
     min-width: 24px;
     display: inline-block;
     font-size: 24px;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .next-button-container {
@@ -140,7 +162,9 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .next-button {
+    font-family: 'Poppins', sans-serif;
     font-size: 25px;
+    font-weight: 600;
 }
 
 /* Step 2 - Order Details */
@@ -151,11 +175,12 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .back-button {
+    font-family: 'Poppins', sans-serif;
     background: #fff;
     border: 2px solid #b85c38;
     color: #b85c38;
     font-size: 25px;
-    font-weight: bold;
+    font-weight: 600;
     cursor: pointer;
     padding: 8px 28px;
     border-radius: 8px;
@@ -174,10 +199,12 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .order-title {
+    font-family: 'Poppins', sans-serif;
     margin-top: 0;
     margin-bottom: 12px;
     color: #b85c38;
     font-size: 2rem;
+    font-weight: 600;
 }
 
 .order-items-container {
@@ -193,6 +220,7 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .order-item {
+    font-family: 'Inter', sans-serif;
     font-size: 1.4rem;
     margin-bottom: 0;
     padding: 6px 10px;
@@ -205,57 +233,67 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .order-item-name {
-    font-weight: bold;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
 }
 
 .order-item-options {
+    font-family: 'Inter', sans-serif;
     font-size: 1rem;
     color: #555;
     margin-top: 4px;
     margin-left: 20px;
+    font-weight: 400;
 }
 
 .order-total {
+    font-family: 'Poppins', sans-serif;
     margin-top: 10px;
-    font-weight: bold;
+    font-weight: 700;
     font-size: 1.8rem;
 }
 
 .order-notes {
+    font-family: 'Inter', sans-serif;
     margin-top: 15px;
     padding: 10px;
     background: #f9f9f9;
     border-radius: 6px;
     font-size: 1.2rem;
+    font-weight: 400;
 }
 
 .tax-notice {
-    font-weight: bold;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
     margin-top: 5px;
     color: #b85c38;
 }
 
 .name-input {
+    font-family: 'Inter', sans-serif;
     width: 100%;
     padding: 10px;
     margin-bottom: 18px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 1rem;
+    font-weight: 400;
     box-sizing: border-box;
 }
 
 .notes-textarea {
+    font-family: 'Inter', sans-serif;
     width: 100%;
     padding: 10px;
     margin-bottom: 18px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 1rem;
+    font-weight: 400;
     min-height: 80px;
     resize: vertical;
     box-sizing: border-box;
-    font-family: inherit;
 }
 
 .order-button-container {
@@ -263,26 +301,34 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .order-button {
+    font-family: 'Poppins', sans-serif;
     font-size: 25px;
+    font-weight: 600;
 }
 
 /* Step 3 - Order Confirmation */
 .confirmation-container {
+    font-family: 'Inter', sans-serif;
     text-align: center;
     margin-top: 50px;
 }
 
 .confirmation-details {
+    font-family: 'Poppins', sans-serif;
     font-size: 1.5rem;
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .confirmation-name {
+    font-family: 'Poppins', sans-serif;
     font-size: 1.5rem;
+    font-weight: 500;
 }
 
 .confirmation-items-title {
+    font-family: 'Poppins', sans-serif;
     margin-top: 20px;
+    font-weight: 600;
 }
 
 .confirmation-items-container {
@@ -298,6 +344,7 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .confirmation-item {
+    font-family: 'Inter', sans-serif;
     font-size: 1.4rem;
     margin-bottom: 0;
     padding: 6px 10px;
@@ -310,41 +357,49 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .confirmation-item-name {
-    font-weight: bold;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
 }
 
 .confirmation-item-options {
+    font-family: 'Inter', sans-serif;
     font-size: 1rem;
     color: #555;
     margin-top: 4px;
     margin-left: 20px;
+    font-weight: 400;
 }
 
 .confirmation-total {
+    font-family: 'Poppins', sans-serif;
     margin-top: 10px;
-    font-weight: bold;
+    font-weight: 700;
     font-size: 1.8rem;
     color: #b85c38;
 }
 
 .confirmation-notes {
+    font-family: 'Inter', sans-serif;
     margin-top: 15px;
     padding: 10px;
     background: #f9f9f9;
     border-radius: 6px;
     font-size: 1.2rem;
+    font-weight: 400;
 }
 
 .confirmation-tax-notice {
-    font-weight: bold;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
     margin-top: 5px;
     color: #b85c38;
 }
 
 .confirmation-payment-notice {
+    font-family: 'Poppins', sans-serif;
     margin-top: 20px;
     font-size: 1.4rem;
-    font-weight: bold;
+    font-weight: 600;
     color: #b85c38;
 }
 
@@ -354,12 +409,14 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .another-order-button {
+    font-family: 'Poppins', sans-serif;
     background: #b85c38;
     color: #fff;
     border: none;
     padding: 10px 20px;
     border-radius: 8px;
     font-size: 1.2rem;
+    font-weight: 500;
     cursor: pointer;
 }
 
@@ -378,6 +435,7 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .modal-content {
+    font-family: 'Inter', sans-serif;
     background: #f1e6e1ff;
     padding: 20px;
     border-radius: 8px;
@@ -386,13 +444,19 @@ input[type="checkbox"], input[type="radio"] {
     text-align: center;
 }
 
+.modal-content h2 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+}
+
 .spice-slider-container {
     margin-bottom: 20px;
 }
 
 .spice-slider-label {
+    font-family: 'Poppins', sans-serif;
     font-size: 1.2rem;
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .spice-slider {
@@ -404,11 +468,13 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .spice-levels {
+    font-family: 'Inter', sans-serif;
     display: flex;
     justify-content: center;
     gap: 22%;
     color: #b85c38;
     font-size: 1rem;
+    font-weight: 500;
     margin-top: 6px;
     max-width: 90%;
     margin-left: auto;
@@ -420,8 +486,10 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .option-label {
+    font-family: 'Inter', sans-serif;
     color: #b85c38;
     font-size: 1.2rem;
+    font-weight: 500;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -440,6 +508,7 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .modal-cancel-button {
+    font-family: 'Poppins', sans-serif;
     margin-top: 10px;
     padding: 10px 20px;
     background: firebrick;
@@ -447,15 +516,18 @@ input[type="checkbox"], input[type="radio"] {
     border: none;
     border-radius: 6px;
     margin-right: 10px;
+    font-weight: 500;
 }
 
 .modal-add-button {
+    font-family: 'Poppins', sans-serif;
     margin-top: 20px;
     padding: 10px 20px;
     background: green;
     color: #fff;
     border: none;
     border-radius: 6px;
+    font-weight: 500;
 }
 
 /* Mobile Responsive */

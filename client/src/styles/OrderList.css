@@ -1,10 +1,22 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 .order-list-container {
+    font-family: 'Inter', sans-serif;
     background: #fff;
     max-width: 1000px;
     margin: 32px auto;
     padding: 24px 32px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.order-list-container h1 {
+    font-family: 'Poppins', sans-serif;
+    color: #b85c38;
+    font-weight: 700;
+    font-size: 2.5rem;
+    text-align: center;
 }
 
 /* Navigation Styles */
@@ -22,7 +34,9 @@
 }
 
 .nav-tab-button {
+    font-family: 'Poppins', sans-serif;
     font-size: 24px;
+    font-weight: 600;
     text-align: center;
     background: #b85c38;
     color: #fff;
@@ -37,18 +51,19 @@
 .nav-tab-button.active-tab {
     background: #a14d2c;
     color: #fff;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .reset-button {
+    font-family: 'Poppins', sans-serif;
     font-size: 24px;
+    font-weight: 600;
     background: firebrick;
     color: #fff;
     border: none;
     padding: 10px 20px;
     border-radius: 8px;
     cursor: pointer;
-    font-weight: bold;
     transition: background 0.2s;
 }
 
@@ -74,7 +89,8 @@
 }
 
 .order-header {
-    font-weight: bold;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
     font-size: 28px;
 }
 
@@ -85,22 +101,34 @@
 }
 
 .order-item-detail {
+    font-family: 'Inter', sans-serif;
     background: none;
     padding: 0;
     margin: 0;
     font-size: 24px;
+    font-weight: 500;
 }
 
 .order-total {
+    font-family: 'Poppins', sans-serif;
     margin-top: 6px;
-    font-weight: bold;
+    font-weight: 700;
     color: #b85c38;
     font-size: 24px;
 }
 
-.order-status {
+.order-notes {
+    font-family: 'Inter', sans-serif;
     margin-top: 6px;
-    font-weight: bold;
+    font-size: 18px;
+    font-weight: 400;
+    color: #555;
+}
+
+.order-status {
+    font-family: 'Poppins', sans-serif;
+    margin-top: 6px;
+    font-weight: 600;
     font-size: 20px;
 }
 
@@ -119,9 +147,10 @@
 }
 
 .control-button {
+    font-family: 'Poppins', sans-serif;
     padding: 10px 0;
     font-size: 18px;
-    font-weight: bold;
+    font-weight: 600;
     color: #fff;
     border: none;
     border-radius: 6px;
@@ -165,12 +194,14 @@
 
 /* Empty State */
 .empty-orders {
+    font-family: 'Inter', sans-serif;
     background: #f3e9e3;
     margin-bottom: 12px;
     padding: 14px 10px;
     border-radius: 8px;
     text-align: center;
     font-style: italic;
+    font-weight: 400;
     color: #666;
 }
 
