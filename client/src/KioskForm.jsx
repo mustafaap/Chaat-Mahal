@@ -260,16 +260,24 @@ const KioskForm = () => {
                                     .map(([key, { name, quantity, options }]) => (
                                         <li key={key} className="order-item">
                                             <div className="order-item-content">
-                                                <span className="order-item-name">{name} {quantity > 1 && `x${quantity}`}</span>
-                                                {options.length > 0 && (
-                                                    <span className="order-item-options">
-                                                        Options: {options.map(option => {
-                                                            const baseItem = menuItems.find(i => i.name === name);
-                                                            const hasExtraCharge = baseItem?.extraOptions?.[option];
-                                                            return hasExtraCharge ? `${option}` : option;
-                                                        }).join(', ')}
+                                                <div className="order-item-details">
+                                                    <div className="order-item-info">
+                                                        <span className="order-item-name">{name} {quantity > 1 && `x${quantity}`}</span>
+                                                        {options.length > 0 && (
+                                                            <span className="order-item-options">
+                                                                Options: {options.map(option => {
+                                                                    const baseItem = menuItems.find(i => i.name === name);
+                                                                    const hasExtraCharge = baseItem?.extraOptions?.[option];
+                                                                    return hasExtraCharge ? `${option}` : option;
+                                                                }).join(', ')}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <span className="order-item-price">
+                                                        ${calculateItemPrice(name, options).toFixed(2)}
+                                                        {quantity > 1 && ` each`}
                                                     </span>
-                                                )}
+                                                </div>
                                             </div>
                                         </li>
                                     ))}
@@ -331,12 +339,20 @@ const KioskForm = () => {
                                 .map(([key, { name, quantity, options }]) => (
                                     <li key={key} className="confirmation-item">
                                         <div className="confirmation-item-content">
-                                            <span className="confirmation-item-name">{name} {quantity > 1 && `x${quantity}`}</span>
-                                            {options.length > 0 && (
-                                                <span className="confirmation-item-options">
-                                                    Options: {options.join(', ')}
+                                            <div className="confirmation-item-details">
+                                                <div className="confirmation-item-info">
+                                                    <span className="confirmation-item-name">{name} {quantity > 1 && `x${quantity}`}</span>
+                                                    {options.length > 0 && (
+                                                        <span className="confirmation-item-options">
+                                                            Options: {options.join(', ')}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span className="confirmation-item-price">
+                                                    ${calculateItemPrice(name, options).toFixed(2)}
+                                                    {quantity > 1 && ` each`}
                                                 </span>
-                                            )}
+                                            </div>
                                         </div>
                                     </li>
                                 ))}

@@ -194,8 +194,8 @@ input[type="checkbox"], input[type="radio"] {
 .back-button::before {
     content: '←';
     position: relative;
-    top: -2px; /* Adjust this value to move arrow up or down */
-    margin-right: 8px;
+    top: 0px; /* Adjust this value to move arrow up or down */
+    margin-right: 10px;
 }
 
 .order-card {
@@ -215,6 +215,7 @@ input[type="checkbox"], input[type="radio"] {
     color: #b85c38;
     font-size: 2rem;
     font-weight: 600;
+    text-align: center;
 }
 
 .order-items-container {
@@ -261,6 +262,7 @@ input[type="checkbox"], input[type="radio"] {
     margin-top: 10px;
     font-weight: 700;
     font-size: 1.8rem;
+    text-align: center;
 }
 
 .order-notes {
@@ -278,6 +280,7 @@ input[type="checkbox"], input[type="radio"] {
     font-weight: 600;
     margin-top: 5px;
     color: #b85c38;
+    text-align: center;
 }
 
 .name-input {
