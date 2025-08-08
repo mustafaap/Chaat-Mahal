@@ -1,0 +1,164 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+.about-container {
+    font-family: 'Inter', sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-top: 32px;
+}
+
+.about-container h1 {
+    font-family: 'Poppins', sans-serif;
+    color: #b85c38;
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 32px;
+}
+
+.about-content h2 {
+    font-family: 'Poppins', sans-serif;
+    color: #b85c38;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    margin-top: 32px;
+}
+
+.about-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 32px;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.about-text p {
+    font-family: 'Inter', sans-serif;
+    color: #333;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.about-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.highlights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+    margin: 24px 0;
+}
+
+.highlight-item {
+    background: #f3e9e3;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.highlight-item h3 {
+    font-family: 'Poppins', sans-serif;
+    color: #b85c38;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.highlight-item p {
+    font-family: 'Inter', sans-serif;
+    color: #333;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.dishes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin: 24px 0;
+}
+
+.dish-card {
+    background: #f9f9f9;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.dish-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.dish-card h3 {
+    font-family: 'Poppins', sans-serif;
+    color: #b85c38;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.dish-card p {
+    font-family: 'Inter', sans-serif;
+    color: #333;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.mission-section {
+    background: #f3e9e3;
+    padding: 32px;
+    border-radius: 12px;
+    margin-top: 32px;
+}
+
+.mission-section p {
+    font-family: 'Inter', sans-serif;
+    color: #333;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .about-container {
+        padding: 16px;
+        margin-top: 16px;
+    }
+
+    .about-container h1 {
+        font-size: 2rem;
+    }
+
+    .about-section {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .highlights-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dishes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mission-section {
+        padding: 20px;
+    }
+}

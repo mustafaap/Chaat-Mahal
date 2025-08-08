@@ -35,23 +35,689 @@ h3 {
 
 form {
     background: #fff;
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 32px auto;
     padding: 24px 32px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    animation: fadeIn 0.5s ease;
 }
 
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Menu Header */
+.menu-header {
+    text-align: center;
+    margin-bottom: 10px;
+    padding: 20px 0;
+}
+
+.menu-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.2rem;
+    color: #666;
+    margin-top: 0px;
+    font-style: italic;
+}
+
+/* Simplified Floating Cart - With Bounce Animation Restored */
+.floating-cart {
+    position: fixed;
+    bottom: 40px;
+    right: 20px;
+    background: #b85c38;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(184, 92, 56, 0.3);
+    z-index: 999;
+    transition: all 0.3s ease;
+    animation: bounce 2s infinite; /* Restore the bounce animation */
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.floating-cart:hover {
+    background: #a14d2c;
+    transform: scale(1.05); /* Scale effect on hover */
+}
+
+.floating-cart.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
+}
+
+.cart-icon {
+    font-size: 1.5rem;
+}
+
+.cart-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cart-count {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    background: white; /* Add white background for contrast */
+    color: #b85c38; /* Change text color to match brand */
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.view-cart-text {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: white;
+}
+
+/* Remove the arrow since we're adding a close button */
+.cart-arrow {
+    display: none;
+}
+
+/* Cart Summary - Single definition with proper styling */
+.cart-summary {
+    position: fixed;
+    bottom: 50px;
+    right: 20px;
+    left: 20px;
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    z-index: 1000;
+    max-width: 400px;
+    margin: 0 auto;
+    animation: slideUpFromBottom 0.3s ease;
+    border: 2px solid #b85c38;
+}
+
+@keyframes slideUpFromBottom {
+    from {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cart-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #f3e9e3;
+    padding-bottom: 10px;
+}
+
+.cart-summary h3 {
+    font-family: 'Poppins', sans-serif;
+    color: #b85c38;
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.cart-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    color: #b85c38;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.cart-close-btn:hover {
+    background: #f3e9e3;
+    color: #a14d2c;
+    transform: scale(1.1);
+}
+
+.cart-items-container {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #b85c38;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    gap: 10px;
+}
+
+.cart-item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cart-item-name {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.cart-item-options {
+    font-size: 0.8rem;
+    color: #666;
+    font-style: italic;
+    margin-top: 2px;
+}
+
+.cart-item-price {
+    font-weight: 700;
+    color: #b85c38;
+    background: rgba(184, 92, 56, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    align-self: flex-start;
+    margin-top: 4px;
+}
+
+/* Cart Quantity Controls */
+.cart-item-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.cart-quantity-btn {
+    font-family: 'Poppins', sans-serif;
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 50%;
+    border: 2px solid;
+    color: #fff;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-quantity-btn:hover {
+    transform: scale(1.1);
+}
+
+.cart-minus-btn {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+.cart-minus-btn:hover {
+    background: #c82333;
+    border-color: #c82333;
+}
+
+.cart-plus-btn {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.cart-plus-btn:hover {
+    background: #218838;
+    border-color: #218838;
+}
+
+.cart-quantity-display {
+    font-family: 'Poppins', sans-serif;
+    min-width: 20px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #333;
+    text-align: center;
+}
+
+/* Remove the arrow since we're adding a close button */
+.cart-arrow {
+    display: none;
+}
+
+/* Cart Summary - Single definition with proper styling */
+.cart-summary {
+    position: fixed;
+    bottom: 50px;
+    right: 20px;
+    left: 20px;
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    z-index: 1000;
+    max-width: 400px;
+    margin: 0 auto;
+    animation: slideUpFromBottom 0.3s ease;
+    border: 2px solid #b85c38;
+}
+
+.cart-total-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 2px solid #f3e9e3;
+}
+
+.cart-total-amount {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #b85c38;
+}
+
+.cart-checkout-btn {
+    font-family: 'Poppins', sans-serif;
+    background: #b85c38;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(184, 92, 56, 0.2);
+}
+
+.cart-checkout-btn:hover {
+    background: #a14d2c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(184, 92, 56, 0.3);
+}
+
+/* Category Sections */
+.menu-categories {
+    margin-bottom: 40px; /* Reduced from 100px since we're removing the checkout section */
+}
+
+.category-section {
+    margin-bottom: 50px;
+}
+
+.category-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2rem;
+    color: #b85c38;
+    text-align: center;
+    margin-bottom: 50px;
+    position: relative;
+}
+
+.category-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: #b85c38;
+    border-radius: 2px;
+}
+
+/* Updated Menu Grid - Fix for stretched cards */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin: 30px 0;
+    justify-items: center; /* Center the cards */
+}
+
+.menu-item-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 0;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    max-width: 350px; /* Limit maximum width to prevent stretching */
+}
+
+.menu-item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.menu-item-card.has-items {
+    border: 2px solid #b85c38;
+    box-shadow: 0 8px 30px rgba(184, 92, 56, 0.2);
+}
+
+.menu-item-image-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px 16px 0 0;
+}
+
+.menu-item-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.menu-item-card:hover .menu-item-image {
+    transform: scale(1.05);
+}
+
+.item-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #b85c38;
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.menu-item-content {
+    padding: 20px;
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.menu-item-name {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 1.3rem;
+    color: #333;
+    margin: 0;
+}
+
+.menu-item-price {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #b85c38;
+    background: #f3e9e3;
+    padding: 5px 12px;
+    border-radius: 20px;
+}
+
+.menu-item-description {
+    font-family: 'Inter', sans-serif;
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+/* Updated Quantity Controls */
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.quantity-btn {
+    font-family: 'Poppins', sans-serif;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    font-weight: 600;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    color: #fff;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quantity-btn:hover {
+    transform: scale(1.1);
+}
+
+.quantity-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.quantity-btn-minus {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+.quantity-btn-minus:hover:not(:disabled) {
+    background: #c82333;
+}
+
+.quantity-btn-plus {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.quantity-btn-plus:hover {
+    background: #218838;
+}
+
+.quantity-display {
+    font-family: 'Poppins', sans-serif;
+    min-width: 30px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+    text-align: center;
+}
+
+/* Modal Improvements */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    font-family: 'Inter', sans-serif;
+    background: white;
+    padding: 30px 30px 30px 30px; /* Increased top padding for close button */
+    border-radius: 16px;
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalSlide 0.3s ease;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative; /* For absolute positioning of close button */
+}
+
+@keyframes modalSlide {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-content h2 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    color: #b85c38;
+    margin-bottom: 25px;
+    margin-top: 5px; /* Reduced since image is above */
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.modal-buttons.single-button {
+    justify-content: center;
+    margin-top: 25px;
+}
+
+.modal-buttons.single-button .modal-add-button {
+    width: 100%;
+    max-width: 250px;
+    padding: 15px 25px;
+    font-size: 1.1rem;
+}
+
+.modal-cancel-button, .modal-add-button {
+    font-family: 'Poppins', sans-serif;
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modal-cancel-button {
+    background: #dc3545;
+    color: white;
+}
+
+.modal-cancel-button:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
+.modal-add-button {
+    background: #28a745;
+    color: white;
+}
+
+.modal-add-button:hover {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+/* Modal Item Image Styles */
+.modal-item-image-container {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.modal-item-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 3px solid #b85c38;
+    transition: all 0.3s ease;
+}
+
+.modal-item-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Enhanced Input Styles */
 input[type="text"] {
     font-family: 'Inter', sans-serif;
     width: 100%;
-    padding: 10px;
+    padding: 15px;
     margin-bottom: 18px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
     font-size: 1rem;
     font-weight: 400;
     box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+input[type="text"]:focus {
+    border-color: #b85c38;
+    box-shadow: 0 0 0 3px rgba(184, 92, 56, 0.1);
+    outline: none;
+    transform: translateY(-1px);
 }
 
 button {
@@ -59,17 +725,19 @@ button {
     background: #b85c38;
     color: #fff;
     border: none;
-    padding: 10px 22px;
-    border-radius: 6px;
+    padding: 12px 24px;
+    border-radius: 8px;
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(184, 92, 56, 0.2);
 }
 
 button:hover {
     background: #a14d2c;
-    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(184, 92, 56, 0.3);
 }
 
 label {
@@ -83,144 +751,92 @@ input[type="checkbox"], input[type="radio"] {
     accent-color: #b85c38;
 }
 
-/* Step 1 - Menu Selection */
-.menu-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 24px;
-    margin: 24px 0;
-}
-
-.menu-item-card {
-    background: #f9f9f9;
-    border-radius: 12px;
-    padding: 14px;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
-.menu-item-image {
-    width: 100%;
-    height: 185px;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 10px;
-}
-
-.menu-item-content {
-    margin-top: 8px;
-}
-
-.menu-item-label {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-    font-size: 1.25rem;
-    display: block;
-    margin: 12px 0 6px 0;
-}
-
-.quantity-controls {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 10px;
-}
-
-.quantity-btn {
-    font-family: 'Poppins', sans-serif;
-    width: 36px;
-    height: 36px;
-    font-size: 22px;
-    font-weight: 600;
-    border-radius: 50%;
-    border: 1px solid #ccc;
-    color: #fff;
-    cursor: pointer;
-    padding: 0;
-}
-
-.quantity-btn-minus {
-    background: #b85c38;
-    margin-right: 8px;
-    padding-bottom: 1px;
-}
-
-.quantity-btn-plus {
-    background: green;
-    margin-left: 8px;
-    padding-top: 1px;
-}
-
-.quantity-display {
-    font-family: 'Poppins', sans-serif;
-    min-width: 24px;
-    display: inline-block;
-    font-size: 24px;
-    font-weight: 700;
-}
-
-.next-button-container {
-    text-align: center;
-}
-
-.next-button {
-    font-family: 'Poppins', sans-serif;
-    font-size: 25px;
-    font-weight: 600;
-}
-
-/* Step 2 - Order Details */
+/* Step 2 - Enhanced Order Details */
 .back-button-container {
     display: flex;
-    align-items: center;
-    margin-bottom: 8px;
+    align-items: flex-start;
+    margin-bottom: 24px;
 }
 
 .back-button {
     font-family: 'Poppins', sans-serif;
-    background: #fff;
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
     border: 2px solid #b85c38;
     color: #b85c38;
-    font-size: 25px;
+    font-size: 1.2rem;
     font-weight: 600;
     cursor: pointer;
-    padding: 8px 28px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    transition: background 0.2s, color 0.2s;
+    padding: 12px 32px;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(184, 92, 56, 0.2);
+    transition: all 0.3s ease;
     position: relative;
+    overflow: hidden;
 }
 
-/* Move the arrow up slightly */
 .back-button::before {
     content: '←';
     position: relative;
-    top: 0px; /* Adjust this value to move arrow up or down */
-    margin-right: 10px;
+    margin-right: 8px;
+    font-size: 1.3rem;
+}
+
+.back-button:hover {
+    background: #b85c38;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(184, 92, 56, 0.3);
 }
 
 .order-card {
-    background: #f3e9e3;
-    border-radius: 10px;
-    padding: 18px 20px;
-    margin-bottom: 24px;
-    max-width: 400px;
+    background: linear-gradient(135deg, #f3e9e3 0%, #f0e4d9 100%);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 32px;
+    max-width: 500px;
     margin-left: auto;
     margin-right: auto;
+    box-shadow: 0 8px 32px rgba(184, 92, 56, 0.15);
+    border: 1px solid rgba(184, 92, 56, 0.1);
+    animation: slideInUp 0.5s ease;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .order-title {
     font-family: 'Poppins', sans-serif;
     margin-top: 0;
-    margin-bottom: 12px;
+    margin-bottom: 20px;
     color: #b85c38;
-    font-size: 2rem;
-    font-weight: 600;
+    font-size: 2.2rem;
+    font-weight: 700;
     text-align: center;
+    position: relative;
+}
+
+.order-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 3px;
+    background: #b85c38;
+    border-radius: 2px;
 }
 
 .order-items-container {
-    max-width: 500px;
+    max-width: 100%;
     margin: 0 auto;
     width: 100%;
 }
@@ -233,9 +849,18 @@ input[type="checkbox"], input[type="radio"] {
 
 .order-item {
     font-family: 'Inter', sans-serif;
-    font-size: 1.4rem;
-    margin-bottom: 0;
-    padding: 6px 10px;
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+    border-left: 4px solid #b85c38;
+    transition: all 0.3s ease;
+}
+
+.order-item:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateX(5px);
 }
 
 .order-item-content {
@@ -244,127 +869,236 @@ input[type="checkbox"], input[type="radio"] {
     align-items: flex-start;
 }
 
+.order-item-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.order-item-info {
+    flex: 1;
+    margin-right: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
 .order-item-name {
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
 }
 
 .order-item-options {
     font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    color: #555;
+    font-size: 0.9rem;
+    color: #666;
     margin-top: 4px;
-    margin-left: 20px;
+    margin-left: 16px;
     font-weight: 400;
+    font-style: italic;
+}
+
+.order-item-price {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    color: #b85c38;
+    white-space: nowrap;
+    text-align: right;
+    min-width: 80px;
+    flex-shrink: 0;
+    font-size: 1.1rem;
+    background: rgba(184, 92, 56, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
 }
 
 .order-total {
     font-family: 'Poppins', sans-serif;
-    margin-top: 10px;
+    margin-top: 20px;
     font-weight: 700;
     font-size: 1.8rem;
     text-align: center;
+    color: #b85c38;
+    background: rgba(184, 92, 56, 0.1);
+    padding: 12px;
+    border-radius: 8px;
+    /* Removed the dashed border */
 }
 
 .order-notes {
     font-family: 'Inter', sans-serif;
-    margin-top: 15px;
-    padding: 10px;
-    background: #f9f9f9;
-    border-radius: 6px;
-    font-size: 1.2rem;
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    font-size: 1rem;
     font-weight: 400;
+    border-left: 4px solid #28a745;
 }
 
 .tax-notice {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    margin-top: 5px;
+    margin-top: 12px;
     color: #b85c38;
     text-align: center;
+    font-size: 0.9rem;
+    opacity: 0.8;
 }
 
+/* Enhanced Form Inputs */
 .name-input {
     font-family: 'Inter', sans-serif;
     width: 100%;
-    padding: 10px;
+    padding: 16px;
     margin-bottom: 28px !important;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 1.1rem;
     font-weight: 400;
     box-sizing: border-box;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+}
+
+.name-input:focus {
+    border-color: #b85c38;
+    box-shadow: 0 0 0 4px rgba(184, 92, 56, 0.1);
+    outline: none;
+    transform: translateY(-2px);
 }
 
 .notes-textarea {
     font-family: 'Inter', sans-serif;
     width: 100%;
-    padding: 10px;
-    margin-bottom: 18px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 24px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
     font-size: 1rem;
     font-weight: 400;
-    min-height: 80px;
+    min-height: 100px;
     resize: vertical;
     box-sizing: border-box;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+}
+
+.notes-textarea:focus {
+    border-color: #b85c38;
+    box-shadow: 0 0 0 4px rgba(184, 92, 56, 0.1);
+    outline: none;
+    transform: translateY(-2px);
 }
 
 .order-button-container {
     text-align: center;
+    margin-top: 32px;
 }
 
 .order-button {
     font-family: 'Poppins', sans-serif;
-    font-size: 25px;
-    font-weight: 600;
+    font-size: 1.3rem;
+    font-weight: 700;
+    padding: 16px 48px;
+    background: linear-gradient(135deg, #b85c38 0%, #a14d2c 100%);
+    border-radius: 50px;
+    box-shadow: 0 6px 20px rgba(184, 92, 56, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-/* Step 3 - Order Confirmation */
+.order-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(184, 92, 56, 0.4);
+}
+
+/* Step 3 - Enhanced Order Confirmation */
 .confirmation-container {
     font-family: 'Inter', sans-serif;
     text-align: center;
     margin-top: 50px;
+    animation: fadeIn 0.6s ease;
 }
 
-.confirmation-divider{
+.confirmation-container h1 {
+    font-size: 2.5rem;
+    color: #b85c38;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.confirmation-container h1::after {
+    content: '✓';
+    position: absolute;
+    top: -10px;
+    right: -40px;
+    color: #28a745;
+    font-size: 2rem;
+    animation: checkmark 0.6s ease 0.3s both;
+}
+
+@keyframes checkmark {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.confirmation-divider {
     margin: 0px 32px;
 }
 
-.confirmation-container form {
-    background: #fff;
-    max-width: 1000px;
-    margin: 32px auto;
-    padding: 24px 32px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-/* Make confirmation order card match the order card exactly */
 .confirmation-order-card {
-    background: #f3e9e3;
-    border-radius: 10px;
-    padding: 18px 20px;
-    margin-bottom: 24px;
-    max-width: 400px;
+    background: linear-gradient(135deg, #f3e9e3 0%, #f0e4d9 100%);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 32px;
+    margin-top: 32px;
+    max-width: 500px;
     margin-left: auto;
     margin-right: auto;
     text-align: left;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Add subtle shadow like order card */
+    box-shadow: 0 8px 32px rgba(184, 92, 56, 0.15);
+    border: 1px solid rgba(184, 92, 56, 0.1);
+    animation: slideInUp 0.5s ease 0.2s both;
 }
 
 .confirmation-order-title {
     font-family: 'Poppins', sans-serif;
     margin-top: 0;
-    margin-bottom: 12px;
+    margin-bottom: 20px;
     color: #b85c38;
     font-size: 2rem;
-    font-weight: 600;
+    font-weight: 700;
     text-align: center;
+    position: relative;
+}
+
+.confirmation-order-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 3px;
+    background: #b85c38;
+    border-radius: 2px;
 }
 
 .confirmation-items-container {
-    max-width: 500px;
+    max-width: 100%;
     margin: 0 auto;
     width: 100%;
     text-align: left;
@@ -379,10 +1113,19 @@ input[type="checkbox"], input[type="radio"] {
 
 .confirmation-item {
     font-family: 'Inter', sans-serif;
-    font-size: 1.4rem;
-    margin-bottom: 0;
-    padding: 6px 10px;
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    padding: 12px;
     text-align: left;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+    border-left: 4px solid #28a745;
+    transition: all 0.3s ease;
+}
+
+.confirmation-item:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateX(5px);
 }
 
 .confirmation-item-content {
@@ -408,136 +1151,202 @@ input[type="checkbox"], input[type="radio"] {
 .confirmation-item-name {
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
 }
 
 .confirmation-item-options {
     font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    color: #555;
+    font-size: 0.9rem;
+    color: #666;
     margin-top: 4px;
-    margin-left: 20px;
+    margin-left: 16px;
     font-weight: 400;
+    font-style: italic;
 }
 
 .confirmation-item-price {
-    font-weight: bold;
-    color: #333;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    color: #28a745;
     white-space: nowrap;
     text-align: right;
-    min-width: 100px;
+    min-width: 80px;
     flex-shrink: 0;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
+    background: rgba(40, 167, 69, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
 }
 
 .confirmation-total {
     font-family: 'Poppins', sans-serif;
-    margin-top: 10px;
+    margin-top: 20px;
     font-weight: 700;
-    font-size: 24px;
-    color: #b85c38;
+    font-size: 2rem;
+    color: #28a745;
     text-align: center;
+    background: rgba(40, 167, 69, 0.1);
+    padding: 16px;
+    border-radius: 12px;
+    /* Removed the dashed border */
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
 }
 
 .confirmation-notes {
     font-family: 'Inter', sans-serif;
-    margin-top: 15px;
-    padding: 10px;
-    background: #f9f9f9;
-    border-radius: 6px;
-    font-size: 1.2rem;
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    font-size: 1rem;
     font-weight: 400;
+    border-left: 4px solid #17a2b8;
 }
 
 .confirmation-tax-notice {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    margin-top: 5px;
+    margin-top: 12px;
     color: #b85c38;
     text-align: center;
+    font-size: 0.9rem;
+    opacity: 0.8;
 }
 
 .confirmation-details {
     font-family: 'Poppins', sans-serif;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     font-weight: 600;
+    color: #333;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 12px 24px;
+    border-radius: 25px;
+    display: inline-block;
+    margin: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .confirmation-name {
     font-family: 'Poppins', sans-serif;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     font-weight: 500;
+    color: #333;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 12px 24px;
+    border-radius: 25px;
+    display: inline-block;
+    margin: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .confirmation-payment-notice {
     font-family: 'Poppins', sans-serif;
-    margin: 20px;
-    font-size: 1.4rem;
+    margin: 32px 20px;
+    font-size: 1.3rem;
     font-weight: 600;
     color: #b85c38;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 5px solid #b85c38;
+    box-shadow: 0 4px 15px rgba(184, 92, 56, 0.2);
+    animation: slideInUp 0.5s ease 0.4s both;
 }
 
 .another-order-container {
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: 32px;
+    margin-bottom: 32px;
 }
 
 .another-order-button {
     font-family: 'Poppins', sans-serif;
-    background: #b85c38;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: #fff;
     border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
+    padding: 16px 32px;
+    border-radius: 50px;
     font-size: 1.2rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+    position: relative;
+    overflow: hidden;
 }
 
-/* Modal Styles */
-.modal-overlay {
-    position: fixed;
+.another-order-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+}
+
+.another-order-button::before {
+    content: '';
+    position: absolute;
     top: 0;
-    left: 0;
+    left: -100%;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
 }
 
-.modal-content {
-    font-family: 'Inter', sans-serif;
-    background: #f1e6e1ff;
-    padding: 20px;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
+.another-order-button:hover::before {
+    left: 100%;
 }
 
-.modal-content h2 {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-}
-
+/* Spice Slider Styles */
 .spice-slider-container {
     margin-bottom: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
 }
 
 .spice-slider-label {
     font-family: 'Poppins', sans-serif;
     font-size: 1.2rem;
     font-weight: 600;
+    color: #b85c38;
 }
 
 .spice-slider {
     width: 85%;
-    margin-top: 10px;
+    margin-top: 15px;
     display: block;
     margin-left: auto;
     margin-right: auto;
+    height: 8px;
+    border-radius: 4px;
+    background: #ddd;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.spice-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #b85c38;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(184, 92, 56, 0.3);
+    transition: all 0.3s ease;
+}
+
+.spice-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(184, 92, 56, 0.5);
 }
 
 .spice-levels {
@@ -546,87 +1355,176 @@ input[type="checkbox"], input[type="radio"] {
     justify-content: center;
     gap: 22%;
     color: #b85c38;
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 500;
-    margin-top: 6px;
+    margin-top: 10px;
     max-width: 90%;
     margin-left: auto;
     margin-right: auto;
 }
 
 .option-container {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.option-container:hover {
+    background: #fff;
+    border-color: #b85c38;
+    transform: translateY(-1px);
 }
 
 .option-label {
     font-family: 'Inter', sans-serif;
-    color: #b85c38;
-    font-size: 1.2rem;
+    color: #333;
+    font-size: 1.1rem;
     font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    cursor: pointer;
 }
 
-.option-checkbox {
-    width: 18px;
-    height: 18px;
+.option-checkbox, .option-radio {
+    width: 20px;
+    height: 20px;
     accent-color: #b85c38;
-}
-
-.option-radio {
-    width: 18px;
-    height: 18px;
-    accent-color: #b85c38;
-}
-
-.modal-cancel-button {
-    font-family: 'Poppins', sans-serif;
-    margin-top: 10px;
-    padding: 10px 20px;
-    background: firebrick;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    margin-right: 10px;
-    font-weight: 500;
-}
-
-.modal-add-button {
-    font-family: 'Poppins', sans-serif;
-    margin-top: 20px;
-    padding: 10px 20px;
-    background: green;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-weight: 500;
+    transform: scale(1.2);
 }
 
 /* Mobile Responsive */
 @media (max-width: 880px) {
-    h1{
+    h1 {
         font-size: 30px;
     }
     
-    .back-button-container {
-        justify-content: center;
-        padding-bottom: 16px;
+    .menu-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
     }
     
-    .back-button-container button {
-        width: 100%;
+    .floating-cart {
+        bottom: 30px; /* Adjusted for mobile - no checkout section */
+        right: 10px;
+        padding: 12px 16px;
     }
     
-    .order-button-container button {
-        width: 100%;
-    }
-    
-    .next-button-container button {
-        width: 100%;
+    .cart-summary {
+        bottom: 90px; /* Adjusted for mobile - no checkout section */
+        right: 10px;
+        left: 10px;
+        max-width: none;
     }
 
-    .menu-item-image {
-        height: 230px;
+    .back-button-container{
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .floating-cart {
+        bottom: 20px; /* Further adjusted for small mobile */
+        padding: 10px 12px;
+    }
+    
+    .cart-summary {
+        bottom: 80px; /* Further adjusted for small mobile */
+    }
+    
+    .checkout-section {
+        height: 100px; /* Further reduced for small mobile */
+    }
+    
+    .cart-total {
+        font-size: 1rem;
+    }
+    
+    .cart-count {
+        font-size: 0.8rem;
+    }
+
+    .order-title, .confirmation-order-title {
+        font-size: 1.8rem;
+    }
+
+    .confirmation-total {
+        font-size: 1.6rem;
+    }
+}
+
+/* Modal Close Button Styles */
+.modal-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: #b85c38;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: none;
+    font-weight: bold;
+    z-index: 2;
+}
+
+.modal-close-btn:hover {
+    background: rgba(184, 92, 56, 0.1);
+    transform: scale(1.1);
+    color: #a14d2c;
+}
+
+/* Updated Modal Content to account for close button */
+.modal-content {
+    font-family: 'Inter', sans-serif;
+    background: white;
+    padding: 30px 30px 30px 30px; /* Increased top padding for close button */
+    border-radius: 16px;
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalSlide 0.3s ease;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative; /* For absolute positioning of close button */
+}
+
+/* Single button container (no cancel button) */
+.modal-buttons.single-button {
+    justify-content: center;
+    margin-top: 25px;
+}
+
+.modal-buttons.single-button .modal-add-button {
+    width: 100%;
+    max-width: 250px;
+    padding: 15px 25px;
+    font-size: 1.1rem;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+    .modal-close-btn {
+        top: 5px;
+        right: 5px;
+        font-size: 1.8rem;
+        width: 35px;
+        height: 35px;
+    }
+    
+    .modal-content {
+        padding: 35px 25px 25px 25px; /* Adjusted for smaller screens */
     }
 }

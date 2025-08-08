@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+.contact-container {
+    font-family: 'Inter', sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-top: 32px;
+}
+
+.contact-container h1 {
+    font-family: 'Poppins', sans-serif;
+    color: #b85c38;
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 32px;
+}
+
+.contact-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    margin-top: 32px;
+}
+
+.contact-info h2 {
+    font-family: 'Poppins', sans-serif;
+    color: #b85c38;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 24px;
+}
+
+.contact-item {
+    margin-bottom: 24px;
+}
+
+.contact-item h3 {
+    font-family: 'Poppins', sans-serif;
+    color: #b85c38;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.contact-item p {
+    font-family: 'Inter', sans-serif;
+    color: #333;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 4px 0;
+}
+
+.contact-form {
+    background: #f3e9e3;
+    padding: 32px;
+    border-radius: 12px;
+}
+
+.contact-form h2 {
+    font-family: 'Poppins', sans-serif;
+    color: #b85c38;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.contact-input {
+    font-family: 'Inter', sans-serif;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.contact-textarea {
+    font-family: 'Inter', sans-serif;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.contact-submit {
+    font-family: 'Poppins', sans-serif;
+    background: #b85c38;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.2s;
+}
+
+.contact-submit:hover {
+    background: #a14d2c;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .contact-container {
+        padding: 16px;
+        margin-top: 16px;
+    }
+
+    .contact-container h1 {
+        font-size: 2rem;
+    }
+
+    .contact-content {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+
+    .contact-form {
+        padding: 24px;
+    }
+}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './styles/KioskForm.css';
 
@@ -11,21 +11,25 @@ const KioskForm = () => {
     const [modalItem, setModalItem] = useState(null);
     const [itemOptions, setItemOptions] = useState({});
     const [notes, setNotes] = useState('');
+    const [cartTotal, setCartTotal] = useState(0);
+    const [showCartSummary, setShowCartSummary] = useState(false);
 
     const menuItems = [
-        { id: 1, name: 'Mango Lassi', price: 3, image: '/images/mango-lassi.jpg', options: ['Ice', 'No Ice'] },
-        { id: 2, name: 'Panipuri', price: 3, image: '/images/panipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
-        { id: 3, name: 'Masala Puri', price: 4, image: '/images/masala-puri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
-        { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
-        { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
-        { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'] },
+        { id: 1, name: 'Mango Lassi', price: 3, image: '/images/mango-lassi.jpg', options: ['Ice', 'No Ice'], category: 'Drinks', description: 'Refreshing yogurt-based mango drink' },
+        { id: 2, name: 'Panipuri', price: 3, image: '/images/panipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy shells filled with spiced water and chutneys' },
+        { id: 3, name: 'Masala Puri', price: 4, image: '/images/masala-puri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with spiced potatoes and chutneys' },
+        { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Puris filled with yogurt, chutneys and spices' },
+        { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with sev, vegetables and chutneys' },
+        { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Popular street snack with puffed rice and chutneys' },
         { 
             id: 7, 
             name: 'Paneer Wrap', 
             price: 8, 
             image: '/images/paneer-wrap.JPG', 
             options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Paneer (+$2)'],
-            extraOptions: { 'Extra Paneer (+$2)': 2 }
+            extraOptions: { 'Extra Paneer (+$2)': 2 },
+            category: 'Wraps',
+            description: 'Grilled paneer with fresh vegetables wrapped in naan'
         },
         { 
             id: 8, 
@@ -33,9 +37,21 @@ const KioskForm = () => {
             price: 9, 
             image: '/images/chicken-wrap.JPG', 
             options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Meat (+$2)'],
-            extraOptions: { 'Extra Meat (+$2)': 2 }
+            extraOptions: { 'Extra Meat (+$2)': 2 },
+            category: 'Wraps',
+            description: 'Tender spiced chicken with vegetables wrapped in naan'
         },
     ];
+
+    // Calculate cart total whenever selectedItems changes
+    useEffect(() => {
+        const total = Object.entries(selectedItems)
+            .reduce((sum, [key, { name, quantity, options }]) => {
+                const itemPrice = calculateItemPrice(name, options);
+                return sum + (itemPrice * quantity);
+            }, 0);
+        setCartTotal(total);
+    }, [selectedItems]);
 
     // Helper function to calculate item price with extras
     const calculateItemPrice = (itemName, options) => {
@@ -56,6 +72,11 @@ const KioskForm = () => {
         return totalPrice;
     };
 
+    const getTotalItemsInCart = () => {
+        return Object.entries(selectedItems)
+            .reduce((sum, [key, { quantity }]) => sum + quantity, 0);
+    };
+
     const handleQuantityChange = (itemName, quantity, options = []) => {
         setSelectedItems(prev => {
             const updated = { ...prev };
@@ -73,7 +94,7 @@ const KioskForm = () => {
     const openModal = (item) => {
         setModalItem(item);
         
-        // Set default spice level for items that have spice options in order to avoid empty options
+        // Set default spice level for items that have spice options
         if (item.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt))) {
             const currentOptions = itemOptions[item.name] || [];
             const hasSpiceLevel = currentOptions.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt));
@@ -81,7 +102,7 @@ const KioskForm = () => {
             if (!hasSpiceLevel) {
                 setItemOptions(prev => ({
                     ...prev,
-                    [item.name]: [...currentOptions, 'Mild'] // Default to 'Mild'
+                    [item.name]: [...currentOptions, 'Mild']
                 }));
             }
         }
@@ -94,7 +115,7 @@ const KioskForm = () => {
             if (!hasIceOption) {
                 setItemOptions(prev => ({
                     ...prev,
-                    [item.name]: [...currentOptions, 'Ice'] // Default to 'Ice'
+                    [item.name]: [...currentOptions, 'Ice']
                 }));
             }
         }
@@ -113,9 +134,8 @@ const KioskForm = () => {
         closeModal();
     };
 
-    const handleMenuSubmit = (e) => {
-        e.preventDefault();
-
+    // Modified handleMenuSubmit to proceed directly without form submit
+    const proceedToCheckout = () => {
         const items = Object.entries(selectedItems)
             .flatMap(([name, { quantity }]) => {
                 const validQuantity = Number(quantity) || 0;
@@ -127,6 +147,11 @@ const KioskForm = () => {
         } else {
             alert('Please select at least one item before proceeding.');
         }
+    };
+
+    // Original form submit handler now just prevents default
+    const handleMenuSubmit = (e) => {
+        e.preventDefault();
     };
 
     const handleNameSubmit = async (e) => {
@@ -177,66 +202,185 @@ const KioskForm = () => {
         <div className="kiosk-container">
             {step === 1 && (
                 <form onSubmit={handleMenuSubmit}>
-                    <h1>Select Menu Items</h1>
-                    <div className="menu-grid">
-                        {menuItems.map(item => (
-                            <div key={item.id} className="menu-item-card">
-                                <img className='menu-item-image'
-                                    src={item.image}
-                                    alt={item.name}
-                                />
-                                <div className="menu-item-content">
-                                    <hr />
-                                    <label htmlFor={`qty-${item.name}`} className="menu-item-label">
-                                        {item.name} | ${item.price}
-                                    </label>
-                                    <div className="quantity-controls">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                const totalQuantity = Object.entries(selectedItems)
-                                                    .filter(([key]) => key.startsWith(`${item.name}-`))
-                                                    .reduce((sum, [, itemData]) => sum + itemData.quantity, 0);
-                                                
-                                                if (totalQuantity > 0) {
-                                                    const firstKey = Object.keys(selectedItems).find(key => key.startsWith(`${item.name}-`));
-                                                    if (firstKey) {
-                                                        const currentItem = selectedItems[firstKey];
-                                                        if (currentItem.quantity > 1) {
+                    <div className="menu-header">
+                        <h1>Our Menu</h1>
+                        <p className="menu-subtitle">Authentic Indian Street Food Made Fresh</p>
+                    </div>
+
+                    {/* Floating Cart Summary with Updated Checkout Function */}
+                    {getTotalItemsInCart() > 0 && (
+                        <div 
+                            className={`floating-cart ${showCartSummary ? 'hidden' : ''}`} 
+                            onClick={() => setShowCartSummary(true)}
+                        >
+                            <div className="cart-icon">🛒</div>
+                            <div className="cart-info">
+                                <span className="cart-count">{getTotalItemsInCart()}</span>
+                                <span className="view-cart-text">View Cart</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Enhanced Cart Summary with Quantity Controls */}
+                    {showCartSummary && getTotalItemsInCart() > 0 && (
+                        <div className="cart-summary">
+                            <div className="cart-summary-header">
+                                <h3>Your Order</h3>
+                                <button 
+                                    className="cart-close-btn"
+                                    onClick={() => setShowCartSummary(false)}
+                                    title="Close cart"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                            
+                            <div className="cart-items-container">
+                                {Object.entries(selectedItems)
+                                    .filter(([_, { quantity }]) => quantity > 0)
+                                    .map(([key, { name, quantity, options }]) => (
+                                        <div key={key} className="cart-item">
+                                            <div className="cart-item-info">
+                                                <div className="cart-item-name">
+                                                    {name} {quantity > 1 && `x${quantity}`}
+                                                </div>
+                                                {options.length > 0 && (
+                                                    <div className="cart-item-options">
+                                                        {options.join(', ')}
+                                                    </div>
+                                                )}
+                                                <div className="cart-item-price">
+                                                    ${(calculateItemPrice(name, options) * quantity).toFixed(2)}
+                                                </div>
+                                            </div>
+                                            <div className="cart-item-controls">
+                                                <button
+                                                    className="cart-quantity-btn cart-minus-btn"
+                                                    onClick={() => {
+                                                        if (quantity > 1) {
                                                             setSelectedItems(prev => ({
                                                                 ...prev,
-                                                                [firstKey]: { ...currentItem, quantity: currentItem.quantity - 1 }
+                                                                [key]: { ...prev[key], quantity: quantity - 1 }
                                                             }));
                                                         } else {
                                                             setSelectedItems(prev => {
                                                                 const updated = { ...prev };
-                                                                delete updated[firstKey];
+                                                                delete updated[key];
                                                                 return updated;
                                                             });
                                                         }
-                                                    }
-                                                }
-                                            }}
-                                            className="quantity-btn quantity-btn-minus"
-                                        >-</button>
-                                        <span className="quantity-display">
-                                            {Object.entries(selectedItems)
-                                                .filter(([key]) => key.startsWith(`${item.name}-`))
-                                                .reduce((sum, [, itemData]) => sum + itemData.quantity, 0)}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            onClick={() => openModal(item)}
-                                            className="quantity-btn quantity-btn-plus"
-                                        >+</button>
-                                    </div>
+                                                    }}
+                                                >
+                                                    −
+                                                </button>
+                                                <span className="cart-quantity-display">{quantity}</span>
+                                                <button
+                                                    className="cart-quantity-btn cart-plus-btn"
+                                                    onClick={() => {
+                                                        setSelectedItems(prev => ({
+                                                            ...prev,
+                                                            [key]: { ...prev[key], quantity: quantity + 1 }
+                                                        }));
+                                                    }}
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                            </div>
+                            
+                            <div className="cart-total-line">
+                                <div className="cart-total-amount">
+                                    Total: ${cartTotal.toFixed(2)}
+                                </div>
+                                <button 
+                                    className="cart-checkout-btn"
+                                    onClick={() => {
+                                        setShowCartSummary(false);
+                                        proceedToCheckout();
+                                    }}
+                                >
+                                    Proceed to Checkout →
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="menu-categories">
+                        {['Chaat', 'Wraps', 'Drinks'].map(category => (
+                            <div key={category} className="category-section">
+                                <h2 className="category-title">{category}</h2>
+                                <div className="menu-grid">
+                                    {menuItems.filter(item => item.category === category).map(item => {
+                                        const itemQuantity = Object.entries(selectedItems)
+                                            .filter(([key]) => key.startsWith(`${item.name}-`))
+                                            .reduce((sum, [, itemData]) => sum + itemData.quantity, 0);
+                                        
+                                        return (
+                                            <div key={item.id} className={`menu-item-card ${itemQuantity > 0 ? 'has-items' : ''}`}>
+                                                <div className="menu-item-image-container">
+                                                    <img className='menu-item-image'
+                                                        src={item.image}
+                                                        alt={item.name}
+                                                    />
+                                                    {itemQuantity > 0 && (
+                                                        <div className="item-badge">{itemQuantity}</div>
+                                                    )}
+                                                </div>
+                                                <div className="menu-item-content">
+                                                    <div className="item-header">
+                                                        <h3 className="menu-item-name">{item.name}</h3>
+                                                        <span className="menu-item-price">${item.price}</span>
+                                                    </div>
+                                                    <p className="menu-item-description">{item.description}</p>
+                                                    <div className="quantity-controls">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const totalQuantity = Object.entries(selectedItems)
+                                                                    .filter(([key]) => key.startsWith(`${item.name}-`))
+                                                                    .reduce((sum, [, itemData]) => sum + itemData.quantity, 0);
+                                                                
+                                                                if (totalQuantity > 0) {
+                                                                    const firstKey = Object.keys(selectedItems).find(key => key.startsWith(`${item.name}-`));
+                                                                    if (firstKey) {
+                                                                        const currentItem = selectedItems[firstKey];
+                                                                        if (currentItem.quantity > 1) {
+                                                                            setSelectedItems(prev => ({
+                                                                                ...prev,
+                                                                                [firstKey]: { ...currentItem, quantity: currentItem.quantity - 1 }
+                                                                            }));
+                                                                        } else {
+                                                                            setSelectedItems(prev => {
+                                                                                const updated = { ...prev };
+                                                                                delete updated[firstKey];
+                                                                                return updated;
+                                                                            });
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }}
+                                                            className="quantity-btn quantity-btn-minus"
+                                                            disabled={itemQuantity === 0}
+                                                        >−</button>
+                                                        <span className="quantity-display">{itemQuantity}</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openModal(item)}
+                                                            className="quantity-btn quantity-btn-plus"
+                                                        >+</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         ))}
                     </div>
-                    <div className="next-button-container">
-                        <button className="next-button" type="submit">Next</button>
-                    </div>
+
+                    {/* REMOVED: Bottom Checkout Section */}
                 </form>
             )}
             {step === 2 && (
@@ -289,7 +433,7 @@ const KioskForm = () => {
                                 .reduce((sum, [key, { name, quantity, options }]) => {
                                     const itemPrice = calculateItemPrice(name, options);
                                     return sum + (itemPrice * quantity);
-                                }, 0)
+                                }, 0).toFixed(2)
                             }
                         </div>
                         {notes && (
@@ -308,7 +452,7 @@ const KioskForm = () => {
                         required
                         className="name-input"
                     />
-                    <h2>Allergies /  Special Requests / Notes (Optional)</h2>
+                    <h2>Notes (Optional)</h2>
                     <textarea
                         placeholder="Enter any allergies, special requests or notes here..."
                         value={notes}
@@ -365,7 +509,7 @@ const KioskForm = () => {
                             {Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
                                 const itemPrice = calculateItemPrice(name, options);
                                 return sum + (itemPrice * quantity);
-                            }, 0)}
+                            }, 0).toFixed(2)}
                         </div>
                         {notes && (
                             <div className="confirmation-notes">
@@ -395,10 +539,28 @@ const KioskForm = () => {
                 </div>
             )}
 
-            {/* Modal */}
+            {/* Modal - Enhanced with X close button instead of Cancel button */}
             {modalItem && (
                 <div className="modal-overlay">
                     <div className="modal-content">
+                        {/* Close button at top right */}
+                        <button 
+                            className="modal-close-btn"
+                            onClick={closeModal}
+                            title="Close"
+                        >
+                            ×
+                        </button>
+                        
+                        {/* Added item image to modal */}
+                        <div className="modal-item-image-container">
+                            <img 
+                                src={modalItem.image} 
+                                alt={modalItem.name}
+                                className="modal-item-image"
+                            />
+                        </div>
+                        
                         <h2>{modalItem.name} Options</h2>
 
                         {/* Slider for Spice Level */}
@@ -437,7 +599,7 @@ const KioskForm = () => {
                             </div>
                         )}
 
-                        {/* Other Options (checkboxes for most items, radio buttons for Mango Lassi) */}
+                        {/* Other Options */}
                         {modalItem.options?.filter(opt => !['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)).map(option => (
                             <div key={option} className="option-container">
                                 <label className="option-label">
@@ -451,10 +613,8 @@ const KioskForm = () => {
                                                 const currentOptions = prev[modalItem.name] || [];
                                                 
                                                 if (modalItem.name === 'Mango Lassi') {
-                                                    // For radio buttons, replace the current option
                                                     return { ...prev, [modalItem.name]: checked ? [option] : [] };
                                                 } else {
-                                                    // For checkboxes, add/remove from array
                                                     if (checked) {
                                                         return { ...prev, [modalItem.name]: [...currentOptions, option] };
                                                     } else {
@@ -473,13 +633,11 @@ const KioskForm = () => {
                             </div>
                         ))}
 
-                        {/* Buttons */}
-                        <button onClick={closeModal} className="modal-cancel-button">
-                            Cancel
-                        </button>
-                        <button onClick={handleOptionSubmit} className="modal-add-button">
-                            Add to Order
-                        </button>
+                        <div className="modal-buttons single-button">
+                            <button onClick={handleOptionSubmit} className="modal-add-button">
+                                Add to Order
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

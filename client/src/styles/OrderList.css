@@ -108,7 +108,7 @@
     color: #333 !important;
     white-space: nowrap !important;
     text-align: right !important;
-    min-width: 100px !important;
+    min-width: 0px !important;
     max-width: 100px !important;
     flex-shrink: 0 !important;
     display: block !important;
