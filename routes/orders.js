@@ -31,26 +31,36 @@ router.get('/all', async (req, res) => {
     }
 });
 
-// Update order status
+// Update order status with timestamp
 router.patch('/:id', async (req, res) => {
     try {
-        const updatedOrder = await Order.findByIdAndUpdate(req.params.id, { status: 'Completed' }, { new: true });
-        req.io.emit('ordersUpdated'); // Notify all clients
+        const updatedOrder = await Order.findByIdAndUpdate(
+            req.params.id, 
+            { 
+                status: 'Completed',
+                updatedAt: new Date()
+            }, 
+            { new: true }
+        );
+        req.io.emit('ordersUpdated');
         res.json(updatedOrder);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
-// Delete an order (mark as Cancelled)
+// Delete an order (mark as Cancelled) with timestamp
 router.delete('/:id', async (req, res) => {
     try {
         const deletedOrder = await Order.findByIdAndUpdate(
             req.params.id,
-            { status: 'Cancelled' },
+            { 
+                status: 'Cancelled',
+                updatedAt: new Date()
+            },
             { new: true }
         );
-        req.io.emit('ordersUpdated'); // Notify all clients
+        req.io.emit('ordersUpdated');
         res.json(deletedOrder);
     } catch (err) {
         res.status(500).json({ message: err.message });

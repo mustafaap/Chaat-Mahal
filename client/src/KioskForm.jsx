@@ -11,8 +11,11 @@ const KioskForm = () => {
     const [modalItem, setModalItem] = useState(null);
     const [itemOptions, setItemOptions] = useState({});
     const [notes, setNotes] = useState('');
-    const [cartTotal, setCartTotal] = useState(0);
     const [showCartSummary, setShowCartSummary] = useState(false);
+    const [cartTotal, setCartTotal] = useState(0);
+    
+    // State for floating index
+    const [activeSection, setActiveSection] = useState('Chaat');
 
     const menuItems = [
         { id: 1, name: 'Mango Lassi', price: 3, image: '/images/mango-lassi.jpg', options: ['Ice', 'No Ice'], category: 'Drinks', description: 'Refreshing yogurt-based mango drink' },
@@ -21,8 +24,9 @@ const KioskForm = () => {
         { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Puris filled with yogurt, chutneys and spices' },
         { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with sev, vegetables and chutneys' },
         { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Popular street snack with puffed rice and chutneys' },
+        { id: 7, name: 'Water', price: 1, image: '/images/water.jpg', options: ['Cold', 'Room Temperature'], category: 'Drinks', description: 'Refreshing hydration' },
         { 
-            id: 7, 
+            id: 8, 
             name: 'Paneer Wrap', 
             price: 8, 
             image: '/images/paneer-wrap.JPG', 
@@ -32,7 +36,7 @@ const KioskForm = () => {
             description: 'Grilled paneer with fresh vegetables wrapped in naan'
         },
         { 
-            id: 8, 
+            id: 9, 
             name: 'Chicken Wrap', 
             price: 9, 
             image: '/images/chicken-wrap.JPG', 
@@ -42,6 +46,37 @@ const KioskForm = () => {
             description: 'Tender spiced chicken with vegetables wrapped in naan'
         },
     ];
+
+    // Scroll tracking for floating index
+    useEffect(() => {
+        const handleScroll = () => {
+            const sections = ['Chaat', 'Wraps', 'Drinks'];
+            const scrollPosition = window.scrollY + 200; // Offset for navbar
+            
+            for (let i = sections.length - 1; i >= 0; i--) {
+                const section = document.getElementById(`section-${sections[i]}`);
+                if (section && section.offsetTop <= scrollPosition) {
+                    setActiveSection(sections[i]);
+                    break;
+                }
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        handleScroll(); // Check initial position
+
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Function to scroll to section
+    const scrollToSection = (section) => {
+        const element = document.getElementById(`section-${section}`);
+        if (element) {
+            const yOffset = -100; // Offset for fixed navbar
+            const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+    };
 
     // Calculate cart total whenever selectedItems changes
     useEffect(() => {
@@ -53,39 +88,33 @@ const KioskForm = () => {
         setCartTotal(total);
     }, [selectedItems]);
 
-    // Helper function to calculate item price with extras
     const calculateItemPrice = (itemName, options) => {
-        const baseItem = menuItems.find(i => i.name === itemName);
-        if (!baseItem) return 0;
+        const item = menuItems.find(item => item.name === itemName);
+        let price = item.price;
         
-        let totalPrice = baseItem.price;
-        
-        // Add extra charges
-        if (baseItem.extraOptions) {
+        if (item.extraOptions && options) {
             options.forEach(option => {
-                if (baseItem.extraOptions[option]) {
-                    totalPrice += baseItem.extraOptions[option];
+                if (item.extraOptions[option]) {
+                    price += item.extraOptions[option];
                 }
             });
         }
         
-        return totalPrice;
+        return price;
     };
 
     const getTotalItemsInCart = () => {
-        return Object.entries(selectedItems)
-            .reduce((sum, [key, { quantity }]) => sum + quantity, 0);
+        return Object.values(selectedItems).reduce((total, item) => total + item.quantity, 0);
     };
 
-    const handleQuantityChange = (itemName, quantity, options = []) => {
+    const addToCart = (itemName, quantity, options) => {
+        const key = `${itemName}-${options.sort().join('-')}`;
         setSelectedItems(prev => {
             const updated = { ...prev };
-            const key = `${itemName}-${options.join('-')}`;
-            const currentQuantity = updated[key]?.quantity || 0;
-            if (quantity > 0) {
-                updated[key] = { name: itemName, quantity: currentQuantity + 1, options };
+            if (updated[key]) {
+                updated[key].quantity += quantity;
             } else {
-                delete updated[key];
+                updated[key] = { name: itemName, quantity, options };
             }
             return updated;
         });
@@ -119,6 +148,19 @@ const KioskForm = () => {
                 }));
             }
         }
+        
+        // Set default "Cold" option for Water
+        if (item.name === 'Water') {
+            const currentOptions = itemOptions[item.name] || [];
+            const hasTemperatureOption = currentOptions.some(opt => ['Cold', 'Room Temperature'].includes(opt));
+            
+            if (!hasTemperatureOption) {
+                setItemOptions(prev => ({
+                    ...prev,
+                    [item.name]: [...currentOptions, 'Cold']
+                }));
+            }
+        }
     };
 
     const closeModal = () => {
@@ -127,68 +169,65 @@ const KioskForm = () => {
 
     const handleOptionSubmit = () => {
         const options = itemOptions[modalItem.name] || [];
-        const key = `${modalItem.name}-${options.join('-')}`;
-        const currentQuantity = selectedItems[key]?.quantity || 0;
-        handleQuantityChange(modalItem.name, currentQuantity + 1, options);
-        setItemOptions(prev => ({ ...prev, [modalItem.name]: [] }));
+        addToCart(modalItem.name, 1, options);
         closeModal();
     };
 
-    // Modified handleMenuSubmit to proceed directly without form submit
-    const proceedToCheckout = () => {
-        const items = Object.entries(selectedItems)
-            .flatMap(([name, { quantity }]) => {
-                const validQuantity = Number(quantity) || 0;
-                return Array(validQuantity).fill(name);
-            });
-
-        if (items.length > 0) {
-            setStep(2);
-        } else {
-            alert('Please select at least one item before proceeding.');
-        }
+    const updateCartQuantity = (key, change) => {
+        setSelectedItems(prev => {
+            const updated = { ...prev };
+            const currentQuantity = updated[key]?.quantity || 0;
+            const newQuantity = currentQuantity + change;
+            
+            if (newQuantity > 0) {
+                const [itemName, ...optionsParts] = key.split('-');
+                const options = optionsParts.join('-').split('-').filter(opt => opt);
+                updated[key] = { name: itemName, quantity: newQuantity, options };
+            } else {
+                delete updated[key];
+            }
+            return updated;
+        });
     };
 
-    // Original form submit handler now just prevents default
+    const proceedToCheckout = () => {
+        if (Object.keys(selectedItems).length === 0) {
+            alert('Please select at least one item.');
+            return;
+        }
+        setStep(2);
+    };
+
     const handleMenuSubmit = (e) => {
         e.preventDefault();
+        proceedToCheckout();
     };
 
     const handleNameSubmit = async (e) => {
         e.preventDefault();
-        if (isSubmitting) return;
-
-        setIsSubmitting(true);
-
-        const items = Object.entries(selectedItems)
-            .flatMap(([name, { quantity }]) => {
-                const validQuantity = Number(quantity) || 0;
-                return Array(validQuantity).fill(name);
-            });
-
-        // Calculate total
-        const total = Object.entries(selectedItems)
-            .reduce((sum, [key, { name, quantity, options }]) => {
-                const itemPrice = calculateItemPrice(name, options);
-                return sum + (itemPrice * quantity);
-            }, 0);
-
-        if (customerName.trim() && items.length > 0) {
-            const order = {
+        
+        if (customerName && Object.keys(selectedItems).length > 0) {
+            setIsSubmitting(true);
+            
+            const orderData = {
                 customerName,
-                items,
-                total,
-                notes: notes.trim(),
-                status: 'Pending',
+                items: Object.values(selectedItems).flatMap(item => 
+                    Array(item.quantity).fill(item.options.length > 0 ? `${item.name} (${item.options.join(', ')})` : item.name)
+                ),
+                total: Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+                    const itemPrice = calculateItemPrice(name, options);
+                    return sum + (itemPrice * quantity);
+                }, 0),
+                notes: notes || ''
             };
+
             try {
-                const response = await axios.post('/api/orders', order);
-                const fullOrderId = response.data._id;
-                setOrderNumber(fullOrderId.slice(-4));
+                const response = await axios.post('/api/orders', orderData);
+                setOrderNumber(response.data.orderNumber);
                 setStep(3);
             } catch (error) {
-                console.error('Error placing order:', error);
-                alert('There was an error placing your order. Please try again.');
+                console.error('Error submitting order:', error);
+                alert('There was an error submitting your order. Please try again.');
             } finally {
                 setIsSubmitting(false);
             }
@@ -205,6 +244,28 @@ const KioskForm = () => {
                     <div className="menu-header">
                         <h1>Our Menu</h1>
                         <p className="menu-subtitle">Authentic Indian Street Food Made Fresh</p>
+                    </div>
+
+                    {/* Floating Index */}
+                    <div className="floating-index">
+                        {['Chaat', 'Wraps', 'Drinks'].map(section => (
+                            <button
+                                key={section}
+                                type="button"
+                                className={`index-item ${activeSection === section ? 'active' : ''}`}
+                                onClick={() => scrollToSection(section)}
+                            >
+                                <span className="index-icon">
+                                    {section === 'Chaat' && '🍛'}
+                                    {section === 'Wraps' && '🌯'}
+                                    {section === 'Drinks' && '🥤'}
+                                </span>
+                                <span className="index-text">{section}</span>
+                                <span className="index-count">
+                                    {menuItems.filter(item => item.category === section).length}
+                                </span>
+                            </button>
+                        ))}
                     </div>
 
                     {/* Floating Cart Summary with Updated Checkout Function */}
@@ -255,32 +316,24 @@ const KioskForm = () => {
                                             </div>
                                             <div className="cart-item-controls">
                                                 <button
+                                                    type="button" // Add type="button"
                                                     className="cart-quantity-btn cart-minus-btn"
-                                                    onClick={() => {
-                                                        if (quantity > 1) {
-                                                            setSelectedItems(prev => ({
-                                                                ...prev,
-                                                                [key]: { ...prev[key], quantity: quantity - 1 }
-                                                            }));
-                                                        } else {
-                                                            setSelectedItems(prev => {
-                                                                const updated = { ...prev };
-                                                                delete updated[key];
-                                                                return updated;
-                                                            });
-                                                        }
+                                                    onClick={(e) => {
+                                                        e.preventDefault(); // Prevent form submission
+                                                        e.stopPropagation(); // Stop event bubbling
+                                                        updateCartQuantity(key, -1);
                                                     }}
                                                 >
                                                     −
                                                 </button>
                                                 <span className="cart-quantity-display">{quantity}</span>
                                                 <button
+                                                    type="button" // Add type="button"
                                                     className="cart-quantity-btn cart-plus-btn"
-                                                    onClick={() => {
-                                                        setSelectedItems(prev => ({
-                                                            ...prev,
-                                                            [key]: { ...prev[key], quantity: quantity + 1 }
-                                                        }));
+                                                    onClick={(e) => {
+                                                        e.preventDefault(); // Prevent form submission
+                                                        e.stopPropagation(); // Stop event bubbling
+                                                        updateCartQuantity(key, 1);
                                                     }}
                                                 >
                                                     +
@@ -309,7 +362,7 @@ const KioskForm = () => {
 
                     <div className="menu-categories">
                         {['Chaat', 'Wraps', 'Drinks'].map(category => (
-                            <div key={category} className="category-section">
+                            <div key={category} className="category-section" id={`section-${category}`}>
                                 <h2 className="category-title">{category}</h2>
                                 <div className="menu-grid">
                                     {menuItems.filter(item => item.category === category).map(item => {
@@ -347,29 +400,32 @@ const KioskForm = () => {
                                                                     if (firstKey) {
                                                                         const currentItem = selectedItems[firstKey];
                                                                         if (currentItem.quantity > 1) {
-                                                                            setSelectedItems(prev => ({
-                                                                                ...prev,
-                                                                                [firstKey]: { ...currentItem, quantity: currentItem.quantity - 1 }
-                                                                            }));
+                                                                            updateCartQuantity(firstKey, -1);
                                                                         } else {
-                                                                            setSelectedItems(prev => {
-                                                                                const updated = { ...prev };
-                                                                                delete updated[firstKey];
-                                                                                return updated;
-                                                                            });
+                                                                            updateCartQuantity(firstKey, -1);
                                                                         }
                                                                     }
                                                                 }
                                                             }}
                                                             className="quantity-btn quantity-btn-minus"
                                                             disabled={itemQuantity === 0}
-                                                        >−</button>
+                                                        >
+                                                            −
+                                                        </button>
                                                         <span className="quantity-display">{itemQuantity}</span>
                                                         <button
                                                             type="button"
-                                                            onClick={() => openModal(item)}
+                                                            onClick={() => {
+                                                                if (item.options && item.options.length > 0) {
+                                                                    openModal(item);
+                                                                } else {
+                                                                    addToCart(item.name, 1, []);
+                                                                }
+                                                            }}
                                                             className="quantity-btn quantity-btn-plus"
-                                                        >+</button>
+                                                        >
+                                                            +
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -379,8 +435,6 @@ const KioskForm = () => {
                             </div>
                         ))}
                     </div>
-
-                    {/* REMOVED: Bottom Checkout Section */}
                 </form>
             )}
             {step === 2 && (
@@ -402,22 +456,24 @@ const KioskForm = () => {
                                 {Object.entries(selectedItems)
                                     .filter(([_, { quantity }]) => quantity > 0)
                                     .map(([key, { name, quantity, options }]) => (
-                                        <li key={key} className="order-item">
-                                            <div className="order-item-content">
-                                                <div className="order-item-details">
-                                                    <div className="order-item-info">
-                                                        <span className="order-item-name">{name} {quantity > 1 && `x${quantity}`}</span>
+                                        <li key={key} className="kiosk-order-item">
+                                            <div className="kiosk-order-item-content">
+                                                <div className="kiosk-order-item-details">
+                                                    <div className="kiosk-order-item-info">
+                                                        <span className="kiosk-order-item-name">{name} {quantity > 1 && `x${quantity}`}</span>
                                                         {options.length > 0 && (
-                                                            <span className="order-item-options">
+                                                            <span className="kiosk-order-item-options">
                                                                 Options: {options.map(option => {
-                                                                    const baseItem = menuItems.find(i => i.name === name);
-                                                                    const hasExtraCharge = baseItem?.extraOptions?.[option];
-                                                                    return hasExtraCharge ? `${option}` : option;
+                                                                    const spiceLevels = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
+                                                                    if (spiceLevels.includes(option)) {
+                                                                        return `${option}`;
+                                                                    }
+                                                                    return option;
                                                                 }).join(', ')}
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <span className="order-item-price">
+                                                    <span className="kiosk-order-item-price">
                                                         ${calculateItemPrice(name, options).toFixed(2)}
                                                         {quantity > 1 && ` each`}
                                                     </span>
@@ -427,12 +483,11 @@ const KioskForm = () => {
                                     ))}
                             </ul>
                         </div>
-                        <div className="order-total">
+                        <div className="confirmation-total">
                             Total: $
                             {Object.entries(selectedItems)
                                 .reduce((sum, [key, { name, quantity, options }]) => {
-                                    const itemPrice = calculateItemPrice(name, options);
-                                    return sum + (itemPrice * quantity);
+                                    return sum + (calculateItemPrice(name, options) * quantity);
                                 }, 0).toFixed(2)
                             }
                         </div>
@@ -604,15 +659,15 @@ const KioskForm = () => {
                             <div key={option} className="option-container">
                                 <label className="option-label">
                                     <input
-                                        type={modalItem.name === 'Mango Lassi' ? 'radio' : 'checkbox'}
-                                        name={modalItem.name === 'Mango Lassi' ? 'mango-lassi-options' : option}
+                                        type={modalItem.name === 'Mango Lassi' || modalItem.name === 'Water' ? 'radio' : 'checkbox'}
+                                        name={modalItem.name === 'Mango Lassi' ? 'mango-lassi-options' : modalItem.name === 'Water' ? 'water-options' : option}
                                         checked={itemOptions[modalItem.name]?.includes(option) || false}
                                         onChange={(e) => {
                                             const checked = e.target.checked;
                                             setItemOptions(prev => {
                                                 const currentOptions = prev[modalItem.name] || [];
                                                 
-                                                if (modalItem.name === 'Mango Lassi') {
+                                                if (modalItem.name === 'Mango Lassi' || modalItem.name === 'Water') {
                                                     return { ...prev, [modalItem.name]: checked ? [option] : [] };
                                                 } else {
                                                     if (checked) {

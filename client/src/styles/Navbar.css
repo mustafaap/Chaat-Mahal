@@ -314,3 +314,54 @@
     backdrop-filter: blur(15px);
     box-shadow: 0 6px 30px rgba(184, 92, 56, 0.4);
 }
+
+/* Admin Navbar Styles */
+.admin-navbar {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+}
+
+.admin-nav-menu {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.admin-nav-btn {
+    background: none !important;
+    border: none !important;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.admin-nav-btn.active {
+    background: rgba(255, 255, 255, 0.25) !important;
+    color: #f1c40f !important;
+    font-weight: 700;
+}
+
+.back-to-menu {
+    background: rgba(231, 76, 60, 0.2) !important;
+    border: 1px solid rgba(231, 76, 60, 0.3) !important;
+}
+
+.back-to-menu:hover {
+    background: rgba(231, 76, 60, 0.3) !important;
+    border-color: rgba(231, 76, 60, 0.5) !important;
+}
+
+/* Admin controls styling */
+.admin-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+    padding: 0 20px;
+}
+
+.reset-button.standalone {
+    margin: 0;
+}
+
+/* Mobile styles for admin navbar */
+@media (max-width: 768px) {
+    .admin-nav-menu {
+        background: linear-gradient(135deg, rgba(44, 62, 80, 0.98) 0%, rgba(52, 73, 94, 0.98) 100%);
+    }
+}

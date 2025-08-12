@@ -3,39 +3,65 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import './styles/OrderList.css';
 
-const socket = io(); // Automatically uses the same origin
+const socket = io();
 
-const OrderList = () => {
+const OrderList = ({ currentView, setCurrentView }) => {
     const [orders, setOrders] = useState([]);
-    const [view, setView] = useState('pending'); // 'pending' or 'completed'
-    const [paidOrders, setPaidOrders] = useState({}); // Track paid orders
+    const [paidOrders, setPaidOrders] = useState({});
+    const [showScrollTop, setShowScrollTop] = useState(false);
+    const [givenItems, setGivenItems] = useState({}); // Track given items per order
+
+    const [localView, setLocalView] = useState('pending');
+    const view = currentView || localView;
+    const setView = setCurrentView || setLocalView;
 
     const fetchOrders = async () => {
-        const response = await axios.get('/api/orders/all'); // new endpoint to get all orders
+        const response = await axios.get('/api/orders/all');
         setOrders(response.data);
     };
 
     useEffect(() => {
         fetchOrders();
-
         socket.on('ordersUpdated', fetchOrders);
-
         return () => {
             socket.off('ordersUpdated', fetchOrders);
         };
     }, []);
+
+    // Scroll to top functionality
+    useEffect(() => {
+        const handleScroll = () => {
+            setShowScrollTop(window.pageYOffset > 300);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    };
 
     const completeOrder = async (id) => {
         await axios.patch(`/api/orders/${id}`, { status: 'completed' });
         setOrders(orders.map(order =>
             order._id === id ? { ...order, status: 'Completed' } : order
         ));
+        // Clear given items for this order when completed
+        setGivenItems(prev => {
+            const updated = { ...prev };
+            delete updated[id];
+            return updated;
+        });
     };
 
     const markAsPaid = (id) => {
         setPaidOrders(prev => ({
             ...prev,
-            [id]: !prev[id] // Toggle the paid status
+            [id]: !prev[id]
         }));
     };
 
@@ -45,153 +71,337 @@ const OrderList = () => {
             setOrders(orders.map(order =>
                 order._id === id ? { ...order, status: 'Cancelled' } : order
             ));
+            // Clear given items for this order when cancelled
+            setGivenItems(prev => {
+                const updated = { ...prev };
+                delete updated[id];
+                return updated;
+            });
         } catch (error) {
             console.error('Error deleting order:', error);
             alert('Failed to delete the order. Please try again.');
         }
     };
 
-    const resetAllOrders = async () => {
-        if (window.confirm('Are you sure you want to reset all orders? This action cannot be undone.')) {
-            try {
-                await axios.delete('/api/orders');
-                setOrders([]); // Clear all orders from the state
-            } catch (error) {
-                console.error('Error resetting orders:', error);
-                alert('Failed to reset orders. Please try again.');
-            }
-        }
+    // Toggle item as given/not given
+    const toggleItemGiven = (orderId, itemKey) => {
+        setGivenItems(prev => {
+            const orderItems = prev[orderId] || {};
+            const updated = {
+                ...prev,
+                [orderId]: {
+                    ...orderItems,
+                    [itemKey]: !orderItems[itemKey]
+                }
+            };
+            return updated;
+        });
+    };
+
+    // Check if all items in an order have been given
+    const areAllItemsGiven = (orderId, itemCounts) => {
+        const orderGivenItems = givenItems[orderId] || {};
+        return Object.keys(itemCounts).every(itemName => orderGivenItems[itemName]);
+    };
+
+    // Calculate completion percentage
+    const getCompletionPercentage = (orderId, itemCounts) => {
+        const orderGivenItems = givenItems[orderId] || {};
+        const totalItems = Object.keys(itemCounts).length;
+        const givenCount = Object.keys(itemCounts).filter(itemName => orderGivenItems[itemName]).length;
+        return totalItems > 0 ? Math.round((givenCount / totalItems) * 100) : 0;
+    };
+
+    // Helper function to calculate time since order was placed
+    const getOrderAge = (createdAt) => {
+        const now = new Date();
+        const orderTime = new Date(createdAt);
+        const diffMinutes = Math.floor((now - orderTime) / (1000 * 60));
+        
+        if (diffMinutes < 1) return 'Just now';
+        if (diffMinutes < 60) return `${diffMinutes} min ago`;
+        const hours = Math.floor(diffMinutes / 60);
+        if (hours < 24) return `${hours}h ${diffMinutes % 60}m ago`;
+        return `${Math.floor(hours / 24)} days ago`;
     };
 
     const pendingOrders = orders.filter(order => order.status === 'Pending');
     const completedOrders = orders.filter(order => order.status === 'Completed');
+    const cancelledOrders = orders.filter(order => order.status === 'Cancelled');
 
     return (
         <div className="order-list-container">
-            <div className="order-list-nav">
-                <div className="order-list-nav-buttons">
-                    <button
-                        className={`nav-tab-button ${view === 'pending' ? 'active-tab' : ''}`}
-                        onClick={() => setView('pending')}
-                    >
-                        Pending Orders
-                    </button>
-                    <button
-                        className={`nav-tab-button ${view === 'completed' ? 'active-tab' : ''}`}
-                        onClick={() => setView('completed')}
-                    >
-                        Past Orders
-                    </button>
+            {!currentView && (
+                <div className="order-list-nav">
+                    <div className="order-list-nav-buttons">
+                        <button
+                            className={`nav-tab-button ${view === 'pending' ? 'active-tab' : ''}`}
+                            onClick={() => setView('pending')}
+                        >
+                            🔄 Pending Orders ({pendingOrders.length})
+                        </button>
+                        <button
+                            className={`nav-tab-button ${view === 'completed' ? 'active-tab' : ''}`}
+                            onClick={() => setView('completed')}
+                        >
+                            ✅ Completed Orders ({completedOrders.length})
+                        </button>
+                        <button
+                            className={`nav-tab-button ${view === 'cancelled' ? 'active-tab' : ''}`}
+                            onClick={() => setView('cancelled')}
+                        >
+                            ❌ Cancelled Orders ({cancelledOrders.length})
+                        </button>
+                    </div>
                 </div>
-                <button
-                    onClick={resetAllOrders}
-                    className="reset-button"
-                >
-                    Reset All Orders
-                </button>
-            </div>
+            )}
+
             {view === 'pending' && (
                 <>
-                    <h1>Pending Orders</h1>
+                    <h1>Pending Orders ({pendingOrders.length})</h1>
                     <ul className="orders-list">
-                        {pendingOrders.length === 0 && <li className="empty-orders">No pending orders.</li>}
-                        {pendingOrders.map(order => {
-                            // Group items and count quantities
-                            const itemCounts = {};
-                            order.items.forEach(item => {
-                                itemCounts[item] = (itemCounts[item] || 0) + 1;
-                            });
+                        {pendingOrders.length === 0 && <li className="empty-orders">No pending orders to prepare! 🎉</li>}
+                        {pendingOrders
+                            .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+                            .map(order => {
+                                const itemCounts = {};
+                                order.items.forEach(item => {
+                                    itemCounts[item] = (itemCounts[item] || 0) + 1;
+                                });
 
-                            return (
-                                <li key={order._id} className="order-item">
-                                    <div className="order-info">
-                                        <span className="order-header">
-                                            Order #{order._id.slice(-4)} - {order.customerName}
-                                        </span>
-                                        <ul className="order-items">
-                                            {Object.entries(itemCounts).map(([name, qty]) => (
-                                                <li key={name} className="order-item-detail">
-                                                    {name}{qty > 1 ? ` x${qty}` : ''}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        <div className="order-total">
-                                            Total: ${order.total}
-                                        </div>
-                                        {order.notes && (
-                                            <div className="order-notes">
-                                                <strong>Notes:</strong> {order.notes}
+                                const orderAge = getOrderAge(order.createdAt);
+                                const completionPercentage = getCompletionPercentage(order._id, itemCounts);
+                                const allItemsGiven = areAllItemsGiven(order._id, itemCounts);
+
+                                return (
+                                    <li key={order._id} className={`order-item ${allItemsGiven ? 'all-items-given' : ''}`}>
+                                        <div className="order-info">
+                                            <div className="order-header">
+                                                <div className="order-header-main">
+                                                    Order #{order._id.slice(-4)} - {order.customerName}
+                                                    <span className="order-timestamp">
+                                                        {orderAge}
+                                                    </span>
+                                                </div>
+                                                
+                                                {/* Progress Bar */}
+                                                <div className="order-progress-container">
+                                                    <div className="order-progress-bar">
+                                                        <div 
+                                                            className="order-progress-fill" 
+                                                            style={{ width: `${completionPercentage}%` }}
+                                                        ></div>
+                                                    </div>
+                                                    <span className="order-progress-text">
+                                                        {completionPercentage}% Complete
+                                                    </span>
+                                                </div>
                                             </div>
-                                        )}
-                                    </div>
-                                    <div className="order-controls">
-                                        <button
-                                            onClick={() => completeOrder(order._id)}
-                                            className="control-button complete-button"
-                                        >
-                                            Complete
-                                        </button>
-                                        <button
-                                            onClick={() => markAsPaid(order._id)}
-                                            className={`control-button paid-button ${paidOrders[order._id] ? 'is-paid' : ''}`}
-                                        >
-                                            {paidOrders[order._id] ? 'Paid' : 'Mark as Paid'}
-                                        </button>
-                                        <button
-                                            onClick={() => deleteOrder(order._id)}
-                                            className="control-button delete-button"
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
-                                </li>
-                            );
-                        })}
+                                            
+                                            <div className="order-info-section">
+                                                <div className="info-card">
+                                                    <div className="order-items">
+                                                        <div className="order-items-header">
+                                                            Items to Prepare ({Object.keys(itemCounts).filter(itemName => givenItems[order._id]?.[itemName]).length}/{Object.keys(itemCounts).length} Given)
+                                                        </div>
+                                                        {Object.entries(itemCounts).map(([name, qty]) => {
+                                                            const isGiven = givenItems[order._id]?.[name];
+                                                            return (
+                                                                <div 
+                                                                    key={name} 
+                                                                    className={`order-item-detail ${isGiven ? 'item-given' : 'item-pending'}`}
+                                                                    onClick={() => toggleItemGiven(order._id, name)}
+                                                                >
+                                                                    <div className="item-content">
+                                                                        <span className="item-checkbox">
+                                                                            {isGiven ? '✅' : '⭕'}
+                                                                        </span>
+                                                                        <div className="item-details">
+                                                                            <strong>{qty}x</strong> {name}
+                                                                        </div>
+                                                                        <span className={`item-status ${isGiven ? 'item-given' : 'item-pending'}`}>
+                                                                            {isGiven ? 'GIVEN' : 'PENDING'}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="info-card">
+                                                    <div className="order-total">
+                                                        Total: ${order.total}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {order.notes && (
+                                                <div className="order-notes">
+                                                    <strong>Special Instructions:</strong> {order.notes}
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        <div className="order-controls">
+                                            <button
+                                                onClick={() => completeOrder(order._id)}
+                                                className={`control-button complete-button ${allItemsGiven ? 'ready-to-complete' : ''}`}
+                                                title="Mark order as completed"
+                                            >
+                                                Complete Order
+                                            </button>
+                                            <button
+                                                onClick={() => markAsPaid(order._id)}
+                                                className={`control-button paid-button ${paidOrders[order._id] ? 'is-paid' : ''}`}
+                                                title={paidOrders[order._id] ? 'Order is paid' : 'Mark as paid'}
+                                            >
+                                                {paidOrders[order._id] ? 'Paid' : 'Mark as Paid'}
+                                            </button>
+                                            <button
+                                                onClick={() => deleteOrder(order._id)}
+                                                className="control-button delete-button"
+                                                title="Cancel/Delete order"
+                                            >
+                                                Cancel Order
+                                            </button>
+                                        </div>
+                                    </li>
+                                );
+                            })}
                     </ul>
                 </>
             )}
+
             {view === 'completed' && (
                 <>
-                    <h1>Past Orders</h1>
+                    <h1>Completed Orders ({completedOrders.length})</h1>
                     <ul className="orders-list">
-                        {completedOrders.length === 0 && orders.filter(order => order.status === 'Cancelled').length === 0 && 
-                            <li className="empty-orders">No past orders.</li>}
-                        {[...completedOrders, ...orders.filter(order => order.status === 'Cancelled')].reverse().map(order => {
-                            const itemCounts = {};
-                            order.items.forEach(item => {
-                                itemCounts[item] = (itemCounts[item] || 0) + 1;
-                            });
+                        {completedOrders.length === 0 && 
+                            <li className="empty-orders">No completed orders yet! 📝</li>}
+                        {completedOrders
+                            .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+                            .map(order => {
+                                const itemCounts = {};
+                                order.items.forEach(item => {
+                                    itemCounts[item] = (itemCounts[item] || 0) + 1;
+                                });
 
-                            return (
-                                <li key={order._id} className="order-item">
-                                    <div className="order-info">
-                                        <span className="order-header">
-                                            Order #{order._id.slice(-4)} - {order.customerName}
-                                        </span>
-                                        <ul className="order-items">
-                                            {Object.entries(itemCounts).map(([name, qty]) => (
-                                                <li key={name} className="order-item-detail">
-                                                    {name}{qty > 1 ? ` x${qty}` : ''}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        <div className="order-total">
-                                            Total: ${order.total}
-                                        </div>
-                                        <div className={`order-status ${order.status === 'Completed' ? 'completed' : 'cancelled'}`}>
-                                            Status: {order.status}
-                                        </div>
-                                        {order.notes && (
-                                            <div className="order-notes">
-                                                <strong>Notes:</strong> {order.notes}
+                                const completedTime = getOrderAge(order.updatedAt || order.createdAt);
+
+                                return (
+                                    <li key={order._id} className="order-item">
+                                        <div className="order-info">
+                                            <div className="order-header">
+                                                Order #{order._id.slice(-4)} - {order.customerName}
+                                                <span className="order-timestamp">
+                                                    {completedTime}
+                                                </span>
                                             </div>
-                                        )}
-                                    </div>
-                                </li>
-                            );
-                        })}
+                                            
+                                            <div className="order-info-section">
+                                                <div className="info-card">
+                                                    <div className="order-items">
+                                                        <div className="order-items-header">
+                                                            Items Ordered
+                                                        </div>
+                                                        {Object.entries(itemCounts).map(([name, qty]) => (
+                                                            <div key={name} className="order-item-detail">
+                                                                <strong>{qty}x</strong> {name}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="info-card">
+                                                    <div className="order-total">
+                                                        Total: ${order.total}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {order.notes && (
+                                                <div className="order-notes">
+                                                    <strong>Customer Notes:</strong> {order.notes}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </li>
+                                );
+                            })}
                     </ul>
                 </>
+            )}
+
+            {view === 'cancelled' && (
+                <>
+                    <h1>Cancelled Orders ({cancelledOrders.length})</h1>
+                    <ul className="orders-list">
+                        {cancelledOrders.length === 0 && 
+                            <li className="empty-orders">No cancelled orders! 🎉</li>}
+                        {cancelledOrders
+                            .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+                            .map(order => {
+                                const itemCounts = {};
+                                order.items.forEach(item => {
+                                    itemCounts[item] = (itemCounts[item] || 0) + 1;
+                                });
+
+                                const cancelledTime = getOrderAge(order.updatedAt || order.createdAt);
+
+                                return (
+                                    <li key={order._id} className="order-item">
+                                        <div className="order-info">
+                                            <div className="order-header">
+                                                Order #{order._id.slice(-4)} - {order.customerName}
+                                                <span className="order-timestamp">
+                                                    {cancelledTime}
+                                                </span>
+                                            </div>
+                                            
+                                            <div className="order-info-section">
+                                                <div className="info-card">
+                                                    <div className="order-items">
+                                                        <div className="order-items-header">
+                                                            Items Ordered
+                                                        </div>
+                                                        {Object.entries(itemCounts).map(([name, qty]) => (
+                                                            <div key={name} className="order-item-detail">
+                                                                <strong>{qty}x</strong> {name}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="info-card">
+                                                    <div className="order-total">
+                                                        Total: ${order.total}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {order.notes && (
+                                                <div className="order-notes">
+                                                    <strong>Customer Notes:</strong> {order.notes}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                    </ul>
+                </>
+            )}
+
+            {/* Scroll to Top Button */}
+            {showScrollTop && (
+                <button 
+                    className="scroll-to-top-btn"
+                    onClick={scrollToTop}
+                    title="Back to top"
+                >
+                    ↑
+                </button>
             )}
         </div>
     );
