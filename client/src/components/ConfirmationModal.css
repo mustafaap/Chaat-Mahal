@@ -1,0 +1,208 @@
+/* Confirmation Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease;
+    overflow: hidden;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 24px 0 24px;
+    border-bottom: 2px solid #f8f9fa;
+    margin-bottom: 20px;
+}
+
+.modal-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0;
+    color: #2c3e50;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 0 24px 20px 24px;
+}
+
+.modal-message {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #555;
+    margin: 0;
+    text-align: center;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 12px;
+    padding: 20px 24px;
+    background: #f8f9fa;
+    justify-content: center;
+}
+
+.modal-btn {
+    font-family: 'Poppins', sans-serif;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px; /* Increased from 100px for better proportion */
+    flex: 1; /* Make buttons equal width */
+    max-width: 200px; /* Prevent buttons from getting too wide */
+}
+
+.modal-cancel-btn {
+    background: #6c757d;
+    color: white;
+}
+
+.modal-cancel-btn:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+.modal-confirm-btn {
+    color: white;
+}
+
+.btn-success {
+    background: #28a745;
+}
+
+.btn-success:hover {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: #dc3545;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
+.btn-warning {
+    background: #ffc107;
+    color: #212529;
+}
+
+.btn-warning:hover {
+    background: #e0a800;
+    transform: translateY(-1px);
+}
+
+/* Modal type variations */
+.modal-danger .modal-title {
+    color: #dc3545;
+}
+
+.modal-warning .modal-title {
+    color: #ffc107;
+}
+
+.modal-default .modal-title {
+    color: #28a745;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+    .modal-content {
+        width: 95%;
+        margin: 0 auto;
+    }
+    
+    .modal-header {
+        padding: 16px 20px 0 20px;
+    }
+    
+    .modal-body {
+        padding: 0 20px 16px 20px;
+    }
+    
+    .modal-footer {
+        padding: 16px 20px;
+        flex-direction: column; /* Stack vertically on mobile */
+        gap: 8px;
+    }
+    
+    .modal-btn {
+        width: 100%; /* Full width on mobile when stacked */
+        max-width: none; /* Remove max-width restriction on mobile */
+        flex: none; /* Remove flex on mobile since they're stacked */
+    }
+    
+    .modal-title {
+        font-size: 1.2rem;
+    }
+    
+    .modal-close-btn {
+        font-size: 1.8rem;
+        width: 28px;
+        height: 28px;
+    }
+}

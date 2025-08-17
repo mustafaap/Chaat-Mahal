@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
+import ConfirmationModal from './components/ConfirmationModal';
 import './styles/OrderList.css';
 
 const socket = io();
@@ -8,7 +9,18 @@ const socket = io();
 const OrderList = ({ currentView, setCurrentView }) => {
     const [orders, setOrders] = useState([]);
     const [showScrollTop, setShowScrollTop] = useState(false);
-    const [givenItems, setGivenItems] = useState({}); // Track given items per order
+    const [givenItems, setGivenItems] = useState({});
+    
+    // Modal states
+    const [modalState, setModalState] = useState({
+        isOpen: false,
+        type: 'default',
+        title: '',
+        message: '',
+        confirmText: 'Confirm',
+        cancelText: 'Cancel',
+        onConfirm: null
+    });
 
     const [localView, setLocalView] = useState('pending');
     const view = currentView || localView;
@@ -44,16 +56,50 @@ const OrderList = ({ currentView, setCurrentView }) => {
         });
     };
 
+    // Modal helper functions
+    const openModal = (config) => {
+        setModalState({
+            isOpen: true,
+            ...config
+        });
+    };
+
+    const closeModal = () => {
+        setModalState({
+            isOpen: false,
+            type: 'default',
+            title: '',
+            message: '',
+            confirmText: 'Confirm',
+            cancelText: 'Cancel',
+            onConfirm: null
+        });
+    };
+
     const completeOrder = async (id) => {
-        await axios.patch(`/api/orders/${id}`, { status: 'completed' });
-        setOrders(orders.map(order =>
-            order._id === id ? { ...order, status: 'Completed' } : order
-        ));
-        // Clear given items for this order when completed
-        setGivenItems(prev => {
-            const updated = { ...prev };
-            delete updated[id];
-            return updated;
+        openModal({
+            type: 'default',
+            title: 'Complete Order',
+            message: 'Are you sure you want to mark this order as completed? This action will move the order to the completed section.',
+            confirmText: 'Complete Order',
+            cancelText: 'Cancel',
+            onConfirm: async () => {
+                try {
+                    await axios.patch(`/api/orders/${id}`, { status: 'Completed' });
+                    setOrders(orders.map(order =>
+                        order._id === id ? { ...order, status: 'Completed' } : order
+                    ));
+                    // Clear given items for this order when completed
+                    setGivenItems(prev => {
+                        const updated = { ...prev };
+                        delete updated[id];
+                        return updated;
+                    });
+                } catch (error) {
+                    console.error('Error completing order:', error);
+                    alert('Failed to complete order. Please try again.');
+                }
+            }
         });
     };
 
@@ -74,21 +120,52 @@ const OrderList = ({ currentView, setCurrentView }) => {
     };
 
     const deleteOrder = async (id) => {
-        try {
-            await axios.delete(`/api/orders/${id}`);
-            setOrders(orders.map(order =>
-                order._id === id ? { ...order, status: 'Cancelled' } : order
-            ));
-            // Clear given items for this order when cancelled
-            setGivenItems(prev => {
-                const updated = { ...prev };
-                delete updated[id];
-                return updated;
-            });
-        } catch (error) {
-            console.error('Error deleting order:', error);
-            alert('Failed to delete the order. Please try again.');
-        }
+        openModal({
+            type: 'danger',
+            title: 'Cancel Order',
+            message: 'Are you sure you want to cancel this order? This action will move the order to the cancelled section and cannot be undone easily.',
+            confirmText: 'Cancel Order',
+            cancelText: 'Keep Order',
+            onConfirm: async () => {
+                try {
+                    await axios.delete(`/api/orders/${id}`);
+                    setOrders(orders.map(order =>
+                        order._id === id ? { ...order, status: 'Cancelled' } : order
+                    ));
+                    // Clear given items for this order when cancelled
+                    setGivenItems(prev => {
+                        const updated = { ...prev };
+                        delete updated[id];
+                        return updated;
+                    });
+                } catch (error) {
+                    console.error('Error deleting order:', error);
+                    alert('Failed to delete the order. Please try again.');
+                }
+            }
+        });
+    };
+
+    // Revert functions for completed and cancelled orders
+    const revertOrderToPending = async (id) => {
+        openModal({
+            type: 'warning',
+            title: 'Revert Order',
+            message: 'Are you sure you want to move this order back to pending? The order will appear in the pending section.',
+            confirmText: 'Revert to Pending',
+            cancelText: 'Cancel',
+            onConfirm: async () => {
+                try {
+                    await axios.patch(`/api/orders/${id}`, { status: 'Pending' });
+                    setOrders(orders.map(order =>
+                        order._id === id ? { ...order, status: 'Pending' } : order
+                    ));
+                } catch (error) {
+                    console.error('Error reverting order:', error);
+                    alert('Failed to revert order. Please try again.');
+                }
+            }
+        });
     };
 
     // Toggle item as given/not given
@@ -238,7 +315,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                 </div>
                                                 
                                                 <div className="info-card">
-                                                    <div className="order-total">
+                                                    <div className="admin-order-total">
                                                         Total: ${order.total}
                                                     </div>
                                                 </div>
@@ -323,13 +400,25 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                 const completedTime = getOrderAge(order.updatedAt || order.createdAt);
 
                                 return (
-                                    <li key={order._id} className="order-item">
+                                    <li key={order._id} className={`order-item ${order.paid ? 'order-paid' : ''}`}>
                                         <div className="order-info">
                                             <div className="order-header">
-                                                Order #{order._id.slice(-4)} - {order.customerName}
-                                                <span className="order-timestamp">
-                                                    {completedTime}
-                                                </span>
+                                                <div className="order-header-with-revert">
+                                                    <div className="order-header-main">
+                                                        Order #{order._id.slice(-4)} - {order.customerName}
+                                                        <span className="order-timestamp">
+                                                            Completed {completedTime}
+                                                        </span>
+                                                    </div>
+                                                    <button 
+                                                        className="revert-btn"
+                                                        onClick={() => revertOrderToPending(order._id)}
+                                                        title="Move back to pending"
+                                                    >
+                                                        <span>↶</span>
+                                                        <span>Revert</span>
+                                                    </button>
+                                                </div>
                                             </div>
                                             
                                             <div className="order-info-section">
@@ -347,7 +436,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                 </div>
                                                 
                                                 <div className="info-card">
-                                                    <div className="order-total">
+                                                    <div className="admin-order-total">
                                                         Total: ${order.total}
                                                     </div>
                                                 </div>
@@ -383,13 +472,25 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                 const cancelledTime = getOrderAge(order.updatedAt || order.createdAt);
 
                                 return (
-                                    <li key={order._id} className="order-item">
+                                    <li key={order._id} className={`order-item ${order.paid ? 'order-paid' : ''}`}>
                                         <div className="order-info">
                                             <div className="order-header">
-                                                Order #{order._id.slice(-4)} - {order.customerName}
-                                                <span className="order-timestamp">
-                                                    {cancelledTime}
-                                                </span>
+                                                <div className="order-header-with-revert">
+                                                    <div className="order-header-main">
+                                                        Order #{order._id.slice(-4)} - {order.customerName}
+                                                        <span className="order-timestamp">
+                                                            Cancelled {cancelledTime}
+                                                        </span>
+                                                    </div>
+                                                    <button 
+                                                        className="revert-btn"
+                                                        onClick={() => revertOrderToPending(order._id)}
+                                                        title="Move back to pending"
+                                                    >
+                                                        <span>↶</span>
+                                                        <span>Revert</span>
+                                                    </button>
+                                                </div>
                                             </div>
                                             
                                             <div className="order-info-section">
@@ -407,7 +508,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                 </div>
                                                 
                                                 <div className="info-card">
-                                                    <div className="order-total">
+                                                    <div className="admin-order-total">
                                                         Total: ${order.total}
                                                     </div>
                                                 </div>
@@ -425,6 +526,18 @@ const OrderList = ({ currentView, setCurrentView }) => {
                     </ul>
                 </>
             )}
+
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={modalState.isOpen}
+                onClose={closeModal}
+                onConfirm={modalState.onConfirm}
+                title={modalState.title}
+                message={modalState.message}
+                confirmText={modalState.confirmText}
+                cancelText={modalState.cancelText}
+                type={modalState.type}
+            />
 
             {/* Scroll to Top Button */}
             {showScrollTop && (

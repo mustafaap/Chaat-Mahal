@@ -24,8 +24,6 @@ router.post('/', async (req, res) => {
 // Store reset timestamp
 router.post('/reset-timestamp', async (req, res) => {
     try {
-        // You can store this in a simple way - either in a separate collection
-        // or use a file/environment variable. For simplicity, I'll use a global variable
         global.resetTimestamp = new Date();
         req.io.emit('ordersUpdated'); // Notify all clients
         res.json({ message: 'Reset timestamp set successfully.', timestamp: global.resetTimestamp });
@@ -62,6 +60,25 @@ router.get('/all', async (req, res) => {
 
 // Update order status with timestamp
 router.patch('/:id', async (req, res) => {
+    try {
+        const { status } = req.body;
+        const updatedOrder = await Order.findByIdAndUpdate(
+            req.params.id, 
+            { 
+                status: status,
+                updatedAt: new Date()
+            }, 
+            { new: true }
+        );
+        req.io.emit('ordersUpdated');
+        res.json(updatedOrder);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Complete order with timestamp
+router.patch('/:id/complete', async (req, res) => {
     try {
         const updatedOrder = await Order.findByIdAndUpdate(
             req.params.id, 
