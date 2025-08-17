@@ -4,13 +4,15 @@ import './styles/AdminControls.css';
 
 const AdminControls = () => {
     const resetAllOrders = async () => {
-        if (window.confirm('Are you sure you want to reset all orders? This action cannot be undone.')) {
+        if (window.confirm('Are you sure you want to reset the order view? This will hide all current orders from the display but keep them in the database.')) {
             try {
-                await axios.delete('/api/orders');
-                alert('All orders have been reset successfully.');
+                await axios.post('/api/orders/reset-timestamp');
+                alert('Order view has been reset successfully. Only new orders will be displayed.');
+                // Force a page reload to refresh the order list
+                window.location.reload();
             } catch (error) {
-                console.error('Error resetting orders:', error);
-                alert('Failed to reset orders. Please try again.');
+                console.error('Error resetting order view:', error);
+                alert('Failed to reset order view. Please try again.');
             }
         }
     };
@@ -23,13 +25,13 @@ const AdminControls = () => {
             <div className="controls-grid">
                 <div className="control-card">
                     <div className="control-icon">🔄</div>
-                    <h3>Reset Orders</h3>
-                    <p>Remove all orders from the system (both pending and completed)</p>
+                    <h3>Reset Order View</h3>
+                    <p>Hide all current orders from display (orders remain in database for records)</p>
                     <button 
                         onClick={resetAllOrders}
                         className="admin-control-button reset-btn"
                     >
-                        Reset All Orders
+                        Reset Order View
                     </button>
                 </div>
                 

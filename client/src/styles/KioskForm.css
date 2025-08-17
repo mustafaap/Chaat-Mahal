@@ -57,7 +57,7 @@ form {
 /* Menu Header */
 .menu-header {
     text-align: center;
-    margin-bottom: 10px;
+    margin: 10px 0px;
     padding: 20px 0;
 }
 
@@ -418,7 +418,7 @@ form {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 30px;
     margin: 30px 0;
-    justify-items: center; /* Center the cards */
+    justify-items: center; 
 }
 
 .menu-item-card {
@@ -514,7 +514,7 @@ form {
     font-size: 0.95rem;
     line-height: 1.4;
     margin-bottom: 20px;
-    text-align: left;
+    text-align: center;
 }
 
 /* Updated Quantity Controls */
@@ -1402,7 +1402,6 @@ input[type="checkbox"], input[type="radio"] {
     flex-direction: column;
     gap: 8px;
     animation: slideInFromLeft 0.5s ease;
-    background-color: white;
 }
 
 @keyframes slideInFromLeft {
@@ -1464,7 +1463,7 @@ input[type="checkbox"], input[type="radio"] {
     background: linear-gradient(135deg, #b85c38 0%, #a14d2c 100%);
     color: white;
     border-color: #b85c38;
-    transform: translateX(8px) scale(1.1);
+    transform: translateX(8px) scale(1.05);
     box-shadow: 0 8px 25px rgba(184, 92, 56, 0.4);
 }
 
@@ -1501,6 +1500,10 @@ input[type="checkbox"], input[type="radio"] {
     .back-button-container {
         justify-content: center; /* Center the button on mobile */
         align-items: center;
+    }
+
+    .menu-header {
+        margin-top: 30px;
     }
 
     @keyframes slideInFromTop {

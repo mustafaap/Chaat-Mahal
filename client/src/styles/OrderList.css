@@ -51,7 +51,7 @@
 .order-list-nav-buttons {
     display: flex;
     gap: 15px;
-    flex: 1;
+    flex: 1 1;
 }
 
 .nav-tab-button {
@@ -66,7 +66,7 @@
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
-    flex: 1;
+    flex: 1 1;
     position: relative;
     overflow: hidden;
 }
@@ -143,6 +143,30 @@
     transform: translateY(-3px); /* Increased from -2px */
     box-shadow: 0 10px 35px rgba(0,0,0,0.12); /* Increased shadow */
     border-left-color: #27ae60;
+}
+
+/* Paid Order Visual Indicators - Darker green background */
+.order-item.order-paid {
+    border-left-color: #27ae60 !important;
+    background: linear-gradient(135deg, #f0fff4 0%, #e8f5e8 100%); /* Changed from f8fff8/f0fff4 to f0fff4/e8f5e8 */
+    box-shadow: 0 5px 25px rgba(39, 174, 96, 0.15);
+}
+
+.order-item.order-paid:hover {
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%); /* Changed from f0fff4/e8f5e8 to e8f5e8/d4f4d4 */
+    border-left-color: #229954 !important;
+    box-shadow: 0 8px 30px rgba(39, 174, 96, 0.2);
+}
+
+/* Update the existing all-items-given styles to work with paid orders */
+.order-item.all-items-given.order-paid {
+    border-left-color: #00d4aa !important;
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%); /* Made this consistent with the new darker shade */
+}
+
+.order-item.all-items-given.order-paid:hover {
+    border-left-color: #00b894 !important;
+    background: linear-gradient(135deg, #d4f4d4 0%, #c8e6c9 100%); /* Even slightly darker for hover */
 }
 
 /* Enhanced Order Info Styles - Better Readability */
@@ -352,6 +376,33 @@
     height: 100%; /* Take full height of the container */
 }
 
+/* Main action button (Complete Order) takes half the height */
+.main-action-btn {
+    flex: 1; /* Takes up remaining space after gap */
+    min-height: 50%; /* Ensure it takes at least half the height */
+}
+
+/* Bottom controls container for the two smaller buttons */
+.bottom-controls {
+    display: flex;
+    flex-direction: column; /* Stack vertically instead of horizontally */
+    gap: 8px;
+    flex: 1; /* Takes up remaining space to match main button */
+}
+
+/* Half-width buttons in the bottom row - now full width since stacked */
+.half-width-btn {
+    width: 100%; /* Full width since they're stacked */
+    height: auto; /* Let height be determined by content and padding */
+    flex: 1; /* Equal height distribution */
+}
+
+/* Full-width button (Cancel Order when unpaid) */
+.full-width-btn {
+    width: 100%;
+    flex: 1;
+}
+
 .control-button {
     font-family: 'Poppins', sans-serif;
     padding: 12px 16px; /* Increased from 10px 14px */
@@ -365,7 +416,7 @@
     position: relative;
     overflow: hidden;
     box-shadow: 0 3px 15px rgba(0,0,0,0.1); /* Increased shadow */
-    flex: 1; /* Make buttons equal height */
+    flex: 1 1; /* Make buttons equal height */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -390,6 +441,7 @@
 .control-button:hover {
     transform: translateY(-2px); /* Increased from -1px */
     box-shadow: 0 5px 20px rgba(0,0,0,0.15); /* Increased shadow */
+    background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
 }
 
 .complete-button {
@@ -407,6 +459,8 @@
 
 .paid-button {
     background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    position: relative;
+    overflow: hidden;
 }
 
 .paid-button::after {
@@ -442,6 +496,7 @@
 
 .delete-button:hover {
     box-shadow: 0 5px 20px rgba(231, 76, 60, 0.3); /* Increased shadow */
+    background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
 }
 
 /* Admin controls styling */
@@ -554,7 +609,7 @@
     }
 
     .control-button {
-        flex: 1;
+        flex: 1 1;
         min-width: 100px; /* Increased from 90px */
         font-size: 0.9rem; /* Increased from 0.85rem */
         padding: 10px 12px; /* Increased from 8px 10px */
@@ -608,7 +663,7 @@
 }
 
 .order-progress-bar {
-    flex: 1;
+    flex: 1 1;
     height: 8px;
     background: #e9ecef;
     border-radius: 4px;
@@ -654,7 +709,8 @@
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
-    user-select: none;
+    -webkit-user-select: none;
+            user-select: none;
 }
 
 .order-item-detail.item-pending {
@@ -686,7 +742,7 @@
 }
 
 .item-details {
-    flex: 1;
+    flex: 1 1;
     transition: all 0.3s ease;
 }
 
@@ -795,5 +851,215 @@
     
     .item-checkbox {
         align-self: flex-start;
+    }
+}
+
+/* Paid Order Visual Indicators - Darker green background */
+.order-item.order-paid {
+    border-left-color: #27ae60 !important;
+    background: linear-gradient(135deg, #f0fff4 0%, #e8f5e8 100%); /* Changed from f8fff8/f0fff4 to f0fff4/e8f5e8 */
+    box-shadow: 0 5px 25px rgba(39, 174, 96, 0.15);
+}
+
+.order-item.order-paid:hover {
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%); /* Changed from f0fff4/e8f5e8 to e8f5e8/d4f4d4 */
+    border-left-color: #229954 !important;
+    box-shadow: 0 8px 30px rgba(39, 174, 96, 0.2);
+}
+
+/* Update the existing all-items-given styles to work with paid orders */
+.order-item.all-items-given.order-paid {
+    border-left-color: #00d4aa !important;
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%); /* Made this consistent with the new darker shade */
+}
+
+.order-item.all-items-given.order-paid:hover {
+    border-left-color: #00b894 !important;
+    background: linear-gradient(135deg, #d4f4d4 0%, #c8e6c9 100%); /* Even slightly darker for hover */
+}
+
+/* Enhanced paid button styling */
+.paid-button {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.paid-button::after {
+    content: '💳';
+    margin-left: 8px;
+}
+
+.paid-button:hover {
+    box-shadow: 0 5px 20px rgba(52, 152, 219, 0.4);
+    background: linear-gradient(135deg, #2980b9 0%, #1f5e8c 100%);
+}
+
+/* Add a subtle animation for paid orders */
+.order-item.order-paid::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(39, 174, 96, 0.05) 50%, transparent 100%);
+    animation: paidShimmer 3s infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes paidShimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Ensure content stays above the shimmer effect */
+.order-item.order-paid .order-info,
+.order-item.order-paid .order-controls {
+    position: relative;
+    z-index: 2;
+}
+
+/* Remove the absolute positioning from the paid indicator */
+.order-item.order-paid .order-header::after {
+    display: none; /* Hide the old positioned indicator */
+}
+
+/* Add the paid indicator inside order-header-main */
+.order-item.order-paid .order-header-main::after {
+    content: 'PAID ✓';
+    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+    white-space: nowrap;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+/* Mobile responsive adjustments for paid orders */
+@media (max-width: 880px) {
+    .order-item.order-paid .order-header-main::after {
+        font-size: 0.65rem;
+        padding: 3px 6px;
+        margin-left: 8px;
+    }
+    
+    .order-item.order-paid .order-header-main {
+        flex-wrap: wrap; /* Allow wrapping on very small screens */
+        gap: 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .order-item.order-paid .order-header-main::after {
+        font-size: 0.6rem;
+        padding: 2px 5px;
+        margin-left: 6px;
+    }
+}
+
+/* Undo Payment Button Styling */
+.undo-payment-button {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.undo-payment-button::after {
+    content: '↶';
+    margin-left: 8px;
+    font-size: 1.1rem;
+}
+
+.undo-payment-button:hover {
+    box-shadow: 0 5px 20px rgba(243, 156, 18, 0.4);
+    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+}
+
+/* Adjust order controls for 3 buttons when paid */
+.order-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 130px;
+    justify-content: center;
+    align-items: stretch;
+    height: 100%;
+}
+
+/* Main action button (Complete Order) takes half the height */
+.main-action-btn {
+    flex: 1; /* Takes up remaining space after gap */
+    min-height: 50%; /* Ensure it takes at least half the height */
+}
+
+/* Bottom controls container for the two smaller buttons */
+.bottom-controls {
+    display: flex;
+    flex-direction: column; /* Stack vertically instead of horizontally */
+    gap: 8px;
+    flex: 1; /* Takes up remaining space to match main button */
+}
+
+/* Half-width buttons in the bottom row - now full width since stacked */
+.half-width-btn {
+    width: 100%; /* Full width since they're stacked */
+    height: auto; /* Let height be determined by content and padding */
+    flex: 1; /* Equal height distribution */
+}
+
+/* Full-width button (Cancel Order when unpaid) */
+.full-width-btn {
+    width: 100%;
+    flex: 1;
+}
+
+/* Mobile responsive adjustments for the new button layout */
+@media (max-width: 880px) {
+    .order-controls {
+        min-width: 120px;
+        gap: 8px;
+    }
+    
+    .control-button {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+    }
+    
+    .bottom-controls {
+        gap: 6px;
+        flex-direction: column; /* Ensure vertical stacking on mobile */
+    }
+    
+    .undo-payment-button::after {
+        font-size: 1rem;
+        margin-left: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .order-controls {
+        min-width: 100px;
+        gap: 6px;
+    }
+    
+    .control-button {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+    
+    .bottom-controls {
+        gap: 4px;
+        flex-direction: column; /* Ensure vertical stacking on small screens */
+    }
+    
+    .undo-payment-button::after {
+        font-size: 0.9rem;
+        margin-left: 4px;
     }
 }

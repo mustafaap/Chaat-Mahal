@@ -7,7 +7,6 @@ const socket = io();
 
 const OrderList = ({ currentView, setCurrentView }) => {
     const [orders, setOrders] = useState([]);
-    const [paidOrders, setPaidOrders] = useState({});
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [givenItems, setGivenItems] = useState({}); // Track given items per order
 
@@ -58,11 +57,20 @@ const OrderList = ({ currentView, setCurrentView }) => {
         });
     };
 
-    const markAsPaid = (id) => {
-        setPaidOrders(prev => ({
-            ...prev,
-            [id]: !prev[id]
-        }));
+    const markAsPaid = async (id) => {
+        try {
+            const currentOrder = orders.find(order => order._id === id);
+            const newPaidStatus = !currentOrder.paid;
+            
+            await axios.patch(`/api/orders/${id}/paid`, { paid: newPaidStatus });
+            
+            setOrders(orders.map(order =>
+                order._id === id ? { ...order, paid: newPaidStatus } : order
+            ));
+        } catch (error) {
+            console.error('Error updating paid status:', error);
+            alert('Failed to update paid status. Please try again.');
+        }
     };
 
     const deleteOrder = async (id) => {
@@ -174,7 +182,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                 const allItemsGiven = areAllItemsGiven(order._id, itemCounts);
 
                                 return (
-                                    <li key={order._id} className={`order-item ${allItemsGiven ? 'all-items-given' : ''}`}>
+                                    <li key={order._id} className={`order-item ${allItemsGiven ? 'all-items-given' : ''} ${order.paid ? 'order-paid' : ''}`}>
                                         <div className="order-info">
                                             <div className="order-header">
                                                 <div className="order-header-main">
@@ -244,27 +252,52 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                         </div>
                                         
                                         <div className="order-controls">
-                                            <button
-                                                onClick={() => completeOrder(order._id)}
-                                                className={`control-button complete-button ${allItemsGiven ? 'ready-to-complete' : ''}`}
-                                                title="Mark order as completed"
-                                            >
-                                                Complete Order
-                                            </button>
-                                            <button
-                                                onClick={() => markAsPaid(order._id)}
-                                                className={`control-button paid-button ${paidOrders[order._id] ? 'is-paid' : ''}`}
-                                                title={paidOrders[order._id] ? 'Order is paid' : 'Mark as paid'}
-                                            >
-                                                {paidOrders[order._id] ? 'Paid' : 'Mark as Paid'}
-                                            </button>
-                                            <button
-                                                onClick={() => deleteOrder(order._id)}
-                                                className="control-button delete-button"
-                                                title="Cancel/Delete order"
-                                            >
-                                                Cancel Order
-                                            </button>
+                                            {!order.paid ? (
+                                                // Unpaid state: Mark as Paid (top), Cancel (bottom full width)
+                                                <>
+                                                    <button
+                                                        onClick={() => markAsPaid(order._id)}
+                                                        className="control-button paid-button main-action-btn"
+                                                        title="Mark as paid to start preparation"
+                                                    >
+                                                        Mark as Paid
+                                                    </button>
+                                                    <button
+                                                        onClick={() => deleteOrder(order._id)}
+                                                        className="control-button delete-button full-width-btn"
+                                                        title="Cancel/Delete order"
+                                                    >
+                                                        Cancel Order
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                // Paid state: Complete (top), Undo and Cancel (bottom split)
+                                                <>
+                                                    <button
+                                                        onClick={() => completeOrder(order._id)}
+                                                        className={`control-button complete-button main-action-btn ${allItemsGiven ? 'ready-to-complete' : ''}`}
+                                                        title="Mark order as completed"
+                                                    >
+                                                        Complete Order
+                                                    </button>
+                                                    <div className="bottom-controls">
+                                                        <button
+                                                            onClick={() => markAsPaid(order._id)}
+                                                            className="control-button undo-payment-button half-width-btn"
+                                                            title="Undo payment - mark as unpaid"
+                                                        >
+                                                            Undo Payment
+                                                        </button>
+                                                        <button
+                                                            onClick={() => deleteOrder(order._id)}
+                                                            className="control-button delete-button half-width-btn"
+                                                            title="Cancel/Delete order"
+                                                        >
+                                                            Cancel Order
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                     </li>
                                 );
