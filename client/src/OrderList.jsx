@@ -49,6 +49,12 @@ const OrderList = ({ currentView, setCurrentView }) => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Add this useEffect to scroll to top when view changes
+    useEffect(() => {
+        // Scroll to top when view changes
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [view]);
+
     const scrollToTop = () => {
         window.scrollTo({
             top: 0,
@@ -263,7 +269,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                         <div className="order-info">
                                             <div className="order-header">
                                                 <div className="order-header-main">
-                                                    Order #{order._id.slice(-4)} - {order.customerName}
+                                                    Order #{order.orderNumber || order._id.slice(-4)} - {order.customerName}
                                                     <span className="order-timestamp">
                                                         {orderAge}
                                                     </span>

@@ -1,22 +1,29 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
+const { getNextOrderNumber } = require('../utils/orderCounter');
 
 // Create a new order
 router.post('/', async (req, res) => {
     const { customerName, items, total, notes } = req.body;
-    const newOrder = new Order({ 
-        customerName, 
-        items, 
-        total,
-        notes: notes || '',
-        status: 'Pending' 
-    });
+    
     try {
+        const orderNumber = await getNextOrderNumber();
+        
+        const newOrder = new Order({ 
+            orderNumber: orderNumber,
+            customerName, 
+            items, 
+            total,
+            notes: notes || '',
+            status: 'Pending' 
+        });
+        
         const savedOrder = await newOrder.save();
         req.io.emit('ordersUpdated'); // Notify all clients
         res.status(201).json(savedOrder);
     } catch (err) {
+        console.error('Error creating order:', err);
         res.status(500).json({ message: err.message });
     }
 });

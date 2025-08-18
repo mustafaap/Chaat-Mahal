@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ConfirmationModal from './components/ConfirmationModal';
 import MenuManagement from './components/MenuManagement';
@@ -15,6 +15,12 @@ const AdminControls = () => {
         cancelText: 'Cancel',
         onConfirm: null
     });
+
+    // Add this useEffect to scroll to top when view changes
+    useEffect(() => {
+        // Scroll to top when view changes
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [currentView]);
 
     const openModal = (config) => {
         setModalState({

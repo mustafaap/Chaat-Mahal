@@ -221,6 +221,8 @@ const KioskForm = ({ initialStep = 1 }) => {
             return;
         }
         setStep(2);
+        // Scroll to top when moving to checkout
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleMenuSubmit = (e) => {
@@ -261,6 +263,11 @@ const KioskForm = ({ initialStep = 1 }) => {
             setIsSubmitting(false);
         }
     };
+
+    // Scroll to top when step changes
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [step]);
 
     if (isLoadingMenu) {
         return (
