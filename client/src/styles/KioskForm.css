@@ -431,7 +431,8 @@ form {
     overflow: hidden;
     position: relative;
     width: 100%;
-    max-width: 350px; /* Limit maximum width to prevent stretching */
+    max-width: 350px !important;
+    border: 0px !important;  /* Limit maximum width to prevent stretching */
 }
 
 .menu-item-card:hover {

@@ -177,6 +177,42 @@
     display: none;
 }
 
+.menu-btn {
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    color: white;
+}
+
+.menu-btn:hover {
+    background: linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%);
+    box-shadow: 0 6px 20px rgba(155, 89, 182, 0.3);
+}
+
+.admin-controls-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.admin-controls-nav {
+    margin-bottom: 20px;
+}
+
+.nav-back-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nav-back-btn:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
 /* Mobile Responsive */
 @media (max-width: 880px) {
     .admin-controls-container {

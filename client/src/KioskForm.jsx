@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './styles/KioskForm.css';
 
-const KioskForm = () => {
+const KioskForm = ({ initialStep = 1 }) => {
+    const [menuItems, setMenuItems] = useState([]);
+    const [isLoadingMenu, setIsLoadingMenu] = useState(true);
     const [customerName, setCustomerName] = useState('');
     const [selectedItems, setSelectedItems] = useState({});
-    const [step, setStep] = useState(1);
+    const [step, setStep] = useState(initialStep);
     const [orderNumber, setOrderNumber] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [modalItem, setModalItem] = useState(null);
@@ -17,35 +19,51 @@ const KioskForm = () => {
     // State for floating index
     const [activeSection, setActiveSection] = useState('Chaat');
 
-    const menuItems = [
-        { id: 1, name: 'Mango Lassi', price: 3, image: '/images/mango-lassi.jpg', options: ['Ice', 'No Ice'], category: 'Drinks', description: 'Refreshing yogurt-based mango drink' },
-        { id: 2, name: 'Panipuri', price: 3, image: '/images/panipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy shells filled with spiced water and chutneys' },
-        { id: 3, name: 'Masala Puri', price: 4, image: '/images/masala-puri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with spiced potatoes and chutneys' },
-        { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Puris filled with yogurt, chutneys and spices' },
-        { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with sev, vegetables and chutneys' },
-        { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Popular street snack with puffed rice and chutneys' },
-        { id: 7, name: 'Water', price: 1, image: '/images/water.jpg', options: ['Cold', 'Room Temperature'], category: 'Drinks', description: 'Refreshing hydration' },
-        { 
-            id: 8, 
-            name: 'Paneer Wrap', 
-            price: 8, 
-            image: '/images/paneer-wrap.JPG', 
-            options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Paneer (+$2)'],
-            extraOptions: { 'Extra Paneer (+$2)': 2 },
-            category: 'Wraps',
-            description: 'Grilled paneer with fresh vegetables wrapped in naan'
-        },
-        { 
-            id: 9, 
-            name: 'Chicken Wrap', 
-            price: 9, 
-            image: '/images/chicken-wrap.JPG', 
-            options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Meat (+$2)'],
-            extraOptions: { 'Extra Meat (+$2)': 2 },
-            category: 'Wraps',
-            description: 'Tender spiced chicken with vegetables wrapped in naan'
-        },
-    ];
+    // Fetch menu items from API
+    useEffect(() => {
+        const fetchMenuItems = async () => {
+            try {
+                const response = await axios.get('/api/menu');
+                setMenuItems(response.data);
+            } catch (error) {
+                console.error('Error fetching menu items:', error);
+                // Fallback to hardcoded menu if API fails
+                setMenuItems([
+                    { id: 1, name: 'Mango Lassi', price: 3, image: '/images/mango-lassi.jpg', options: ['Ice', 'No Ice'], category: 'Drinks', description: 'Refreshing yogurt-based mango drink' },
+                    { id: 2, name: 'Panipuri', price: 3, image: '/images/panipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy shells filled with spiced water and chutneys' },
+                    { id: 3, name: 'Masala Puri', price: 4, image: '/images/masala-puri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with spiced potatoes and chutneys' },
+                    { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Puris filled with yogurt, chutneys and spices' },
+                    { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with sev, vegetables and chutneys' },
+                    { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Popular street snack with puffed rice and chutneys' },
+                    { id: 7, name: 'Water', price: 1, image: '/images/water.jpg', options: ['Cold', 'Room Temperature'], category: 'Drinks', description: 'Refreshing hydration' },
+                    { 
+                        id: 8, 
+                        name: 'Paneer Wrap', 
+                        price: 8, 
+                        image: '/images/paneer-wrap.JPG', 
+                        options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Paneer (+$2)'],
+                        extraOptions: { 'Extra Paneer': 2 },
+                        category: 'Wraps',
+                        description: 'Grilled paneer with fresh vegetables wrapped in naan'
+                    },
+                    { 
+                        id: 9, 
+                        name: 'Chicken Wrap', 
+                        price: 9, 
+                        image: '/images/chicken-wrap.JPG', 
+                        options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Meat (+$2)'],
+                        extraOptions: { 'Extra Meat': 2 },
+                        category: 'Wraps',
+                        description: 'Tender spiced chicken with vegetables wrapped in naan'
+                    },
+                ]);
+            } finally {
+                setIsLoadingMenu(false);
+            }
+        };
+
+        fetchMenuItems();
+    }, []);
 
     // Scroll tracking for floating index
     useEffect(() => {
@@ -94,8 +112,15 @@ const KioskForm = () => {
         
         if (item.extraOptions && options) {
             options.forEach(option => {
+                // Check if the option exists directly in extraOptions
                 if (item.extraOptions[option]) {
                     price += item.extraOptions[option];
+                } else {
+                    // Handle options with (+$X) format - extract the base name
+                    const baseOptionName = option.replace(/\s*\(\+\$\d+(\.\d+)?\)/, '');
+                    if (item.extraOptions[baseOptionName]) {
+                        price += item.extraOptions[baseOptionName];
+                    }
                 }
             });
         }
@@ -236,6 +261,17 @@ const KioskForm = () => {
             setIsSubmitting(false);
         }
     };
+
+    if (isLoadingMenu) {
+        return (
+            <div className="kiosk-loading">
+                <div className="loading-spinner">
+                    <div className="spinner"></div>
+                    <p>Loading menu...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="kiosk-container">

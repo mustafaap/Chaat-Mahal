@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import ConfirmationModal from './components/ConfirmationModal';
+import MenuManagement from './components/MenuManagement';
 import './styles/AdminControls.css';
 
 const AdminControls = () => {
+    const [currentView, setCurrentView] = useState('dashboard');
     const [modalState, setModalState] = useState({
         isOpen: false,
         type: 'default',
@@ -53,6 +55,22 @@ const AdminControls = () => {
         });
     };
 
+    if (currentView === 'menu') {
+        return (
+            <div className="admin-controls-wrapper">
+                <div className="admin-controls-nav">
+                    <button 
+                        className="nav-back-btn"
+                        onClick={() => setCurrentView('dashboard')}
+                    >
+                        ← Back to Dashboard
+                    </button>
+                </div>
+                <MenuManagement />
+            </div>
+        );
+    }
+
     return (
         <div className="admin-controls-container">
             <h1>Admin Controls</h1>
@@ -71,6 +89,18 @@ const AdminControls = () => {
                     </button>
                 </div>
                 
+                <div className="control-card">
+                    <div className="control-icon">🍽️</div>
+                    <h3>Menu Management</h3>
+                    <p>Add, edit, or remove menu items and prices</p>
+                    <button 
+                        className="admin-control-button menu-btn"
+                        onClick={() => setCurrentView('menu')}
+                    >
+                        Manage Menu
+                    </button>
+                </div>
+                
                 {/* Placeholder for future controls */}
                 <div className="control-card coming-soon">
                     <div className="control-icon">⚙️</div>
@@ -85,15 +115,6 @@ const AdminControls = () => {
                     <div className="control-icon">📊</div>
                     <h3>Analytics</h3>
                     <p>View sales reports and order statistics</p>
-                    <button className="admin-control-button disabled-btn" disabled>
-                        Coming Soon
-                    </button>
-                </div>
-                
-                <div className="control-card coming-soon">
-                    <div className="control-icon">🍽️</div>
-                    <h3>Menu Management</h3>
-                    <p>Add, edit, or remove menu items and prices</p>
                     <button className="admin-control-button disabled-btn" disabled>
                         Coming Soon
                     </button>

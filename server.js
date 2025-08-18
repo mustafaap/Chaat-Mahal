@@ -32,7 +32,9 @@ app.use((req, res, next) => {
   req.io = io;
   next();
 });
-app.use('/api/orders', orderRoutes);
+// Routes
+app.use('/api/orders', require('./routes/orders'));
+app.use('/api/menu', require('./routes/menu')); // Add this line
 
 const path = require("path");
 
