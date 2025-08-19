@@ -6,6 +6,7 @@ const KioskForm = ({ initialStep = 1 }) => {
     const [menuItems, setMenuItems] = useState([]);
     const [isLoadingMenu, setIsLoadingMenu] = useState(true);
     const [customerName, setCustomerName] = useState('');
+    const [customerEmail, setCustomerEmail] = useState(''); // New state for customer email
     const [selectedItems, setSelectedItems] = useState({});
     const [step, setStep] = useState(initialStep);
     const [orderNumber, setOrderNumber] = useState(null);
@@ -238,6 +239,7 @@ const KioskForm = ({ initialStep = 1 }) => {
             
             const orderData = {
                 customerName,
+                customerEmail, // Include email in the orderData
                 items: Object.values(selectedItems).flatMap(item => 
                     Array(item.quantity).fill(item.options.length > 0 ? `${item.name} (${item.options.join(', ')})` : item.name)
                 ),
@@ -550,6 +552,14 @@ const KioskForm = ({ initialStep = 1 }) => {
                         required
                         className="name-input"
                     />
+                    <h2>Email for Receipt (Optional)</h2>
+                    <input
+                        type="email"
+                        placeholder="Enter your email"
+                        value={customerEmail}
+                        onChange={(e) => setCustomerEmail(e.target.value)}
+                        className="name-input"
+                    />
                     <h2>Notes (Optional)</h2>
                     <textarea
                         placeholder="Enter any allergies, special requests or notes here..."
@@ -627,6 +637,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                                 setStep(1);
                                 setSelectedItems({});
                                 setCustomerName('');
+                                setCustomerEmail(''); // Reset email on new order
                                 setNotes('');
                             }}
                             className="another-order-button"

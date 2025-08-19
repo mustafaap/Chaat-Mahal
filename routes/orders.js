@@ -2,151 +2,165 @@ const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
 const { getNextOrderNumber } = require('../utils/orderCounter');
+const { sendOrderConfirmationEmail } = require('../utils/emailService');
 
-// Create a new order
-router.post('/', async (req, res) => {
-    const { customerName, items, total, notes } = req.body;
-    
-    try {
-        const orderNumber = await getNextOrderNumber();
-        
-        const newOrder = new Order({ 
-            orderNumber: orderNumber,
-            customerName, 
-            items, 
-            total,
-            notes: notes || '',
-            status: 'Pending' 
-        });
-        
-        const savedOrder = await newOrder.save();
-        req.io.emit('ordersUpdated'); // Notify all clients
-        res.status(201).json(savedOrder);
-    } catch (err) {
-        console.error('Error creating order:', err);
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// Store reset timestamp
-router.post('/reset-timestamp', async (req, res) => {
-    try {
-        global.resetTimestamp = new Date();
-        req.io.emit('ordersUpdated'); // Notify all clients
-        res.json({ message: 'Reset timestamp set successfully.', timestamp: global.resetTimestamp });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// Get reset timestamp
-router.get('/reset-timestamp', async (req, res) => {
-    try {
-        res.json({ timestamp: global.resetTimestamp || null });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// Get all orders (pending and completed)
+// GET all orders
 router.get('/all', async (req, res) => {
     try {
-        let query = {};
+        const orders = await Order.find().sort({ createdAt: -1 });
+        res.json(orders);
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).json({ message: 'Failed to fetch orders' });
+    }
+});
+
+// POST a new order
+router.post('/', async (req, res) => {
+    console.log('Received order data:', req.body); // Debug log
+    
+    try {
+        const { customerName, customerEmail, items, total, notes } = req.body;
+
+        // Validate required fields
+        if (!customerName || !items || !total) {
+            return res.status(400).json({ 
+                message: 'Missing required fields: customerName, items, or total' 
+            });
+        }
+
+        // Get the next sequential order number for the day
+        const orderNumber = await getNextOrderNumber();
+        console.log('Generated order number:', orderNumber); // Debug log
+
+        const newOrder = new Order({
+            orderNumber,
+            customerName,
+            customerEmail: customerEmail || '',
+            items,
+            total,
+            notes: notes || '',
+            status: 'Pending'
+        });
+
+        const savedOrder = await newOrder.save();
+        console.log('Order saved successfully:', savedOrder._id); // Debug log
         
-        // If there's a reset timestamp, only show orders after that time
-        if (global.resetTimestamp) {
-            query.createdAt = { $gte: global.resetTimestamp };
+        // Send confirmation email if email is provided (non-blocking)
+        if (customerEmail) {
+            try {
+                console.log('Attempting to send email to:', customerEmail); // Debug log
+                
+                // Prepare email data
+                const emailData = {
+                    customerName,
+                    orderNumber,
+                    items: items.map(itemString => {
+                        const parts = itemString.split(' (');
+                        const name = parts[0];
+                        const options = parts[1] ? parts[1].replace(')', '').split(', ') : [];
+                        return {
+                            name,
+                            options,
+                            quantity: 1,
+                            price: total / items.length
+                        };
+                    }),
+                    total,
+                    notes: notes || ''
+                };
+                
+                const emailResult = await sendOrderConfirmationEmail(customerEmail, emailData);
+                
+                if (emailResult.success) {
+                    console.log('✅ Email sent successfully');
+                } else {
+                    console.log('⚠️ Email failed but order created:', emailResult.error);
+                }
+            } catch (emailError) {
+                console.error('⚠️ Email error (non-blocking):', emailError.message);
+                // Don't fail the order creation if email fails
+            }
         }
         
-        const orders = await Order.find(query);
-        res.json(orders);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+        // Emit socket event for real-time updates
+        req.io.emit('ordersUpdated');
+        
+        res.status(201).json(savedOrder);
+        
+    } catch (error) {
+        console.error('❌ Error creating order:', error);
+        res.status(500).json({ 
+            message: 'Failed to create order', 
+            error: error.message 
+        });
     }
 });
 
-// Update order status with timestamp
+// PATCH - Update order status to completed
 router.patch('/:id', async (req, res) => {
     try {
-        const { status } = req.body;
-        const updatedOrder = await Order.findByIdAndUpdate(
-            req.params.id, 
-            { 
-                status: status,
-                updatedAt: new Date()
-            }, 
+        const order = await Order.findByIdAndUpdate(
+            req.params.id,
+            { status: 'Completed' },
             { new: true }
         );
+        
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
         req.io.emit('ordersUpdated');
-        res.json(updatedOrder);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+        res.json(order);
+    } catch (error) {
+        console.error('Error updating order:', error);
+        res.status(500).json({ message: 'Failed to update order' });
     }
 });
 
-// Complete order with timestamp
-router.patch('/:id/complete', async (req, res) => {
-    try {
-        const updatedOrder = await Order.findByIdAndUpdate(
-            req.params.id, 
-            { 
-                status: 'Completed',
-                updatedAt: new Date()
-            }, 
-            { new: true }
-        );
-        req.io.emit('ordersUpdated');
-        res.json(updatedOrder);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// Update order paid status
-router.patch('/:id/paid', async (req, res) => {
-    try {
-        const { paid } = req.body;
-        const updatedOrder = await Order.findByIdAndUpdate(
-            req.params.id, 
-            { 
-                paid: paid,
-                updatedAt: new Date()
-            }, 
-            { new: true }
-        );
-        req.io.emit('ordersUpdated');
-        res.json(updatedOrder);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// Delete an order (mark as Cancelled) with timestamp
+// DELETE - Cancel a specific order
 router.delete('/:id', async (req, res) => {
     try {
-        const deletedOrder = await Order.findByIdAndUpdate(
+        const order = await Order.findByIdAndUpdate(
             req.params.id,
-            { 
-                status: 'Cancelled',
-                updatedAt: new Date()
-            },
+            { status: 'Cancelled' },
             { new: true }
         );
+        
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
         req.io.emit('ordersUpdated');
-        res.json(deletedOrder);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+        res.json({ message: 'Order cancelled successfully' });
+    } catch (error) {
+        console.error('Error cancelling order:', error);
+        res.status(500).json({ message: 'Failed to cancel order' });
     }
 });
 
-// Delete all orders
+// DELETE - Reset all orders (admin function)
 router.delete('/', async (req, res) => {
     try {
         await Order.deleteMany({});
-        req.io.emit('ordersUpdated'); // Notify all clients
-        res.json({ message: 'All orders have been reset.' });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+        
+        // Optionally reset the daily counter as well
+        const fs = require('fs').promises;
+        const path = require('path');
+        const counterFilePath = path.join(__dirname, '..', 'data', 'orderCounter.json');
+        
+        try {
+            await fs.unlink(counterFilePath);
+            console.log('Order counter reset');
+        } catch (err) {
+            // Counter file doesn't exist, that's fine
+        }
+        
+        req.io.emit('ordersUpdated');
+        res.json({ message: 'All orders deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting orders:', error);
+        res.status(500).json({ message: 'Failed to delete orders' });
     }
 });
 
