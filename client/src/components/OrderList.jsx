@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
-import ConfirmationModal from './components/ConfirmationModal';
-import './styles/OrderList.css';
+import ConfirmationModal from './ConfirmationModal';
+import '../styles/OrderList.css';
 
 const socket = io();
 

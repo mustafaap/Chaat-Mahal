@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ConfirmationModal from './ConfirmationModal';
-import './MenuManagement.css';
+import '../styles/MenuManagement.css';
 
 const MenuManagement = () => {
     const [menuItems, setMenuItems] = useState([]);

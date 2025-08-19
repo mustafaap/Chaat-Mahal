@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './styles/KioskForm.css';
+import '../styles/KioskForm.css';
 
 const KioskForm = ({ initialStep = 1 }) => {
     const [menuItems, setMenuItems] = useState([]);

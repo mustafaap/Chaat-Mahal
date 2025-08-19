@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Switch, Link, useLocation } from 'react-router-dom';
-import KioskForm from './KioskForm';
-import OrderList from './OrderList';
-import AdminControls from './AdminControls';
-import Contact from './Contact';
-import About from './About';
+import KioskForm from './components/KioskForm';
+import OrderList from './components/OrderList';
+import AdminControls from './components/AdminControls';
+import Contact from './components/Contact';
+import About from './components/About';
 import './styles/Navbar.css';
 import './styles/Footer.css';
 

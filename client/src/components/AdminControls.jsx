@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import ConfirmationModal from './components/ConfirmationModal';
-import MenuManagement from './components/MenuManagement';
-import './styles/AdminControls.css';
+import ConfirmationModal from './ConfirmationModal';
+import MenuManagement from './MenuManagement';
+import '../styles/AdminControls.css';
 
 const AdminControls = () => {
     const [currentView, setCurrentView] = useState('dashboard');
