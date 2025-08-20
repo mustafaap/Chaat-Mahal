@@ -162,7 +162,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
             cancelText: 'Cancel',
             onConfirm: async () => {
                 try {
-                    await axios.patch(`/api/orders/${id}`, { status: 'Pending' });
+                    await axios.patch(`/api/orders/${id}/revert`);
                     setOrders(orders.map(order =>
                         order._id === id ? { ...order, status: 'Pending' } : order
                     ));

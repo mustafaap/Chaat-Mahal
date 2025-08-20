@@ -5,7 +5,12 @@ import MenuManagement from './MenuManagement';
 import '../styles/AdminControls.css';
 
 const AdminControls = () => {
-    const [currentView, setCurrentView] = useState('dashboard');
+    // Get initial view from localStorage or default to 'dashboard'
+    const [currentView, setCurrentView] = useState(() => {
+        const savedView = localStorage.getItem('adminControlsView');
+        return savedView || 'dashboard';
+    });
+    
     const [modalState, setModalState] = useState({
         isOpen: false,
         type: 'default',
@@ -15,6 +20,11 @@ const AdminControls = () => {
         cancelText: 'Cancel',
         onConfirm: null
     });
+
+    // Save to localStorage whenever currentView changes
+    useEffect(() => {
+        localStorage.setItem('adminControlsView', currentView);
+    }, [currentView]);
 
     // Add this useEffect to scroll to top when view changes
     useEffect(() => {
@@ -98,7 +108,7 @@ const AdminControls = () => {
                 <div className="control-card">
                     <div className="control-icon">🍽️</div>
                     <h3>Menu Management</h3>
-                    <p>Add, edit, or remove menu items and prices</p>
+                    <p>Add, edit, or remove menu items, options and prices</p>
                     <button 
                         className="admin-control-button menu-btn"
                         onClick={() => setCurrentView('menu')}

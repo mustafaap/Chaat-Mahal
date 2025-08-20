@@ -583,9 +583,18 @@ const KioskForm = ({ initialStep = 1 }) => {
                     <h1>Order Confirmation</h1>
                     <p className="confirmation-details">Order Number: {orderNumber}</p>
                     <p className="confirmation-name">Name: {customerName}</p>
+                    
+                    {/* Move payment notice to top for better visibility */}
+                    <div className="confirmation-payment-divider">
+                        <p className="confirmation-payment-notice">
+                            Please pay at the counter to enter the order preparation line.
+                        </p>
+                    </div>
+
                     <div className="confirmation-divider">
                     <div className="confirmation-order-card">
                         <h3 className="confirmation-order-title">Items Ordered</h3>
+                        
                         <div className="confirmation-items-container">
                             <ul className="confirmation-items-list">
                                 {Object.entries(selectedItems)
@@ -628,9 +637,6 @@ const KioskForm = ({ initialStep = 1 }) => {
                     </div>
                     </div>
                     
-                    <p className="confirmation-payment-notice">
-                        Please pay at the counter to enter the order preparation line.
-                    </p>
                     <div className="another-order-container">
                         <button
                             onClick={() => {

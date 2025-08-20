@@ -97,6 +97,29 @@ router.post('/', async (req, res) => {
     }
 });
 
+// PATCH - Update order paid status
+router.patch('/:id/paid', async (req, res) => {
+    try {
+        const { paid } = req.body;
+        
+        const order = await Order.findByIdAndUpdate(
+            req.params.id,
+            { paid: paid },
+            { new: true }
+        );
+        
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        req.io.emit('ordersUpdated');
+        res.json(order);
+    } catch (error) {
+        console.error('Error updating paid status:', error);
+        res.status(500).json({ message: 'Failed to update paid status' });
+    }
+});
+
 // PATCH - Update order status to completed
 router.patch('/:id', async (req, res) => {
     try {
@@ -115,6 +138,27 @@ router.patch('/:id', async (req, res) => {
     } catch (error) {
         console.error('Error updating order:', error);
         res.status(500).json({ message: 'Failed to update order' });
+    }
+});
+
+// PATCH - Revert order status to pending
+router.patch('/:id/revert', async (req, res) => {
+    try {
+        const order = await Order.findByIdAndUpdate(
+            req.params.id,
+            { status: 'Pending' },
+            { new: true }
+        );
+        
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        req.io.emit('ordersUpdated');
+        res.json(order);
+    } catch (error) {
+        console.error('Error reverting order:', error);
+        res.status(500).json({ message: 'Failed to revert order' });
     }
 });
 

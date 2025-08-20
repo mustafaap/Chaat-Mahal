@@ -127,14 +127,14 @@
     align-items: center;
     padding: 20px 30px;
     border-bottom: 2px solid #f8f9fa;
-    background: #f8f9fa;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
 }
 
 .form-header h2 {
     font-family: 'Poppins', sans-serif;
     font-size: 1.5rem;
     font-weight: 600;
-    color: #2c3e50;
+    color: white;
     margin: 0;
 }
 
@@ -142,7 +142,7 @@
     background: none;
     border: none;
     font-size: 2rem;
-    color: #666;
+    color: rgba(255, 255, 255, 0.8);
     cursor: pointer;
     padding: 0;
     width: 35px;
@@ -152,12 +152,14 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
+    box-shadow: none;
 }
 
 .form-close-btn:hover {
-    background: rgba(0, 0, 0, 0.1);
-    color: #333;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
     transform: rotate(90deg);
+    box-shadow: none;
 }
 
 /* Form Styles */
@@ -391,7 +393,7 @@
     backdrop-filter: blur(10px);
 }
 
-.item-details {
+.menu-item-details {
     padding: 20px;
     flex: 1; /* Take up remaining space */
     display: flex;
@@ -403,7 +405,7 @@
     font-size: 1.3rem;
     font-weight: 600;
     color: #2c3e50;
-    margin: 0 0 10px 0;
+    margin: 0px 0 10px 0;
 }
 
 .item-description {
@@ -455,12 +457,12 @@
 }
 
 .edit-btn {
-    background: #f39c12;
+    background: #3498db;
     color: white;
 }
 
 .edit-btn:hover {
-    background: #e67e22;
+    background: #2980b9;
     transform: translateY(-1px);
 }
 
@@ -504,7 +506,7 @@
     transform: translateY(-2px);
 }
 
-input[type="text"] {
+.menu-management-container input[type="text"] {
     margin-bottom: 0px;
     width: auto;
 }
@@ -668,7 +670,6 @@ input[type="text"] {
     border: 2px solid #dee2e6;
     border-radius: 12px;
     padding: 20px;
-    margin-bottom: 20px;
     text-align: center;
 }
 

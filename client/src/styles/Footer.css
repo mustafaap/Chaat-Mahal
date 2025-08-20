@@ -180,6 +180,7 @@
 @media (max-width: 768px) {
     .footer {
         padding: 15px 0 8px 0; /* Further reduced */
+        margin-top: 0px;
     }
     
     .footer-container {

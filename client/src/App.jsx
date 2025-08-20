@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Switch, Link, useLocation } from 'react-router-dom';
 import KioskForm from './components/KioskForm';
 import OrderList from './components/OrderList';
@@ -114,6 +114,19 @@ const Footer = () => {
 
 // Customer Navbar Component
 const CustomerNavbar = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) => {
+  const location = useLocation();
+  
+  const handleMenuClick = () => {
+    if (location.pathname === '/') {
+      // If we're already on the home page, reset the kiosk form
+      window.location.reload();
+    } else {
+      // If we're on a different page, navigate to home
+      // This will be handled by the Link component
+    }
+    closeMobileMenu();
+  };
+
   return (
     <nav className="navbar">
       <div className="nav-container">
@@ -126,7 +139,7 @@ const CustomerNavbar = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) =
             />
           </Link>
         </div>
-        
+
         {/* Mobile hamburger menu */}
         <div className={`hamburger ${mobileMenuOpen ? 'active' : ''}`} onClick={toggleMobileMenu}>
           <span></span>
@@ -136,7 +149,7 @@ const CustomerNavbar = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) =
 
         {/* Customer Navigation links */}
         <div className={`nav-menu ${mobileMenuOpen ? 'active' : ''}`}>
-          <Link to="/" className="nav-link" onClick={closeMobileMenu}>
+          <Link to="/" className="nav-link" onClick={handleMenuClick}>
             Menu
           </Link>
           <Link to="/about" className="nav-link" onClick={closeMobileMenu}>
@@ -281,7 +294,24 @@ const AppContent = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) => {
 
 // Update the AdminOrdersPage component
 const AdminOrdersPage = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) => {
-  const [currentView, setCurrentView] = useState('pending');
+  // Get initial view from localStorage or default to 'pending'
+  const [currentView, setCurrentView] = useState(() => {
+    const savedView = localStorage.getItem('adminCurrentView');
+    return savedView || 'pending';
+  });
+
+  // Save to localStorage whenever currentView changes
+  useEffect(() => {
+    localStorage.setItem('adminCurrentView', currentView);
+  }, [currentView]);
+
+  // Reset AdminControls view when leaving controls section
+  useEffect(() => {
+    if (currentView !== 'controls') {
+      // Reset the AdminControls internal view to dashboard when leaving controls
+      localStorage.setItem('adminControlsView', 'dashboard');
+    }
+  }, [currentView]);
 
   const renderCurrentView = () => {
     switch(currentView) {

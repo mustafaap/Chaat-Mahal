@@ -526,7 +526,7 @@ const MenuManagement = () => {
                                 <div className="item-category-badge">{item.category}</div>
                             </div>
                             
-                            <div className="item-details">
+                            <div className="menu-item-details">
                                 <h3 className="item-name">{item.name}</h3>
                                 <p className="item-description">{item.description}</p>
                                 <div className="item-price">${item.price}</div>

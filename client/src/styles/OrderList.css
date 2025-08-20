@@ -145,29 +145,29 @@
     border-left-color: #27ae60;
 }
 
-/* Paid Order Visual Indicators - Fix hover colors */
+/* Paid Order Visual Indicators - Darker green background */
 .order-item.order-paid {
     border-left-color: #27ae60 !important;
-    background: linear-gradient(135deg, #f0fff4 0%, #e8f5e8 100%);
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%); /* Changed from f0fff4/e8f5e8 to e8f5e8/d4f4d4 */
     box-shadow: 0 5px 25px rgba(39, 174, 96, 0.15);
 }
 
 .order-item.order-paid:hover {
-    background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%);
+    background: linear-gradient(135deg, #d4f4d4 0%, #c8e6c9 100%); /* Changed from e8f5e8/d4f4d4 to d4f4d4/c8e6c9 */
     border-left-color: #229954 !important;
     box-shadow: 0 8px 30px rgba(39, 174, 96, 0.2);
     transform: translateY(-3px);
 }
 
-/* Unpaid Order Visual Indicators - Red background for unpaid orders */
+/* Unpaid Order Visual Indicators - Slightly lighter red backgrounds */
 .order-item:not(.order-paid) {
     border-left-color: #e74c3c !important;
-    background: linear-gradient(135deg, #fdf2f2 0%, #fce4e4 100%);
+    background: linear-gradient(135deg, #fce4e4 0%, #f5b7b1 100%); /* Keep current normal state */
     box-shadow: 0 5px 25px rgba(231, 76, 60, 0.15);
 }
 
 .order-item:not(.order-paid):hover {
-    background: linear-gradient(135deg, #fce4e4 0%, #f5b7b1 100%);
+    background: linear-gradient(135deg, #f8d7da 0%, #f3a4a7 100%); /* Changed from f5b7b1/f1948a to f8d7da/f3a4a7 */
     border-left-color: #c0392b !important;
     box-shadow: 0 8px 30px rgba(231, 76, 60, 0.2);
     transform: translateY(-3px);
@@ -176,30 +176,29 @@
 /* Update the existing all-items-given styles to work with paid orders */
 .order-item.all-items-given.order-paid {
     border-left-color: #00d4aa !important;
-    background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%);
+    background: linear-gradient(135deg, #d4f4d4 0%, #c8e6c9 100%); /* Changed from f0fff4/e8f5e8 to d4f4d4/c8e6c9 */
 }
 
 .order-item.all-items-given.order-paid:hover {
     border-left-color: #00b894 !important;
-    background: linear-gradient(135deg, #d4f4d4 0%, #c8e6c9 100%);
+    background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%); /* Changed from d4f4d4/c8e6c9 to c8e6c9/a5d6a7 */
 }
 
-/* Ensure unpaid orders with all items given still show red background */
+/* Ensure unpaid orders with all items given still show lighter red background on hover */
 .order-item.all-items-given:not(.order-paid) {
     border-left-color: #e74c3c !important;
-    background: linear-gradient(135deg, #fdf2f2 0%, #fce4e4 100%);
+    background: linear-gradient(135deg, #fce4e4 0%, #f5b7b1 100%); /* Keep current normal state */
 }
 
 .order-item.all-items-given:not(.order-paid):hover {
     border-left-color: #c0392b !important;
-    background: linear-gradient(135deg, #fce4e4 0%, #f5b7b1 100%);
+    background: linear-gradient(135deg, #f8d7da 0%, #f3a4a7 100%); /* Changed from f5b7b1/f1948a to f8d7da/f3a4a7 */
 }
 
 /* Enhanced Order Info Styles - Better Readability */
 .order-info {
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Increased from 12px */
 }
 
 .order-header {
@@ -208,8 +207,7 @@
     font-size: 1.5rem; /* Increased from 1.4rem */
     color: #2c3e50;
     display: flex;
-    align-items: center;
-    gap: 15px; /* Increased from 12px */
+    align-items: center;    
     margin-bottom: 10px; /* Increased from 8px */
 }
 
@@ -245,7 +243,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Increased min width */
     gap: 15px; /* Increased from 12px */
-    margin: 18px 0; /* Increased from 15px */
+    margin-top: 15px; /* Increased from 15px */
 }
 
 .info-card {
@@ -269,7 +267,6 @@
     background: #f8f9fa;
     padding: 18px; /* Increased from 15px */
     border-radius: 12px; /* Increased from 10px */
-    margin: 10px 0; /* Increased from 8px */
     border: 1px solid #e9ecef;
 }
 
@@ -345,6 +342,7 @@
     border-radius: 8px; /* Increased from 6px */
     border-left: 4px solid #f39c12; /* Increased from 3px */
     box-shadow: 0 2px 8px rgba(243, 156, 18, 0.1); /* Increased shadow */
+    margin-top: 15px;
 }
 
 .order-notes::before {
@@ -661,6 +659,8 @@
     align-items: center;
     gap: 15px;
     width: 100%;
+    padding-right: 60px;
+    padding-left: 15px;
 }
 
 .order-progress-container {
@@ -751,6 +751,8 @@
 }
 
 .item-details {
+    padding: 0 !important;
+    display: block !important;
     flex: 1 1;
     transition: all 0.3s ease;
 }
@@ -835,6 +837,10 @@
         font-size: 0.7rem;
         padding: 2px 6px;
     }
+
+    .order-header-main {
+        padding-left: 0px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -866,12 +872,12 @@
 /* Paid Order Visual Indicators - Darker green background */
 .order-item.order-paid {
     border-left-color: #27ae60 !important;
-    background: linear-gradient(135deg, #f0fff4 0%, #e8f5e8 100%); /* Changed from f8fff8/f0fff4 to f0fff4/e8f5e8 */
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%); /* Changed from f0fff4/e8f5e8 to e8f5e8/d4f4d4 */
     box-shadow: 0 5px 25px rgba(39, 174, 96, 0.15);
 }
 
 .order-item.order-paid:hover {
-    background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%); /* Changed from f0fff4/e8f5e8 to e8f5e8/d4f4d4 */
+    background: linear-gradient(135deg, #d4f4d4 0%, #c8e6c9 100%); /* Changed from e8f5e8/d4f4d4 to d4f4d4/c8e6c9 */
     border-left-color: #229954 !important;
     box-shadow: 0 8px 30px rgba(39, 174, 96, 0.2);
 }
@@ -879,12 +885,12 @@
 /* Update the existing all-items-given styles to work with paid orders */
 .order-item.all-items-given.order-paid {
     border-left-color: #00d4aa !important;
-    background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%); /* Made this consistent with the new darker shade */
+    background: linear-gradient(135deg, #d4f4d4 0%, #c8e6c9 100%); /* Changed from f0fff4/e8f5e8 to d4f4d4/c8e6c9 */
 }
 
 .order-item.all-items-given.order-paid:hover {
     border-left-color: #00b894 !important;
-    background: linear-gradient(135deg, #d4f4d4 0%, #c8e6c9 100%); /* Even slightly darker for hover */
+    background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%); /* Changed from d4f4d4/c8e6c9 to c8e6c9/a5d6a7 */
 }
 
 /* Enhanced paid button styling */
