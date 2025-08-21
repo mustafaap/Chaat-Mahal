@@ -61,6 +61,9 @@
     border: 2px solid #e9ecef;
     position: relative;
     overflow: hidden;
+    display: flex; /* Add flex display */
+    flex-direction: column; /* Stack content vertically */
+    min-height: 350px; /* Set a minimum height for consistency */
 }
 
 .control-card::before {
@@ -113,6 +116,7 @@
     color: #666;
     line-height: 1.6;
     margin-bottom: 30px;
+    flex-grow: 1; /* This will push the button to the bottom */
 }
 
 .admin-control-button {
@@ -129,8 +133,9 @@
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     min-width: 180px;
-    margin: 0 auto; /* Center the button horizontally */
-    display: block; /* Make it a block element to center properly */
+    margin: 0 auto;
+    display: block;
+    margin-top: auto; /* This ensures the button stays at the bottom */
 }
 
 .admin-control-button::before {
@@ -211,6 +216,25 @@
 .nav-back-btn:hover {
     background: #5a6268;
     transform: translateY(-1px);
+}
+
+.logout-btn {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+}
+
+.logout-btn:hover {
+    background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);
+}
+
+.logout-card {
+    border: 2px solid rgba(231, 76, 60, 0.2);
+}
+
+.logout-card:hover {
+    border-color: rgba(231, 76, 60, 0.4);
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.15);
 }
 
 /* Mobile Responsive */

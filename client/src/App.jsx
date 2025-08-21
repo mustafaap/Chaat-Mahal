@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Switch, Link, useLocation } from 'react
 import KioskForm from './components/KioskForm';
 import OrderList from './components/OrderList';
 import AdminControls from './components/AdminControls';
+import AdminLogin from './components/AdminLogin';
 import Contact from './components/Contact';
 import About from './components/About';
 import './styles/Navbar.css';
@@ -292,13 +293,19 @@ const AppContent = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) => {
   );
 };
 
-// Update the AdminOrdersPage component
+// Update the AdminOrdersPage component to include authentication
 const AdminOrdersPage = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) => {
-  // Get initial view from localStorage or default to 'pending'
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentView, setCurrentView] = useState(() => {
     const savedView = localStorage.getItem('adminCurrentView');
     return savedView || 'pending';
   });
+
+  // Check authentication on component mount
+  useEffect(() => {
+    const authStatus = localStorage.getItem('adminAuthenticated');
+    setIsAuthenticated(authStatus === 'true');
+  }, []);
 
   // Save to localStorage whenever currentView changes
   useEffect(() => {
@@ -308,10 +315,18 @@ const AdminOrdersPage = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) 
   // Reset AdminControls view when leaving controls section
   useEffect(() => {
     if (currentView !== 'controls') {
-      // Reset the AdminControls internal view to dashboard when leaving controls
       localStorage.setItem('adminControlsView', 'dashboard');
     }
   }, [currentView]);
+
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+  };
+
+  // Show login if not authenticated
+  if (!isAuthenticated) {
+    return <AdminLogin onLogin={handleLogin} />;
+  }
 
   const renderCurrentView = () => {
     switch(currentView) {

@@ -5,12 +5,11 @@ import MenuManagement from './MenuManagement';
 import '../styles/AdminControls.css';
 
 const AdminControls = () => {
-    // Get initial view from localStorage or default to 'dashboard'
     const [currentView, setCurrentView] = useState(() => {
         const savedView = localStorage.getItem('adminControlsView');
         return savedView || 'dashboard';
     });
-    
+
     const [modalState, setModalState] = useState({
         isOpen: false,
         type: 'default',
@@ -71,6 +70,21 @@ const AdminControls = () => {
         });
     };
 
+    // Add logout function
+    const handleLogout = () => {
+        openModal({
+            type: 'danger',
+            title: 'Logout Confirmation',
+            message: 'Are you sure you want to logout? You will need to enter the admin password again to access this panel.',
+            confirmText: 'Logout',
+            cancelText: 'Cancel',
+            onConfirm: () => {
+                localStorage.removeItem('adminAuthenticated');
+                window.location.href = '/orders'; // This will redirect to login since auth is removed
+            }
+        });
+    };
+
     if (currentView === 'menu') {
         return (
             <div className="admin-controls-wrapper">
@@ -94,18 +108,6 @@ const AdminControls = () => {
             
             <div className="controls-grid">
                 <div className="control-card">
-                    <div className="control-icon">🔄</div>
-                    <h3>Reset Order View</h3>
-                    <p>Clear Orders (orders remain in database for records)</p>
-                    <button 
-                        onClick={resetAllOrders}
-                        className="admin-control-button reset-btn"
-                    >
-                        Reset Order View
-                    </button>
-                </div>
-                
-                <div className="control-card">
                     <div className="control-icon">🍽️</div>
                     <h3>Menu Management</h3>
                     <p>Add, edit, or remove menu items, options and prices</p>
@@ -116,23 +118,37 @@ const AdminControls = () => {
                         Manage Menu
                     </button>
                 </div>
-                
-                {/* Placeholder for future controls */}
-                <div className="control-card coming-soon">
-                    <div className="control-icon">⚙️</div>
-                    <h3>System Settings</h3>
-                    <p>Configure restaurant settings and preferences</p>
-                    <button className="admin-control-button disabled-btn" disabled>
-                        Coming Soon
-                    </button>
-                </div>
-                
+
                 <div className="control-card coming-soon">
                     <div className="control-icon">📊</div>
                     <h3>Analytics</h3>
                     <p>View sales reports and order statistics</p>
                     <button className="admin-control-button disabled-btn" disabled>
                         Coming Soon
+                    </button>
+                </div>
+
+                <div className="control-card">
+                    <div className="control-icon">🔄</div>
+                    <h3>Reset Order View</h3>
+                    <p>Clear Orders (orders remain in database for records)</p>
+                    <button 
+                        onClick={resetAllOrders}
+                        className="admin-control-button reset-btn"
+                    >
+                        Reset Order View
+                    </button>
+                </div>
+
+                <div className="control-card logout-card">
+                    <div className="control-icon">🚪</div>
+                    <h3>Logout</h3>
+                    <p>Sign out of the admin panel</p>
+                    <button 
+                        className="admin-control-button logout-btn"
+                        onClick={handleLogout}
+                    >
+                        Logout
                     </button>
                 </div>
             </div>
