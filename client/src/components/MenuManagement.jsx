@@ -10,6 +10,11 @@ const MenuManagement = () => {
     const [showAddForm, setShowAddForm] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('All');
     
+    // Image upload states
+    const [uploadedImage, setUploadedImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
+    
     // Modal state
     const [modalState, setModalState] = useState({
         isOpen: false,
@@ -28,7 +33,7 @@ const MenuManagement = () => {
         image: '',
         category: 'Chaat',
         description: '',
-        otherOptions: [], // Only other options like No Onions, No Cilantro
+        otherOptions: [],
         extraOptions: {}
     });
 
@@ -48,6 +53,74 @@ const MenuManagement = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    // Image upload handling
+    const handleImageUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            return;
+        }
+
+        // Validate file size (2MB) - changed from 5MB
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Image size should be less than 2MB');
+            return;
+        }
+
+        setIsUploadingImage(true);
+
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const response = await axios.post('/api/upload-image', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            if (response.data.success) {
+                const imagePath = response.data.imagePath;
+                const filename = response.data.filename;
+                
+                // If there was a previous uploaded image, delete it
+                if (uploadedImage && uploadedImage.filename) {
+                    try {
+                        await axios.delete(`/api/delete-image/${uploadedImage.filename}`);
+                    } catch (error) {
+                        console.error('Error deleting previous image:', error);
+                    }
+                }
+
+                setUploadedImage({ path: imagePath, filename });
+                setImagePreview(imagePath);
+                setFormData(prev => ({ ...prev, image: imagePath }));
+            }
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert('Failed to upload image. Please try again.');
+        } finally {
+            setIsUploadingImage(false);
+        }
+    };
+
+    const removeUploadedImage = async () => {
+        if (uploadedImage && uploadedImage.filename) {
+            try {
+                await axios.delete(`/api/delete-image/${uploadedImage.filename}`);
+            } catch (error) {
+                console.error('Error deleting image:', error);
+            }
+        }
+        
+        setUploadedImage(null);
+        setImagePreview(null);
+        setFormData(prev => ({ ...prev, image: '' }));
     };
 
     const openModal = (config) => {
@@ -108,6 +181,17 @@ const MenuManagement = () => {
         }));
     };
 
+    const addExtraOption = () => {
+        const newOption = `New Option ${Object.keys(formData.extraOptions).length + 1}`;
+        setFormData(prev => ({
+            ...prev,
+            extraOptions: {
+                ...prev.extraOptions,
+                [newOption]: 0
+            }
+        }));
+    };
+
     const removeExtraOption = (option) => {
         setFormData(prev => {
             const updated = { ...prev.extraOptions };
@@ -119,7 +203,16 @@ const MenuManagement = () => {
         });
     };
 
-    const resetForm = () => {
+    const resetForm = async (isCancel = false) => {
+        // Only clean up uploaded image if form is cancelled (not on successful save)
+        if (isCancel && uploadedImage && uploadedImage.filename && !editingItem) {
+            try {
+                await axios.delete(`/api/delete-image/${uploadedImage.filename}`);
+            } catch (error) {
+                console.error('Error cleaning up image:', error);
+            }
+        }
+
         setFormData({
             name: '',
             price: '',
@@ -131,14 +224,14 @@ const MenuManagement = () => {
         });
         setEditingItem(null);
         setShowAddForm(false);
+        setUploadedImage(null);
+        setImagePreview(null);
     };
 
     const handleEdit = (item) => {
-        // Parse existing options, excluding standard spice levels and premium options
         const standardSpiceLevels = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
         const existingOptions = item.options || [];
         
-        // Filter out spice levels and premium options (those with (+$X) format)
         const otherOptions = existingOptions.filter(opt => 
             !standardSpiceLevels.includes(opt) && 
             !opt.match(/\(\+\$\d+(\.\d+)?\)$/)
@@ -153,6 +246,12 @@ const MenuManagement = () => {
             otherOptions: otherOptions,
             extraOptions: item.extraOptions || {}
         });
+        
+        // Set preview for existing image
+        if (item.image) {
+            setImagePreview(item.image);
+        }
+        
         setEditingItem(item);
         setShowAddForm(true);
     };
@@ -165,13 +264,11 @@ const MenuManagement = () => {
             return;
         }
 
-        // Automatically add appropriate spice levels based on category
         let standardOptions = [];
         
         if (formData.category === 'Chaat' || formData.category === 'Wraps') {
             standardOptions = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
         } else if (formData.category === 'Drinks') {
-            // For drinks, use temperature or ice options instead of spice
             if (formData.name.toLowerCase().includes('lassi')) {
                 standardOptions = ['Ice', 'No Ice'];
             } else if (formData.name.toLowerCase().includes('water')) {
@@ -179,12 +276,10 @@ const MenuManagement = () => {
             }
         }
 
-        // Create premium options with price indicators for the options array
         const premiumOptionsForArray = Object.entries(formData.extraOptions).map(([option, price]) => {
             return `${option} (+$${price})`;
         });
 
-        // Combine standard options, other options, and premium options
         const combinedOptions = [
             ...standardOptions,
             ...formData.otherOptions.filter(opt => opt.trim() !== ''),
@@ -197,12 +292,11 @@ const MenuManagement = () => {
             options: combinedOptions
         };
 
-        // Remove otherOptions from the data sent to server (keep extraOptions)
         delete itemData.otherOptions;
 
         try {
             if (editingItem) {
-                await axios.put(`/api/menu/${editingItem.id}`, itemData);
+                const response = await axios.put(`/api/menu/${editingItem.id}`, itemData);
                 setMenuItems(prev => prev.map(item => 
                     item.id === editingItem.id ? { ...item, ...itemData } : item
                 ));
@@ -212,7 +306,10 @@ const MenuManagement = () => {
                 setMenuItems(prev => [...prev, response.data]);
                 alert('Menu item added successfully!');
             }
-            resetForm();
+            
+            // Clear uploaded image state after successful save (but don't delete file)
+            setUploadedImage(null);
+            resetForm(false); // ✅ Pass false to indicate this is NOT a cancellation
         } catch (error) {
             console.error('Error saving menu item:', error);
             alert('Failed to save menu item. Please try again.');
@@ -223,14 +320,14 @@ const MenuManagement = () => {
         openModal({
             type: 'danger',
             title: 'Delete Menu Item',
-            message: `Are you sure you want to delete "${item.name}"? This action cannot be undone and will affect the customer menu immediately.`,
+            message: `Are you sure you want to delete "${item.name}"? This will also delete its image and cannot be undone.`,
             confirmText: 'Delete Item',
             cancelText: 'Cancel',
             onConfirm: async () => {
                 try {
                     await axios.delete(`/api/menu/${item.id}`);
                     setMenuItems(prev => prev.filter(menuItem => menuItem.id !== item.id));
-                    alert('Menu item deleted successfully!');
+                    alert('Menu item and image deleted successfully!');
                 } catch (error) {
                     console.error('Error deleting menu item:', error);
                     alert('Failed to delete menu item. Please try again.');
@@ -289,7 +386,7 @@ const MenuManagement = () => {
                     <div className="item-form-container">
                         <div className="form-header">
                             <h2>{editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}</h2>
-                            <button className="form-close-btn" onClick={resetForm}>×</button>
+                            <button className="form-close-btn" onClick={() => resetForm(true)}>×</button>
                         </div>
                         
                         <form onSubmit={handleSubmit} className="item-form">
@@ -337,16 +434,48 @@ const MenuManagement = () => {
                                     </select>
                                 </div>
 
+                                {/* Image Upload Section */}
                                 <div className="form-group">
-                                    <label htmlFor="image">Image Path</label>
-                                    <input
-                                        type="text"
-                                        id="image"
-                                        name="image"
-                                        value={formData.image}
-                                        onChange={handleInputChange}
-                                        placeholder="e.g., /images/pani-puri.jpg"
-                                    />
+                                    <label htmlFor="image">Item Image</label>
+                                    <div className="image-upload-container">
+                                        <input
+                                            type="file"
+                                            id="image"
+                                            accept="image/*"
+                                            onChange={handleImageUpload}
+                                            className="image-upload-input"
+                                        />
+                                        
+                                        {isUploadingImage && (
+                                            <div className="upload-progress">
+                                                <div className="upload-spinner"></div>
+                                                <span>Uploading image...</span>
+                                            </div>
+                                        )}
+                                        
+                                        {imagePreview && (
+                                            <div className="image-preview-container">
+                                                <img 
+                                                    src={imagePreview} 
+                                                    alt="Preview" 
+                                                    className="image-preview"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    className="remove-image-btn"
+                                                    onClick={removeUploadedImage}
+                                                    title="Remove image"
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        )}
+                                        
+                                        <div className="image-upload-info">
+                                            <p>Upload a high-quality image (max 2MB)</p>
+                                            <p>Supported formats: JPG, PNG, GIF</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -418,7 +547,7 @@ const MenuManagement = () => {
                                 </div>
                                 <div className="extra-options-container">
                                     {Object.entries(formData.extraOptions).map(([option, price], index) => (
-                                        <div key={index} className="extra-option-input-group"> {/* Use index as key instead of option */}
+                                        <div key={index} className="extra-option-input-group">
                                             <span className="premium-icon">💰</span>
                                             <input
                                                 type="text"
@@ -427,9 +556,7 @@ const MenuManagement = () => {
                                                     const newOption = e.target.value;
                                                     setFormData(prev => {
                                                         const extraOptions = { ...prev.extraOptions };
-                                                        // Remove old key
                                                         delete extraOptions[option];
-                                                        // Add new key with same price
                                                         if (newOption.trim()) {
                                                             extraOptions[newOption] = price;
                                                         }
@@ -487,10 +614,10 @@ const MenuManagement = () => {
                             </div>
 
                             <div className="form-actions">
-                                <button type="button" className="cancel-btn" onClick={resetForm}>
+                                <button type="button" className="cancel-btn" onClick={() => resetForm(true)}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="save-btn">
+                                <button type="submit" className="save-btn" disabled={isUploadingImage}>
                                     {editingItem ? 'Update Item' : 'Add Item'}
                                 </button>
                             </div>

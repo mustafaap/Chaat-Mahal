@@ -57,16 +57,44 @@ form {
 /* Menu Header */
 .menu-header {
     text-align: center;
-    margin: 10px 0px;
+    margin: 10px 0px 10px 0px; /* Add bottom margin for better spacing */
     padding: 20px 0;
+    position: relative;
+    z-index: 1;
+}
+
+.menu-header h1 {
+    font-family: 'Poppins', sans-serif;
+    color: #b85c38;
+    text-align: center;
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.menu-header h1::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, #b85c38, #d4722a, #b85c38);
+    border-radius: 2px;
 }
 
 .menu-subtitle {
     font-family: 'Inter', sans-serif;
     font-size: 1.2rem;
     color: #666;
-    margin-top: 0px;
+    margin-top: 30px; /* Add space for the decorative line */
     font-style: italic;
+    position: relative;
+    z-index: 1;
 }
 
 /* Simplified Floating Cart - With Bounce Animation Restored */
@@ -1178,15 +1206,6 @@ input[type="checkbox"], input[type="radio"] {
     border-radius: 12px;
     animation: pulse 2s infinite;
     margin-bottom: 16px;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.02);
-    }
 }
 
 .confirmation-notes {

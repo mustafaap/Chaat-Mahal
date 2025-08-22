@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs').promises;
 const path = require('path');
+const fsSync = require('fs');
 
 // Path to store menu items (you can also use a database)
 const menuFilePath = path.join(__dirname, '..', 'data', 'menu.json');
@@ -125,6 +126,23 @@ const writeMenuItems = async (menuItems) => {
     await fs.writeFile(menuFilePath, JSON.stringify(menuItems, null, 2));
 };
 
+// Helper function to delete image file
+const deleteImageFile = (imagePath) => {
+    if (imagePath && imagePath.startsWith('/images/')) {
+        const filename = path.basename(imagePath);
+        const fullPath = path.join(__dirname, '..', 'client', 'public', 'images', filename);
+        
+        try {
+            if (fsSync.existsSync(fullPath)) {
+                fsSync.unlinkSync(fullPath);
+                console.log(`Deleted image: ${filename}`);
+            }
+        } catch (error) {
+            console.error(`Error deleting image ${filename}:`, error);
+        }
+    }
+};
+
 // Get all menu items
 router.get('/', async (req, res) => {
     try {
@@ -167,6 +185,14 @@ router.put('/:id', async (req, res) => {
             return res.status(404).json({ message: 'Menu item not found' });
         }
         
+        const oldItem = menuItems[itemIndex];
+        const newImagePath = req.body.image;
+        
+        // If image path changed, delete old image
+        if (oldItem.image && oldItem.image !== newImagePath && oldItem.image.startsWith('/images/')) {
+            deleteImageFile(oldItem.image);
+        }
+        
         menuItems[itemIndex] = {
             ...menuItems[itemIndex],
             ...req.body,
@@ -187,14 +213,19 @@ router.delete('/:id', async (req, res) => {
     try {
         const menuItems = await readMenuItems();
         const itemId = parseInt(req.params.id);
-        const filteredItems = menuItems.filter(item => item.id !== itemId);
+        const itemToDelete = menuItems.find(item => item.id === itemId);
         
-        if (filteredItems.length === menuItems.length) {
+        if (!itemToDelete) {
             return res.status(404).json({ message: 'Menu item not found' });
         }
         
+        // Delete the associated image file
+        deleteImageFile(itemToDelete.image);
+        
+        const filteredItems = menuItems.filter(item => item.id !== itemId);
         await writeMenuItems(filteredItems);
-        res.json({ message: 'Menu item deleted successfully' });
+        
+        res.json({ message: 'Menu item and image deleted successfully' });
     } catch (error) {
         console.error('Error deleting menu item:', error);
         res.status(500).json({ message: 'Failed to delete menu item' });

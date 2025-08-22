@@ -9,6 +9,17 @@ import About from './components/About';
 import './styles/Navbar.css';
 import './styles/Footer.css';
 
+// Add ScrollToTop component
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
+
 const Footer = () => {
   return (
     <footer className="footer">
@@ -21,17 +32,6 @@ const Footer = () => {
               We bring the vibrant flavors of India's bustling street markets 
               straight to your plate with fresh ingredients and traditional recipes.
             </p>
-            <div className="social-links">
-              <a href="#" className="social-link" title="Instagram">
-                📷
-              </a>
-              <a href="#" className="social-link" title="Facebook">
-                👥
-              </a>
-              <a href="#" className="social-link" title="Twitter">
-                🐦
-              </a>
-            </div>
           </div>
           
           <div className="footer-section">
@@ -44,9 +44,15 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="mailto:info@chaatmahal.com">
+                <a href="mailto:snackit@chaatmahal.com">
                   <span className="icon">✉️</span>
-                  info@chaatmahal.com
+                  snackit@chaatmahal.com
+                </a>
+              </li>
+              <li>
+                <a href="https://instagram.com/the.chaat.mahal" target="_blank" rel="noopener noreferrer">
+                  <span className="icon">📷</span>
+                  @the.chaat.mahal
                 </a>
               </li>
               <li>
@@ -123,9 +129,14 @@ const CustomerNavbar = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) =
       window.location.reload();
     } else {
       // If we're on a different page, navigate to home
-      // This will be handled by the Link component
+      // ScrollToTop component will handle the scroll
     }
     closeMobileMenu();
+  };
+
+  const handleNavLinkClick = () => {
+    closeMobileMenu();
+    // Let the ScrollToTop component handle scrolling
   };
 
   return (
@@ -153,10 +164,10 @@ const CustomerNavbar = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) =
           <Link to="/" className="nav-link" onClick={handleMenuClick}>
             Menu
           </Link>
-          <Link to="/about" className="nav-link" onClick={closeMobileMenu}>
+          <Link to="/about" className="nav-link" onClick={handleNavLinkClick}>
             About Us
           </Link>
-          <Link to="/contact" className="nav-link" onClick={closeMobileMenu}>
+          <Link to="/contact" className="nav-link" onClick={handleNavLinkClick}>
             Contact
           </Link>
         </div>
@@ -260,6 +271,7 @@ const AppContent = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) => {
 
   return (
     <div>
+      <ScrollToTop />
       {isAdminPage ? (
         <AdminOrdersPage 
           mobileMenuOpen={mobileMenuOpen}

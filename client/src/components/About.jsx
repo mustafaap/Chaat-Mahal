@@ -39,10 +39,6 @@ const About = () => {
                             <p>We use only the freshest spices and ingredients, sourced locally when possible</p>
                         </div>
                         <div className="highlight-item">
-                            <h3>🚚 Mobile Convenience</h3>
-                            <p>Find us located in Charlotte - follow us on social media for daily updates!</p>
-                        </div>
-                        <div className="highlight-item">
                             <h3>🎯 Made to Order</h3>
                             <p>Every dish is prepared fresh when you order, with customizable spice levels</p>
                         </div>

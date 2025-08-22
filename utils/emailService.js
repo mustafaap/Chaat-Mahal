@@ -103,7 +103,9 @@ const generateOrderEmailHTML = (orderData) => {
                     <p><strong>Chaat Mahal Food Truck</strong></p>
                     <p>📍 Parking lot, 9311 JW Clay Blvd, Charlotte, NC 28262</p>
                     <p>📞 Phone: (704) 418-0330</p>
-                    <p style="margin-top: 15px;"><em>*Taxes applied to card and tap payments only</em></p>
+                    <p>✉️ Email: snackit@chaatmahal.com</p>
+                    <p>Follow us on Instagram: @the.chaat.mahal</p>
+                    <p>This email was sent automatically. Please don't reply to this email.</p>
                 </div>
             </div>
         </div>

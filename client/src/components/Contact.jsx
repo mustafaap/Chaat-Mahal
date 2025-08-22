@@ -36,7 +36,7 @@ const Contact = () => {
                         </div>
                         <div className="contact-item">
                             <h3>✉️ Email</h3>
-                            <p>info@chaatmahal.com</p>
+                            <p>snackit@chaatmahal.com</p>
                         </div>
                         <div className="contact-item">
                             <h3>🕐 Hours</h3>
@@ -46,8 +46,8 @@ const Contact = () => {
                         <div className="contact-item">
                             <h3>📱 Follow Us</h3>
                             <p>Instagram: @the.chaat.mahal</p>
-                            <p>Facebook: Chaat Mahal Charlotte</p>
-                            <p>Twitter: @chaatmahal_clt</p>
+                            <p>Facebook: the.chaat.mahal</p>
+                            {/* <p>Twitter: @chaatmahal_clt</p> */}
                         </div>
                     </div>
                 </div>
