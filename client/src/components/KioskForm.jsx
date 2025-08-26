@@ -149,44 +149,29 @@ const KioskForm = ({ initialStep = 1 }) => {
     const openModal = (item) => {
         setModalItem(item);
         
+        // Always reset options for this item when opening modal
+        let defaultOptions = [];
+        
         // Set default spice level for items that have spice options
         if (item.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt))) {
-            const currentOptions = itemOptions[item.name] || [];
-            const hasSpiceLevel = currentOptions.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt));
-            
-            if (!hasSpiceLevel) {
-                setItemOptions(prev => ({
-                    ...prev,
-                    [item.name]: [...currentOptions, 'Mild']
-                }));
-            }
+            defaultOptions.push('Mild'); // Default to Mild
         }
         
         // Set default "Ice" option for Mango Lassi
         if (item.name === 'Mango Lassi') {
-            const currentOptions = itemOptions[item.name] || [];
-            const hasIceOption = currentOptions.some(opt => ['Ice', 'No Ice'].includes(opt));
-            
-            if (!hasIceOption) {
-                setItemOptions(prev => ({
-                    ...prev,
-                    [item.name]: [...currentOptions, 'Ice']
-                }));
-            }
+            defaultOptions.push('Ice'); // Default to Ice
         }
         
         // Set default "Cold" option for Water
         if (item.name === 'Water') {
-            const currentOptions = itemOptions[item.name] || [];
-            const hasTemperatureOption = currentOptions.some(opt => ['Cold', 'Room Temperature'].includes(opt));
-            
-            if (!hasTemperatureOption) {
-                setItemOptions(prev => ({
-                    ...prev,
-                    [item.name]: [...currentOptions, 'Cold']
-                }));
-            }
+            defaultOptions.push('Cold'); // Default to Cold
         }
+        
+        // Reset the options for this item to defaults only
+        setItemOptions(prev => ({
+            ...prev,
+            [item.name]: defaultOptions
+        }));
     };
 
     const closeModal = () => {

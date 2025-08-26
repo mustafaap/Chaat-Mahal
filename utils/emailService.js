@@ -2,17 +2,6 @@ const nodemailer = require('nodemailer');
 const fs = require('fs');
 const path = require('path');
 
-// Read CSS file
-const getCSSContent = () => {
-    try {
-        const cssPath = path.join(__dirname, 'styles', 'emailService.css'); // Added 'styles' folder
-        return fs.readFileSync(cssPath, 'utf8');
-    } catch (error) {
-        console.warn('CSS file not found, using inline styles');
-        return ''; // Fallback to inline styles if CSS file is missing
-    }
-};
-
 const createTransporter = () => {
     return nodemailer.createTransport({
         service: 'gmail',
@@ -25,7 +14,8 @@ const createTransporter = () => {
 
 const generateOrderEmailHTML = (orderData) => {
     const { customerName, orderNumber, items, total, notes } = orderData;
-    const cssContent = getCSSContent();
+    
+    const cssContent = fs.readFileSync(path.join(__dirname, 'styles', 'emailService.css'), 'utf8');
     
     return `
     <!DOCTYPE html>
@@ -55,28 +45,19 @@ const generateOrderEmailHTML = (orderData) => {
                     <div class="items-list">
                         <table class="item-table">
                             ${Array.isArray(items) ? items.map(item => {
-                                const itemName = typeof item === 'string' ? item : item.name;
-                                const itemOptions = item.options && item.options.length > 0 ? item.options : [];
-                                const itemPrice = item.price ? item.price.toFixed(2) : (total / items.length).toFixed(2);
-                                
-                                // Parse options from item string if it's a string
-                                let displayName = itemName;
-                                let displayOptions = itemOptions;
-                                
-                                if (typeof item === 'string' && item.includes('(')) {
-                                    const parts = item.split(' (');
-                                    displayName = parts[0];
-                                    displayOptions = parts[1] ? [parts[1].replace(')', '')] : [];
-                                }
+                                const itemPrice = item.price ? item.price.toFixed(2) : '0.00';
+                                const itemName = item.name || 'Unknown Item';
+                                const itemOptions = item.options || [];
+                                const quantity = item.quantity || 1;
                                 
                                 return `
                                     <tr>
                                         <td class="item-name-cell">
-                                            <div class="item-name">${displayName}</div>
-                                            ${displayOptions.length > 0 ? `<div class="item-options">Options: ${displayOptions.join(', ')}</div>` : ''}
+                                            <div class="item-name">${quantity > 1 ? `${quantity}x ` : ''}${itemName}</div>
+                                            ${itemOptions.length > 0 ? `<div class="item-options">Options: ${itemOptions.join(', ')}</div>` : ''}
                                         </td>
                                         <td class="item-price-cell">
-                                            $${itemPrice}
+                                            $${itemPrice}${quantity > 1 ? ` each` : ''}
                                         </td>
                                     </tr>
                                 `;
@@ -94,10 +75,6 @@ const generateOrderEmailHTML = (orderData) => {
                         <strong>Special Instructions:</strong> ${notes}
                     </div>
                 ` : ''}
-                
-                <div class="payment-notice">
-                    <strong>Please pay at the counter to enter the order preparation line.</strong>
-                </div>
                 
                 <div class="footer">
                     <p><strong>Chaat Mahal Food Truck</strong></p>

@@ -50,6 +50,7 @@ body {
     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     position: relative;
     z-index: 1;
+    color: white !important; /* Force white text for Gmail dark mode */
 }
 
 .header p {
@@ -58,29 +59,31 @@ body {
     font-size: 1.1rem;
     position: relative;
     z-index: 1;
+    color: white !important; /* Force white text for Gmail dark mode */
 }
 
 /* Content area */
 .content {
     padding: 35px 30px;
+    background: white !important; /* Force white background for Gmail dark mode */
 }
 
 /* Order identification */
 .order-number {
     font-size: 1.8rem;
     font-weight: bold;
-    color: #b85c38;
+    color: #b85c38 !important;
     text-align: center;
     margin-bottom: 25px;
     padding: 15px;
-    background: linear-gradient(90deg, rgba(184,92,56,0.1) 0%, rgba(184,92,56,0.05) 100%);
+    background: linear-gradient(90deg, rgba(184,92,56,0.1) 0%, rgba(184,92,56,0.05) 100%) !important;
     border-radius: 8px;
     border-left: 4px solid #b85c38;
 }
 
 .customer-name {
     font-size: 1.3rem;
-    color: #333;
+    color: #333 !important;
     text-align: center;
     margin-bottom: 25px;
     font-weight: 600;
@@ -88,7 +91,7 @@ body {
 
 /* Order details section */
 .order-details {
-    background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
+    background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%) !important;
     padding: 25px;
     border-radius: 12px;
     margin: 25px 0;
@@ -98,7 +101,7 @@ body {
 .order-details h3 {
     margin-top: 0;
     margin-bottom: 20px;
-    color: #b85c38;
+    color: #b85c38 !important;
     font-size: 1.4rem;
     font-weight: 600;
     text-align: center;
@@ -111,28 +114,30 @@ body {
     border: 1px solid #dee2e6;
     border-radius: 10px;
     overflow: hidden;
-    background: white;
+    background: white !important;
     margin-bottom: 20px;
 }
 
 .item-table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    background: white !important;
 }
 
 .item-table tr {
     transition: background-color 0.2s ease;
+    background: white !important; /* Force white background for Gmail dark mode */
 }
 
 .item-table tr:hover {
-    background-color: rgba(184,92,56,0.05);
+    background-color: rgba(184,92,56,0.05) !important;
 }
 
 .item-table td {
     padding: 18px 20px;
     border-bottom: 1px solid #e9ecef;
     vertical-align: top;
+    background: white !important; /* Force white background for Gmail dark mode */
 }
 
 .item-table tr:last-child td {
@@ -146,7 +151,7 @@ body {
 
 .item-name {
     font-weight: 600;
-    color: #2c3e50;
+    color: #2c3e50 !important;
     margin-bottom: 6px;
     font-size: 1.05rem;
     line-height: 1.4;
@@ -154,11 +159,11 @@ body {
 
 .item-options {
     font-size: 0.9rem;
-    color: #6c757d;
+    color: #6c757d !important;
     font-style: italic;
     margin-top: 6px;
     padding: 4px 8px;
-    background: rgba(108,117,125,0.1);
+    background: rgba(108,117,125,0.1) !important;
     border-radius: 4px;
     display: inline-block;
 }
@@ -168,7 +173,7 @@ body {
     width: 35%;
     text-align: right;
     font-weight: bold;
-    color: #28a745;
+    color: #28a745 !important;
     font-size: 1.1rem;
     white-space: nowrap;
     padding-right: 25px;
@@ -176,8 +181,8 @@ body {
 
 /* Total section */
 .total {
-    background: linear-gradient(135deg, #b85c38 0%, #a14d2c 100%);
-    color: white;
+    background: linear-gradient(135deg, #b85c38 0%, #a14d2c 100%) !important;
+    color: white !important;
     padding: 25px;
     text-align: center;
     font-size: 1.6rem;
@@ -189,55 +194,39 @@ body {
 
 /* Notes section */
 .notes {
-    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%) !important;
     border: 1px solid #ffd700;
     padding: 20px;
     border-radius: 10px;
+    color: #856404 !important;
     margin: 25px 0;
     border-left: 4px solid #ffc107;
 }
 
 .notes strong {
-    color: #856404;
+    color: #856404 !important;
     font-size: 1.05rem;
-}
-
-/* Payment notice */
-.payment-notice {
-    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-    border: 2px solid #28a745;
-    padding: 20px;
-    border-radius: 10px;
-    margin: 25px 0;
-    text-align: center;
-    color: #155724;
-    font-weight: 600;
-    font-size: 1.05rem;
-    box-shadow: 0 2px 8px rgba(40,167,69,0.2);
-}
-
-.payment-notice strong {
-    font-size: 1.1rem;
 }
 
 /* Footer section */
 .footer {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
     padding: 30px;
     text-align: center;
     border-top: 3px solid #b85c38;
-    color: #495057;
+    color: #495057 !important;
 }
 
 .footer p {
     margin: 8px 0;
     line-height: 1.6;
+    color: #495057 !important;
 }
 
 .footer p:first-child {
     font-weight: 700;
     font-size: 1.2rem;
-    color: #b85c38;
+    color: #b85c38 !important;
     margin-bottom: 15px;
 }
 
@@ -245,7 +234,7 @@ body {
     margin-top: 20px;
     font-size: 0.9rem;
     font-style: italic;
-    color: #6c757d;
+    color: #6c757d !important;
 }
 
 /* Responsive design for mobile */
@@ -261,18 +250,22 @@ body {
     
     .header h1 {
         font-size: 1.8rem;
+        color: white !important;
     }
     
     .content {
         padding: 25px 20px;
+        background: white !important;
     }
     
     .order-details {
         padding: 20px 15px;
+        background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%) !important;
     }
     
     .item-table td {
         padding: 15px 12px;
+        background: white !important;
     }
     
     .item-name-cell {
@@ -287,42 +280,89 @@ body {
     .total {
         font-size: 1.4rem;
         padding: 20px;
+        background: linear-gradient(135deg, #b85c38 0%, #a14d2c 100%) !important;
+        color: white !important;
     }
     
     .footer {
         padding: 25px 20px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
     }
 }
 
-/* Dark mode support */
+/* Gmail Dark Mode Specific Overrides */
 @media (prefers-color-scheme: dark) {
+    /* Force light theme for email content in Gmail dark mode */
     .container {
-        background: #2c3e50;
-        color: #ecf0f1;
+        background: white !important;
+        color: #333 !important;
+    }
+    
+    .content {
+        background: white !important;
+        color: #333 !important;
     }
     
     .order-details {
-        background: linear-gradient(145deg, #34495e 0%, #2c3e50 100%);
-        border-color: #34495e;
+        background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        border-color: #dee2e6 !important;
+        color: #333 !important;
     }
     
     .items-list,
-    .item-table {
-        background: #34495e;
-        border-color: #34495e;
-    }
-    
+    .item-table,
+    .item-table tr,
     .item-table td {
-        border-color: #485563;
+        background: white !important;
+        color: #333 !important;
+        border-color: #e9ecef !important;
     }
     
     .item-name {
-        color: #ecf0f1;
+        color: #2c3e50 !important;
     }
     
+    .item-options {
+        color: #6c757d !important;
+        background: rgba(108,117,125,0.1) !important;
+    }
+    
+    .item-price-cell {
+        color: #28a745 !important;
+    }
+    
+    .customer-name,
+    .order-number {
+        color: #333 !important;
+    }
+    
+    /* Make notes/special instructions text darker in dark mode */
+    .notes {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%) !important;
+        color: #5a4a00 !important; /* Much darker than #856404 */
+        border-color: #ffd700 !important;
+    }
+    
+    .notes strong {
+        color: #5a4a00 !important; /* Much darker than #856404 */
+    }
+    
+    /* Make footer text much darker in dark mode */
     .footer {
-        background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
-        color: #bdc3c7;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        color: #2c3e50 !important; /* Much darker than #495057 */
+    }
+    
+    .footer p {
+        color: #2c3e50 !important; /* Much darker than #495057 */
+    }
+    
+    .footer p:first-child {
+        color: #b85c38 !important; /* Keep brand color for restaurant name */
+    }
+    
+    .footer p:last-child {
+        color: #495057 !important; /* Darker than #6c757d but not as dark as body text */
     }
 }
 
@@ -336,17 +376,40 @@ body {
     .container {
         box-shadow: none;
         border: 1px solid #ddd;
+        background: white !important;
     }
     
     .header {
         background: #b85c38 !important;
-        -webkit-print-color-adjust: exact;
-        color-adjust: exact;
+        color: white !important;
+    }
+    
+    .header h1,
+    .header p {
+        color: white !important;
     }
     
     .total {
         background: #b85c38 !important;
-        -webkit-print-color-adjust: exact;
-        color-adjust: exact;
+        color: white !important;
+    }
+    
+    .content {
+        background: white !important;
+    }
+}
+
+/* Outlook specific fixes */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    .container {
+        background: white !important;
+    }
+    
+    .content {
+        background: white !important;
+    }
+    
+    .item-table td {
+        background: white !important;
     }
 }

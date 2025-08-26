@@ -51,19 +51,65 @@ router.post('/', async (req, res) => {
             try {
                 console.log('Attempting to send email to:', customerEmail); // Debug log
                 
-                // Prepare email data
+                // Helper function to calculate item price with options
+                const calculateItemPrice = (itemString, menuItems) => {
+                    const parts = itemString.split(' (');
+                    const itemName = parts[0];
+                    const options = parts[1] ? parts[1].replace(')', '').split(', ') : [];
+                    
+                    const menuItem = menuItems.find(item => item.name === itemName);
+                    if (!menuItem) return 0;
+                    
+                    let price = menuItem.price;
+                    
+                    // Add extra option costs
+                    if (menuItem.extraOptions && options.length > 0) {
+                        options.forEach(option => {
+                            // Check if the option exists directly in extraOptions
+                            if (menuItem.extraOptions[option]) {
+                                price += menuItem.extraOptions[option];
+                            } else {
+                                // Handle options with (+$X) format - extract the base name
+                                const baseOptionName = option.replace(/\s*\(\+\$\d+(\.\d+)?\)/, '');
+                                if (menuItem.extraOptions[baseOptionName]) {
+                                    price += menuItem.extraOptions[baseOptionName];
+                                }
+                            }
+                        });
+                    }
+                    
+                    return price;
+                };
+                
+                // Read menu items to calculate prices
+                const fs = require('fs').promises;
+                const path = require('path');
+                const menuPath = path.join(__dirname, '..', 'data', 'menu.json');
+                const menuData = await fs.readFile(menuPath, 'utf8');
+                const menuItems = JSON.parse(menuData);
+                
+                // Group items by name and options, then calculate quantities
+                const itemCounts = {};
+                items.forEach(itemString => {
+                    const key = itemString; // Use the full string as key to group identical items
+                    itemCounts[key] = (itemCounts[key] || 0) + 1;
+                });
+
+                // Prepare email data with quantities
                 const emailData = {
                     customerName,
                     orderNumber,
-                    items: items.map(itemString => {
+                    items: Object.entries(itemCounts).map(([itemString, quantity]) => {
                         const parts = itemString.split(' (');
                         const name = parts[0];
                         const options = parts[1] ? parts[1].replace(')', '').split(', ') : [];
+                        const itemPrice = calculateItemPrice(itemString, menuItems);
+                        
                         return {
                             name,
                             options,
-                            quantity: 1,
-                            price: total / items.length
+                            quantity,
+                            price: itemPrice
                         };
                     }),
                     total,
