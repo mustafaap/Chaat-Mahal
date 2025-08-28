@@ -13,7 +13,7 @@ const createTransporter = () => {
 };
 
 const generateOrderEmailHTML = (orderData) => {
-    const { customerName, orderNumber, items, total, notes } = orderData;
+    const { customerName, orderNumber, items, total } = orderData;
     
     const cssContent = fs.readFileSync(path.join(__dirname, 'styles', 'emailService.css'), 'utf8');
     
@@ -70,11 +70,19 @@ const generateOrderEmailHTML = (orderData) => {
                     </div>
                 </div>
                 
-                ${notes ? `
-                    <div class="notes">
-                        <strong>Special Instructions:</strong> ${notes}
-                    </div>
-                ` : ''}
+                <!-- Removed special instructions section -->
+                
+                <!-- Leave a Rating Section -->
+                <div class="rating-section">
+                    <h3>❤️ Loved your meal?</h3>
+                    <p>Help us spread the word! Your review means the world to our business.</p>
+                    <a href="https://www.google.com/maps/place/Chaat+Mahal/@35.3113509,-80.7489563,17z/data=!4m8!3m7!1s0x88541ddc5479ff77:0xcae7dbafe53489d9!8m2!3d35.3113509!4d-80.7489563!9m1!1b1!16s%2Fg%2F11y3_8h8qy?entry=ttu&g_ep=EgoyMDI1MDExNS4wIKXMDSoASAFQAw%3D%3D" 
+                       class="rating-button" 
+                       target="_blank">
+                        ⭐ Leave a Google Review
+                    </a>
+                    <p class="rating-subtitle">It only takes a minute and helps other food lovers find us!</p>
+                </div>
                 
                 <div class="footer">
                     <p><strong>Chaat Mahal Food Truck</strong></p>

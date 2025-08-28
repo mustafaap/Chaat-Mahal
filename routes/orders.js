@@ -254,4 +254,27 @@ router.delete('/', async (req, res) => {
     }
 });
 
+// PUT - Update order items and total
+router.put('/:id', async (req, res) => {
+    try {
+        const { items, total } = req.body;
+        
+        const order = await Order.findByIdAndUpdate(
+            req.params.id,
+            { items, total },
+            { new: true }
+        );
+        
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        req.io.emit('ordersUpdated');
+        res.json(order);
+    } catch (error) {
+        console.error('Error updating order:', error);
+        res.status(500).json({ message: 'Failed to update order' });
+    }
+});
+
 module.exports = router;

@@ -208,6 +208,61 @@ body {
     font-size: 1.05rem;
 }
 
+/* Rating Section Styles */
+.rating-section {
+    background: linear-gradient(135deg, #fff8e1 0%, #fff3c4 100%) !important;
+    border: 2px solid #ffc107;
+    border-radius: 12px;
+    padding: 25px;
+    margin: 25px 0;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.2);
+}
+
+.rating-section h3 {
+    margin: 0 0 15px 0;
+    color: #e65100 !important;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.rating-section p {
+    margin: 10px 0;
+    color: #bf360c !important;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.rating-button {
+    display: inline-block;
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%) !important;
+    color: white !important;
+    text-decoration: none !important;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin: 15px 0;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.rating-button:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+    color: white !important;
+    text-decoration: none !important;
+}
+
+.rating-subtitle {
+    font-size: 0.9rem !important;
+    color: #8d6e63 !important;
+    font-style: italic;
+    margin-top: 10px !important;
+}
+
 /* Footer section */
 .footer {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
@@ -288,6 +343,21 @@ body {
         padding: 25px 20px;
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
     }
+    
+    .rating-section {
+        padding: 20px 15px;
+        margin: 20px 0;
+    }
+    
+    .rating-section h3 {
+        font-size: 1.2rem;
+    }
+    
+    .rating-button {
+        padding: 12px 25px;
+        font-size: 1rem;
+        margin: 12px 0;
+    }
 }
 
 /* Gmail Dark Mode Specific Overrides */
@@ -363,6 +433,34 @@ body {
     
     .footer p:last-child {
         color: #495057 !important; /* Darker than #6c757d but not as dark as body text */
+    }
+    
+    /* Rating section dark mode */
+    .rating-section {
+        background: linear-gradient(135deg, #fff8e1 0%, #fff3c4 100%) !important;
+        border-color: #ffc107 !important;
+    }
+    
+    .rating-section h3 {
+        color: #e65100 !important;
+    }
+    
+    .rating-section p {
+        color: #bf360c !important;
+    }
+    
+    .rating-button {
+        background: linear-gradient(135deg, #4caf50 0%, #45a049 100%) !important;
+        color: white !important;
+    }
+    
+    .rating-button:hover {
+        background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%) !important;
+        color: white !important;
+    }
+    
+    .rating-subtitle {
+        color: #8d6e63 !important;
     }
 }
 

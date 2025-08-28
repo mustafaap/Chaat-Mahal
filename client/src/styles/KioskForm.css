@@ -280,7 +280,8 @@ form {
     font-size: 0.8rem;
     color: #666;
     font-style: italic;
-    margin-top: 2px;
+    margin: 2px 0px 0px 8px;
+
 }
 
 .cart-item-price {
@@ -761,13 +762,11 @@ button {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(184, 92, 56, 0.2);
 }
 
 button:hover {
     background: #a14d2c;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(184, 92, 56, 0.3);
 }
 
 label {

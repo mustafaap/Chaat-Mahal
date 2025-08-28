@@ -10,6 +10,12 @@ const OrderList = ({ currentView, setCurrentView }) => {
     const [orders, setOrders] = useState([]);
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [givenItems, setGivenItems] = useState({});
+    const [menuItems, setMenuItems] = useState([]); // Add menu items state
+    const [editingOrder, setEditingOrder] = useState(null); // Add editing state
+    const [editOrderItems, setEditOrderItems] = useState({}); // Add edit items state
+    const [editItemPrices, setEditItemPrices] = useState({}); // Add this line
+    const [editOptionModal, setEditOptionModal] = useState(null); // Add this
+    const [editItemOptions, setEditItemOptions] = useState({}); // Add this
     
     // Modal states
     const [modalState, setModalState] = useState({
@@ -31,8 +37,18 @@ const OrderList = ({ currentView, setCurrentView }) => {
         setOrders(response.data);
     };
 
+    const fetchMenuItems = async () => {
+        try {
+            const response = await axios.get('/api/menu');
+            setMenuItems(response.data);
+        } catch (error) {
+            console.error('Error fetching menu items:', error);
+        }
+    };
+
     useEffect(() => {
         fetchOrders();
+        fetchMenuItems(); // Fetch menu items on component mount
         socket.on('ordersUpdated', fetchOrders);
         return () => {
             socket.off('ordersUpdated', fetchOrders);
@@ -220,6 +236,266 @@ const OrderList = ({ currentView, setCurrentView }) => {
     const completedOrders = orders.filter(order => order.status === 'Completed');
     const cancelledOrders = orders.filter(order => order.status === 'Cancelled');
 
+    // Edit order functions
+    const startEditingOrder = (order) => {
+        const itemCounts = {};
+        const itemPrices = {}; // Store the actual price paid for each item type
+        
+        order.items.forEach(item => {
+            // Use the full item string (including options) as the key instead of just the name
+            const itemKey = item; // Keep the full "Masala Puri (No Onions, Mild)" format
+            
+            // Calculate the actual price that was paid for this item (including premium options)
+            const itemPrice = calculateOriginalItemPrice(item);
+            
+            // Group items by full key (name + options)
+            itemCounts[itemKey] = (itemCounts[itemKey] || 0) + 1;
+            
+            // Store the price for this item type
+            itemPrices[itemKey] = itemPrice;
+        });
+        
+        setEditOrderItems(itemCounts);
+        setEditItemPrices(itemPrices);
+        setEditingOrder(order);
+    };
+
+    const cancelEditingOrder = () => {
+        setEditingOrder(null);
+        setEditOrderItems({});
+        setEditItemPrices({}); // Clear prices too
+    };
+
+    const updateEditItemQuantity = (itemKey, change) => {
+        setEditOrderItems(prev => {
+            const newQuantity = Math.max(0, (prev[itemKey] || 0) + change);
+            if (newQuantity === 0) {
+                const updated = { ...prev };
+                delete updated[itemKey];
+                return updated;
+            }
+            return {
+                ...prev,
+                [itemKey]: newQuantity
+            };
+        });
+    };
+
+    const addNewItemToEdit = (itemName) => {
+        const menuItem = menuItems.find(item => item.name === itemName);
+        if (menuItem && menuItem.options && menuItem.options.length > 0) {
+            openEditOptionsModal(itemName);
+        } else {
+            // No options, add directly
+            setEditOrderItems(prev => ({
+                ...prev,
+                [itemName]: (prev[itemName] || 0) + 1
+            }));
+            
+            if (!editItemPrices[itemName]) {
+                setEditItemPrices(prev => ({
+                    ...prev,
+                    [itemName]: menuItem ? menuItem.price : 0
+                }));
+            }
+        }
+    };
+
+    // Add function to open options modal for editing
+    const openEditOptionsModal = (itemName) => {
+        const menuItem = menuItems.find(item => item.name === itemName);
+        if (menuItem && menuItem.options && menuItem.options.length > 0) {
+            // Set default options when opening modal
+            let defaultOptions = [];
+            
+            // Set default spice level for items that have spice options
+            if (menuItem.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt))) {
+                defaultOptions.push('Mild'); // Default to Mild
+            }
+            
+            // Set default "Ice" option for Mango Lassi
+            if (menuItem.name === 'Mango Lassi') {
+                defaultOptions.push('Ice'); // Default to Ice
+            }
+            
+            // Set default "Cold" option for Water
+            if (menuItem.name === 'Water') {
+                defaultOptions.push('Cold'); // Default to Cold
+            }
+            
+            setEditItemOptions({
+                [itemName]: defaultOptions
+            });
+            setEditOptionModal({ itemName, menuItem });
+        } else {
+            // If no options, just add the base item
+            addNewItemToEdit(itemName);
+        }
+    };
+
+    const closeEditOptionsModal = () => {
+        setEditOptionModal(null);
+        setEditItemOptions({});
+    };
+
+    const handleEditOptionSubmit = () => {
+        const { itemName, menuItem, editingKey } = editOptionModal;
+        const selectedOptions = editItemOptions[itemName] || [];
+        
+        // Calculate price with options
+        let itemPrice = menuItem.price;
+        if (menuItem.extraOptions && selectedOptions.length > 0) {
+            selectedOptions.forEach(option => {
+                if (menuItem.extraOptions[option]) {
+                    itemPrice += menuItem.extraOptions[option];
+                } else {
+                    const baseOptionName = option.replace(/\s*\(\+\$\d+(\.\d+)?\)/, '');
+                    if (menuItem.extraOptions[baseOptionName]) {
+                        itemPrice += menuItem.extraOptions[baseOptionName];
+                    }
+                }
+            });
+        }
+
+        // Create new item key with options
+        const newItemKey = selectedOptions.length > 0 
+            ? `${itemName} (${selectedOptions.join(', ')})`
+            : itemName;
+
+        setEditOrderItems(prev => {
+            const updated = { ...prev };
+            
+            if (editingKey) {
+                // Editing existing item - transfer quantity to new key
+                const quantity = updated[editingKey] || 1;
+                delete updated[editingKey];
+                updated[newItemKey] = quantity;
+            } else {
+                // Adding new item
+                updated[newItemKey] = (updated[newItemKey] || 0) + 1;
+            }
+            
+            return updated;
+        });
+
+        // Update prices
+        setEditItemPrices(prev => {
+            const updated = { ...prev };
+            if (editingKey) {
+                delete updated[editingKey];
+            }
+            updated[newItemKey] = itemPrice;
+            return updated;
+        });
+
+        closeEditOptionsModal();
+    };
+
+    const calculateOriginalItemPrice = (itemString) => {
+        const parts = itemString.split(' (');
+        const itemName = parts[0];
+        const options = parts[1] ? parts[1].replace(')', '').split(', ') : [];
+        
+        const menuItem = menuItems.find(item => item.name === itemName);
+        if (!menuItem) return 0;
+        
+        let price = menuItem.price;
+        
+        // Add extra option costs
+        if (menuItem.extraOptions && options.length > 0) {
+            options.forEach(option => {
+                // Check if the option exists directly in extraOptions
+                if (menuItem.extraOptions[option]) {
+                    price += menuItem.extraOptions[option];
+                } else {
+                    // Handle options with (+$X) format - extract the base name
+                    const baseOptionName = option.replace(/\s*\(\+\$\d+(\.\d+)?\)/, '');
+                    if (menuItem.extraOptions[baseOptionName]) {
+                        price += menuItem.extraOptions[baseOptionName];
+                    }
+                }
+            });
+        }
+        
+        return price;
+    };
+
+    const calculateEditOrderTotal = () => {
+        return Object.entries(editOrderItems).reduce((total, [itemName, quantity]) => {
+            // For existing items that were in the original order, use the stored price
+            // For new items added during editing, use the base menu price
+            const itemPrice = editItemPrices[itemName] || (() => {
+                const menuItem = menuItems.find(item => item.name === itemName);
+                return menuItem ? menuItem.price : 0;
+            })();
+            
+            return total + (itemPrice * quantity);
+        }, 0);
+    };
+
+    const saveEditedOrder = async () => {
+        if (Object.keys(editOrderItems).length === 0) {
+            alert('Order must have at least one item');
+            return;
+        }
+
+        const newItems = [];
+        const originalItemsByName = {};
+        
+        // Group original items by name to preserve their option format
+        editingOrder.items.forEach(item => {
+            const itemName = item.split(' (')[0];
+            if (!originalItemsByName[itemName]) {
+                originalItemsByName[itemName] = [];
+            }
+            originalItemsByName[itemName].push(item);
+        });
+
+        Object.entries(editOrderItems).forEach(([itemName, quantity]) => {
+            // For existing items, preserve the original format with options
+            if (originalItemsByName[itemName]) {
+                const originalItems = originalItemsByName[itemName];
+                for (let i = 0; i < quantity; i++) {
+                    // Use the original item format if available, otherwise use base name
+                    newItems.push(originalItems[i] || itemName);
+                }
+            } else {
+                // For new items added during editing, just use the item name
+                for (let i = 0; i < quantity; i++) {
+                    newItems.push(itemName);
+                }
+            }
+        });
+
+        const newTotal = calculateEditOrderTotal();
+
+        try {
+            await axios.put(`/api/orders/${editingOrder._id}`, {
+                items: newItems,
+                total: newTotal
+            });
+            
+            // Update local state
+            setOrders(orders.map(order => 
+                order._id === editingOrder._id 
+                    ? { ...order, items: newItems, total: newTotal }
+                    : order
+            ));
+            
+            // Clear given items for this order since items have changed
+            setGivenItems(prev => {
+                const updated = { ...prev };
+                delete updated[editingOrder._id];
+                return updated;
+            });
+            
+            cancelEditingOrder();
+        } catch (error) {
+            console.error('Error updating order:', error);
+            alert('Failed to update order. Please try again.');
+        }
+    };
+
     return (
         <div className="order-list-container">
             {!currentView && (
@@ -263,6 +539,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                 const orderAge = getOrderAge(order.createdAt);
                                 const completionPercentage = getCompletionPercentage(order._id, itemCounts);
                                 const allItemsGiven = areAllItemsGiven(order._id, itemCounts);
+                                const isBeingEdited = editingOrder?._id === order._id;
 
                                 return (
                                     <li key={order._id} className={`order-item ${allItemsGiven ? 'all-items-given' : ''} ${order.paid ? 'order-paid' : ''}`}>
@@ -293,36 +570,124 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                 <div className="info-card">
                                                     <div className="order-items">
                                                         <div className="order-items-header">
-                                                            Items to Prepare ({Object.keys(itemCounts).filter(itemName => givenItems[order._id]?.[itemName]).length}/{Object.keys(itemCounts).length} Given)
+                                                            <div className="items-header-content">
+                                                                <span>Items to Prepare ({Object.keys(isBeingEdited ? editOrderItems : itemCounts).filter(itemName => givenItems[order._id]?.[itemName]).length}/{Object.keys(isBeingEdited ? editOrderItems : itemCounts).length} Given)</span>
+                                                                {!isBeingEdited && (
+                                                                    <button 
+                                                                        className="edit-order-btn"
+                                                                        onClick={() => startEditingOrder(order)}
+                                                                        title="Edit order items"
+                                                                    >
+                                                                        ✏️ Edit
+                                                                    </button>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        {Object.entries(itemCounts).map(([name, qty]) => {
-                                                            const isGiven = givenItems[order._id]?.[name];
-                                                            return (
-                                                                <div 
-                                                                    key={name} 
-                                                                    className={`order-item-detail ${isGiven ? 'item-given' : 'item-pending'}`}
-                                                                    onClick={() => toggleItemGiven(order._id, name)}
-                                                                >
-                                                                    <div className="item-content">
-                                                                        <span className="item-checkbox">
-                                                                            {isGiven ? '✅' : '⭕'}
-                                                                        </span>
-                                                                        <div className="item-details">
-                                                                            <strong>{qty}x</strong> {name}
-                                                                        </div>
-                                                                        <span className={`item-status ${isGiven ? 'item-given' : 'item-pending'}`}>
-                                                                            {isGiven ? 'GIVEN' : 'PENDING'}
-                                                                        </span>
+                                                        
+                                                        {isBeingEdited ? (
+                                                            // Edit mode
+                                                            <div className="edit-order-container">
+                                                                <div className="edit-items-list">
+                                                                    {Object.entries(editOrderItems).map(([itemKey, qty]) => {
+                                                                        const itemName = itemKey.split(' (')[0];
+                                                                        const hasOptions = itemKey.includes('(');
+                                                                        const menuItem = menuItems.find(item => item.name === itemName);
+                                                                        const canHaveOptions = menuItem?.options?.length > 0;
+                                                                        
+                                                                        return (
+                                                                            <div key={itemKey} className="edit-order-item">
+                                                                                <div className="edit-item-info">
+                                                                                    <strong>{qty}x&nbsp;</strong> {itemKey}
+                                                                                </div>
+                                                                                <div className="edit-item-controls">
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        className="edit-qty-btn minus"
+                                                                                        onClick={() => updateEditItemQuantity(itemKey, -1)}
+                                                                                    >
+                                                                                        −
+                                                                                    </button>
+                                                                                    <span className="edit-qty-display">{qty}</span>
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        className="edit-qty-btn plus"
+                                                                                        onClick={() => updateEditItemQuantity(itemKey, 1)}
+                                                                                    >
+                                                                                        +
+                                                                                    </button>
+                                                                                </div>
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                                
+                                                                <div className="add-item-section">
+                                                                    <h4 style={{ margin: '0 0 10px 0', color: '#2c3e50', fontSize: '1rem' }}>Add Items</h4>
+                                                                    <div className="add-item-pills">
+                                                                        {menuItems.map(item => (
+                                                                            <div 
+                                                                                key={item.id} 
+                                                                                className="add-item-pill"
+                                                                                onClick={() => addNewItemToEdit(item.name)}
+                                                                            >
+                                                                                <span>{item.name}</span>
+                                                                                <span className="add-item-pill-price">${item.price}</span>
+                                                                            </div>
+                                                                        ))}
                                                                     </div>
                                                                 </div>
-                                                            );
-                                                        })}
+                                                                
+                                                                <div className="edit-order-total">
+                                                                    New Total: ${calculateEditOrderTotal().toFixed(2)}
+                                                                </div>
+                                                                
+                                                                <div className="edit-order-actions">
+                                                                    <button 
+                                                                        className="save-edit-btn"
+                                                                        onClick={saveEditedOrder}
+                                                                    >
+                                                                        Save Changes
+                                                                    </button>
+                                                                    <button 
+                                                                        className="cancel-edit-btn"
+                                                                        onClick={cancelEditingOrder}
+                                                                    >
+                                                                        Cancel
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            // Normal view mode
+                                                            Object.entries(itemCounts).map(([name, qty]) => {
+                                                                const isGiven = givenItems[order._id]?.[name];
+                                                                return (
+                                                                    <div 
+                                                                        key={name} 
+                                                                        className={`order-item-detail ${isGiven ? 'item-given' : 'item-pending'}`}
+                                                                        onClick={() => toggleItemGiven(order._id, name)}
+                                                                    >
+                                                                        <div className="item-content">
+                                                                            <span className="item-checkbox">
+                                                                                {isGiven ? '✅' : '⭕'}
+                                                                            </span>
+                                                                            <div className="item-details">
+                                                                                <strong>{qty}x</strong> {name}
+                                                                            </div>
+                                                                            <span className={`item-status ${isGiven ? 'item-given' : 'item-pending'}`}>
+                                                                                {isGiven ? 'GIVEN' : 'PENDING'}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })
+                                                        )}
                                                     </div>
                                                 </div>
                                                 
                                                 <div className="info-card">
                                                     <div className="admin-order-total">
                                                         Total: ${order.total}
+                                                        {/*Total: ${isBeingEdited ? calculateEditOrderTotal().toFixed(2) : order.total}*/}
                                                     </div>
                                                 </div>
                                             </div>
@@ -334,54 +699,56 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                             )}
                                         </div>
                                         
-                                        <div className="order-controls">
-                                            {!order.paid ? (
-                                                // Unpaid state: Mark as Paid (top), Cancel (bottom full width)
-                                                <>
-                                                    <button
-                                                        onClick={() => markAsPaid(order._id)}
-                                                        className="control-button paid-button main-action-btn"
-                                                        title="Mark as paid to start preparation"
-                                                    >
-                                                        Mark as Paid
-                                                    </button>
-                                                    <button
-                                                        onClick={() => deleteOrder(order._id)}
-                                                        className="control-button delete-button full-width-btn"
-                                                        title="Cancel/Delete order"
-                                                    >
-                                                        Cancel Order
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                // Paid state: Complete (top), Undo and Cancel (bottom split)
-                                                <>
-                                                    <button
-                                                        onClick={() => completeOrder(order._id)}
-                                                        className={`control-button complete-button main-action-btn ${allItemsGiven ? 'ready-to-complete' : ''}`}
-                                                        title="Mark order as completed"
-                                                    >
-                                                        Complete Order
-                                                    </button>
-                                                    <div className="bottom-controls">
+                                        {!isBeingEdited && (
+                                            <div className="order-controls">
+                                                {!order.paid ? (
+                                                    // Unpaid state: Mark as Paid (top), Cancel (bottom full width)
+                                                    <>
                                                         <button
                                                             onClick={() => markAsPaid(order._id)}
-                                                            className="control-button undo-payment-button half-width-btn"
-                                                            title="Undo payment - mark as unpaid"
+                                                            className="control-button paid-button main-action-btn"
+                                                            title="Mark as paid to start preparation"
                                                         >
-                                                            Undo Payment
+                                                            Mark as Paid
                                                         </button>
                                                         <button
                                                             onClick={() => deleteOrder(order._id)}
-                                                            className="control-button delete-button half-width-btn"
+                                                            className="control-button delete-button full-width-btn"
                                                             title="Cancel/Delete order"
                                                         >
                                                             Cancel Order
                                                         </button>
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
+                                                    </>
+                                                ) : (
+                                                    // Paid state: Complete (top), Undo and Cancel (bottom split)
+                                                    <>
+                                                        <button
+                                                            onClick={() => completeOrder(order._id)}
+                                                            className={`control-button complete-button main-action-btn ${allItemsGiven ? 'ready-to-complete' : ''}`}
+                                                            title="Mark order as completed"
+                                                        >
+                                                            Complete Order
+                                                        </button>
+                                                        <div className="bottom-controls">
+                                                            <button
+                                                                onClick={() => markAsPaid(order._id)}
+                                                                className="control-button undo-payment-button half-width-btn"
+                                                                title="Undo payment - mark as unpaid"
+                                                            >
+                                                                Undo Payment
+                                                            </button>
+                                                            <button
+                                                                onClick={() => deleteOrder(order._id)}
+                                                                className="control-button delete-button half-width-btn"
+                                                                title="Cancel/Delete order"
+                                                            >
+                                                                Cancel Order
+                                                            </button>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
                                     </li>
                                 );
                             })}
@@ -554,6 +921,115 @@ const OrderList = ({ currentView, setCurrentView }) => {
                 >
                     ↑
                 </button>
+            )}
+
+            {/* Options Modal */}
+            {editOptionModal && (
+                <div className="edit-options-modal-overlay">
+                    <div className="edit-options-modal">
+                        <div className="edit-options-header">
+                            <h3>
+                                {editOptionModal.editingKey ? 'Edit Options for' : 'Select Options for'} {editOptionModal.itemName}
+                            </h3>
+                            <button 
+                                className="close-modal-btn" 
+                                onClick={closeEditOptionsModal}
+                            >
+                                ×
+                            </button>
+                        </div>
+                        
+                        <div className="edit-options-content">
+                            {/* Spice Level Slider */}
+                            {editOptionModal.menuItem.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)) && (
+                                <div className="spice-section">
+                                    <label>Spice Level:</label>
+                                    <div className="spice-selector">
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="3"
+                                            value={(() => {
+                                                const currentOptions = editItemOptions[editOptionModal.itemName] || [];
+                                                const spiceLevels = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
+                                                const currentSpice = currentOptions.find(opt => spiceLevels.includes(opt));
+                                                return spiceLevels.indexOf(currentSpice) !== -1 ? spiceLevels.indexOf(currentSpice) : 1;
+                                            })()}
+                                            onChange={(e) => {
+                                                const spiceLevels = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
+                                                const newLevel = spiceLevels[parseInt(e.target.value)];
+                                                setEditItemOptions(prev => ({
+                                                    ...prev,
+                                                    [editOptionModal.itemName]: [
+                                                        ...(prev[editOptionModal.itemName]?.filter(opt => !spiceLevels.includes(opt)) || []),
+                                                        newLevel
+                                                    ]
+                                                }));
+                                            }}
+                                            className="spice-slider"
+                                        />
+                                        <div className="spice-levels">
+                                            <span>No Spice</span>
+                                            <span>Mild</span>
+                                            <span>Spicy</span>
+                                            <span>Extra Spicy</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Other Options */}
+                            {editOptionModal.menuItem.options?.filter(opt => !['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)).map(option => (
+                                <div key={option} className="option-container">
+                                    <label className="option-label">
+                                        <input
+                                            type={editOptionModal.menuItem.name === 'Mango Lassi' || editOptionModal.menuItem.name === 'Water' ? 'radio' : 'checkbox'}
+                                            name={editOptionModal.menuItem.name === 'Mango Lassi' ? 'mango-lassi-options' : editOptionModal.menuItem.name === 'Water' ? 'water-options' : option}
+                                            checked={editItemOptions[editOptionModal.itemName]?.includes(option) || false}
+                                            onChange={(e) => {
+                                                const checked = e.target.checked;
+                                                setEditItemOptions(prev => {
+                                                    const currentOptions = prev[editOptionModal.itemName] || [];
+                                                    
+                                                    if (editOptionModal.menuItem.name === 'Mango Lassi' || editOptionModal.menuItem.name === 'Water') {
+                                                        return { ...prev, [editOptionModal.itemName]: checked ? [option] : [] };
+                                                    } else {
+                                                        if (checked) {
+                                                            return { ...prev, [editOptionModal.itemName]: [...currentOptions, option] };
+                                                        } else {
+                                                            return {
+                                                                ...prev,
+                                                                [editOptionModal.itemName]: currentOptions.filter(opt => opt !== option)
+                                                            };
+                                                        }
+                                                    }
+                                                });
+                                            }}
+                                        />
+                                        <span className="option-text">
+                                            {option}
+                                        </span>
+                                    </label>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="edit-options-actions">
+                            <button 
+                                className="confirm-options-btn"
+                                onClick={handleEditOptionSubmit}
+                            >
+                                {editOptionModal.editingKey ? 'Update Item' : 'Add Item'}
+                            </button>
+                            <button 
+                                className="cancel-options-btn"
+                                onClick={closeEditOptionsModal}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
