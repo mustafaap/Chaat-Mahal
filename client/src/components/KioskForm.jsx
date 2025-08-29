@@ -134,14 +134,34 @@ const KioskForm = ({ initialStep = 1 }) => {
     };
 
     const addToCart = (itemName, quantity, options) => {
-        // Add timestamp to make each addition unique
-        const timestamp = Date.now();
-        const key = `${itemName}-${options.sort().join('-')}-${timestamp}`;
+        // Ensure options is always an array and sort consistently
+        const normalizedOptions = Array.isArray(options) ? [...options].sort() : [];
+        const key = `${itemName}-${normalizedOptions.join('|')}`;
         
-        setSelectedItems(prev => ({
-            ...prev,
-            [key]: { name: itemName, quantity, options }
-        }));
+        console.log('Adding to cart:', { itemName, quantity, options: normalizedOptions, key });
+        
+        setSelectedItems(prev => {
+            const updated = { ...prev };
+            
+            if (updated[key]) {
+                // Item already exists, increase quantity
+                updated[key] = {
+                    ...updated[key],
+                    quantity: updated[key].quantity + quantity
+                };
+                console.log('Updated existing item:', updated[key]);
+            } else {
+                // New item
+                updated[key] = { 
+                    name: itemName, 
+                    quantity, 
+                    options: normalizedOptions 
+                };
+                console.log('Created new item:', updated[key]);
+            }
+            
+            return updated;
+        });
     };
 
     const openModal = (item) => {
@@ -178,23 +198,32 @@ const KioskForm = ({ initialStep = 1 }) => {
 
     const handleOptionSubmit = () => {
         const options = itemOptions[modalItem.name] || [];
-        addToCart(modalItem.name, 1, options);
+        // Filter out empty options and ensure consistency
+        const cleanOptions = options.filter(opt => opt && opt.trim() !== '');
+        
+        console.log('Submitting options:', cleanOptions);
+        addToCart(modalItem.name, 1, cleanOptions);
         closeModal();
     };
 
     const updateCartQuantity = (key, change) => {
         setSelectedItems(prev => {
             const updated = { ...prev };
-            const currentQuantity = updated[key]?.quantity || 0;
-            const newQuantity = currentQuantity + change;
             
-            if (newQuantity > 0) {
-                const [itemName, ...optionsParts] = key.split('-');
-                const options = optionsParts.join('-').split('-').filter(opt => opt);
-                updated[key] = { name: itemName, quantity: newQuantity, options };
-            } else {
-                delete updated[key];
+            if (updated[key]) {
+                const newQuantity = updated[key].quantity + change;
+                
+                if (newQuantity <= 0) {
+                    // Remove item if quantity becomes 0 or negative
+                    delete updated[key];
+                } else {
+                    updated[key] = {
+                        ...updated[key],
+                        quantity: newQuantity
+                    };
+                }
             }
+            
             return updated;
         });
     };
@@ -338,9 +367,9 @@ const KioskForm = ({ initialStep = 1 }) => {
                                                         {options.join(', ')}
                                                     </div>
                                                 )}
-                                                <div className="cart-item-price">
-                                                    ${(calculateItemPrice(name, options) * quantity).toFixed(2)}
-                                                </div>
+                                            </div>
+                                            <div className="cart-item-price">
+                                                ${(calculateItemPrice(name, options) * quantity).toFixed(2)}
                                             </div>
                                             <div className="cart-item-controls">
                                                 <button
