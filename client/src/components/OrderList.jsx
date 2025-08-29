@@ -778,7 +778,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                             <div className="order-header">
                                                 <div className="order-header-with-revert">
                                                     <div className="order-header-main">
-                                                        Order #{order._id.slice(-4)} - {order.customerName}
+                                                        Order #{order.orderNumber || order._id.slice(-4)} - {order.customerName}
                                                         <span className="order-timestamp">
                                                             Completed {completedTime}
                                                         </span>
@@ -850,7 +850,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                             <div className="order-header">
                                                 <div className="order-header-with-revert">
                                                     <div className="order-header-main">
-                                                        Order #{order._id.slice(-4)} - {order.customerName}
+                                                        Order #{order.orderNumber || order._id.slice(-4)} - {order.customerName}
                                                         <span className="order-timestamp">
                                                             Cancelled {cancelledTime}
                                                         </span>
