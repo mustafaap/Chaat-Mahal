@@ -134,16 +134,14 @@ const KioskForm = ({ initialStep = 1 }) => {
     };
 
     const addToCart = (itemName, quantity, options) => {
-        const key = `${itemName}-${options.sort().join('-')}`;
-        setSelectedItems(prev => {
-            const updated = { ...prev };
-            if (updated[key]) {
-                updated[key].quantity += quantity;
-            } else {
-                updated[key] = { name: itemName, quantity, options };
-            }
-            return updated;
-        });
+        // Add timestamp to make each addition unique
+        const timestamp = Date.now();
+        const key = `${itemName}-${options.sort().join('-')}-${timestamp}`;
+        
+        setSelectedItems(prev => ({
+            ...prev,
+            [key]: { name: itemName, quantity, options }
+        }));
     };
 
     const openModal = (item) => {
