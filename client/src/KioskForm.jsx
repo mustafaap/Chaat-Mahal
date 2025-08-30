@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import '../styles/KioskForm.css';
+import './styles/KioskForm.css';
 
 const KioskForm = ({ initialStep = 1 }) => {
     const [menuItems, setMenuItems] = useState([]);
@@ -30,7 +30,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                 console.error('Error fetching menu items:', error);
                 // Fallback to hardcoded menu if API fails
                 setMenuItems([
-                    { id: 1, name: 'Mango Lassi', price: 3, image: '/images/mango-lassi.jpg', options: [], category: 'Drinks', description: 'Refreshing yogurt-based mango drink' },
+                    { id: 1, name: 'Mango Lassi', price: 3, image: '/images/mango-lassi.jpg', options: ['Ice', 'No Ice'], category: 'Drinks', description: 'Refreshing yogurt-based mango drink' },
                     { id: 2, name: 'Panipuri', price: 3, image: '/images/panipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy shells filled with spiced water and chutneys' },
                     { id: 3, name: 'Masala Puri', price: 4, image: '/images/masala-puri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with spiced potatoes and chutneys' },
                     { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Puris filled with yogurt, chutneys and spices' },
@@ -134,32 +134,14 @@ const KioskForm = ({ initialStep = 1 }) => {
     };
 
     const addToCart = (itemName, quantity, options) => {
-        // Ensure options is always an array and sort consistently
-        const normalizedOptions = Array.isArray(options) ? [...options].sort() : [];
-        const key = `${itemName}-${normalizedOptions.join('|')}`;
-        
-        console.log('Adding to cart:', { itemName, quantity, options: normalizedOptions, key });
-        
+        const key = `${itemName}-${options.sort().join('-')}`;
         setSelectedItems(prev => {
             const updated = { ...prev };
-            
             if (updated[key]) {
-                // Item already exists, increase quantity
-                updated[key] = {
-                    ...updated[key],
-                    quantity: updated[key].quantity + quantity
-                };
-                console.log('Updated existing item:', updated[key]);
+                updated[key].quantity += quantity;
             } else {
-                // New item
-                updated[key] = { 
-                    name: itemName, 
-                    quantity, 
-                    options: normalizedOptions 
-                };
-                console.log('Created new item:', updated[key]);
+                updated[key] = { name: itemName, quantity, options };
             }
-            
             return updated;
         });
     };
@@ -167,26 +149,44 @@ const KioskForm = ({ initialStep = 1 }) => {
     const openModal = (item) => {
         setModalItem(item);
         
-        // Set default options when opening modal
-        let defaultOptions = [];
-        
         // Set default spice level for items that have spice options
         if (item.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt))) {
-            defaultOptions.push('Mild'); // Default to Mild
+            const currentOptions = itemOptions[item.name] || [];
+            const hasSpiceLevel = currentOptions.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt));
+            
+            if (!hasSpiceLevel) {
+                setItemOptions(prev => ({
+                    ...prev,
+                    [item.name]: [...currentOptions, 'Mild']
+                }));
+            }
+        }
+        
+        // Set default "Ice" option for Mango Lassi
+        if (item.name === 'Mango Lassi') {
+            const currentOptions = itemOptions[item.name] || [];
+            const hasIceOption = currentOptions.some(opt => ['Ice', 'No Ice'].includes(opt));
+            
+            if (!hasIceOption) {
+                setItemOptions(prev => ({
+                    ...prev,
+                    [item.name]: [...currentOptions, 'Ice']
+                }));
+            }
         }
         
         // Set default "Cold" option for Water
         if (item.name === 'Water') {
-            defaultOptions.push('Cold'); // Default to Cold
+            const currentOptions = itemOptions[item.name] || [];
+            const hasTemperatureOption = currentOptions.some(opt => ['Cold', 'Room Temperature'].includes(opt));
+            
+            if (!hasTemperatureOption) {
+                setItemOptions(prev => ({
+                    ...prev,
+                    [item.name]: [...currentOptions, 'Cold']
+                }));
+            }
         }
-        
-        // Remove Mango Lassi special handling completely
-        
-        // Reset the options for this item to defaults only
-        setItemOptions(prev => ({
-            ...prev,
-            [item.name]: defaultOptions
-        }));
     };
 
     const closeModal = () => {
@@ -195,32 +195,23 @@ const KioskForm = ({ initialStep = 1 }) => {
 
     const handleOptionSubmit = () => {
         const options = itemOptions[modalItem.name] || [];
-        // Filter out empty options and ensure consistency
-        const cleanOptions = options.filter(opt => opt && opt.trim() !== '');
-        
-        console.log('Submitting options:', cleanOptions);
-        addToCart(modalItem.name, 1, cleanOptions);
+        addToCart(modalItem.name, 1, options);
         closeModal();
     };
 
     const updateCartQuantity = (key, change) => {
         setSelectedItems(prev => {
             const updated = { ...prev };
+            const currentQuantity = updated[key]?.quantity || 0;
+            const newQuantity = currentQuantity + change;
             
-            if (updated[key]) {
-                const newQuantity = updated[key].quantity + change;
-                
-                if (newQuantity <= 0) {
-                    // Remove item if quantity becomes 0 or negative
-                    delete updated[key];
-                } else {
-                    updated[key] = {
-                        ...updated[key],
-                        quantity: newQuantity
-                    };
-                }
+            if (newQuantity > 0) {
+                const [itemName, ...optionsParts] = key.split('-');
+                const options = optionsParts.join('-').split('-').filter(opt => opt);
+                updated[key] = { name: itemName, quantity: newQuantity, options };
+            } else {
+                delete updated[key];
             }
-            
             return updated;
         });
     };
@@ -364,9 +355,9 @@ const KioskForm = ({ initialStep = 1 }) => {
                                                         {options.join(', ')}
                                                     </div>
                                                 )}
-                                            </div>
-                                            <div className="cart-item-price">
-                                                ${(calculateItemPrice(name, options) * quantity).toFixed(2)}
+                                                <div className="cart-item-price">
+                                                    ${(calculateItemPrice(name, options) * quantity).toFixed(2)}
+                                                </div>
                                             </div>
                                             <div className="cart-item-controls">
                                                 <button
@@ -470,11 +461,10 @@ const KioskForm = ({ initialStep = 1 }) => {
                                                         <button
                                                             type="button"
                                                             onClick={() => {
-                                                                // Check if item has noModal flag set to true
-                                                                if (item.noModal || (!item.options || item.options.length === 0)) {
-                                                                    addToCart(item.name, 1, []);
-                                                                } else {
+                                                                if (item.options && item.options.length > 0) {
                                                                     openModal(item);
+                                                                } else {
+                                                                    addToCart(item.name, 1, []);
                                                                 }
                                                             }}
                                                             className="quantity-btn quantity-btn-plus"
@@ -593,18 +583,9 @@ const KioskForm = ({ initialStep = 1 }) => {
                     <h1>Order Confirmation</h1>
                     <p className="confirmation-details">Order Number: {orderNumber}</p>
                     <p className="confirmation-name">Name: {customerName}</p>
-                    
-                    {/* Move payment notice to top for better visibility */}
-                    <div className="confirmation-payment-divider">
-                        <p className="confirmation-payment-notice">
-                            Please pay at the counter to enter the order preparation line.
-                        </p>
-                    </div>
-
                     <div className="confirmation-divider">
                     <div className="confirmation-order-card">
                         <h3 className="confirmation-order-title">Items Ordered</h3>
-                        
                         <div className="confirmation-items-container">
                             <ul className="confirmation-items-list">
                                 {Object.entries(selectedItems)
@@ -647,6 +628,9 @@ const KioskForm = ({ initialStep = 1 }) => {
                     </div>
                     </div>
                     
+                    <p className="confirmation-payment-notice">
+                        Please pay at the counter to enter the order preparation line.
+                    </p>
                     <div className="another-order-container">
                         <button
                             onClick={() => {
@@ -729,15 +713,15 @@ const KioskForm = ({ initialStep = 1 }) => {
                             <div key={option} className="option-container">
                                 <label className="option-label">
                                     <input
-                                        type={modalItem.name === 'Water' ? 'radio' : 'checkbox'}
-                                        name={modalItem.name === 'Water' ? 'water-options' : option}
+                                        type={modalItem.name === 'Mango Lassi' || modalItem.name === 'Water' ? 'radio' : 'checkbox'}
+                                        name={modalItem.name === 'Mango Lassi' ? 'mango-lassi-options' : modalItem.name === 'Water' ? 'water-options' : option}
                                         checked={itemOptions[modalItem.name]?.includes(option) || false}
                                         onChange={(e) => {
                                             const checked = e.target.checked;
                                             setItemOptions(prev => {
                                                 const currentOptions = prev[modalItem.name] || [];
                                                 
-                                                if (modalItem.name === 'Water') {
+                                                if (modalItem.name === 'Mango Lassi' || modalItem.name === 'Water') {
                                                     return { ...prev, [modalItem.name]: checked ? [option] : [] };
                                                 } else {
                                                     if (checked) {

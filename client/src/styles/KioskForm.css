@@ -252,7 +252,7 @@ form {
 .cart-item {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     margin-bottom: 12px;
     padding: 12px;
     background: #f8f9fa;
@@ -267,7 +267,7 @@ form {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    justify-content: center;
 }
 
 .cart-item-name {
@@ -291,8 +291,8 @@ form {
     padding: 4px 8px;
     border-radius: 6px;
     font-size: 0.9rem;
-    align-self: flex-start;
-    margin-top: 4px;
+    align-self: center;
+    white-space: nowrap;
 }
 
 /* Cart Quantity Controls */
@@ -388,19 +388,25 @@ form {
 .cart-total-amount {
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
-    font-size: 1.2rem;
-    color: #b85c38;
+    font-size: 1.1rem;
+    color: #28a745;
+    text-align: center;
+    background: rgba(40, 167, 69, 0.1);
+    border: 2px solid #28a745;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+    padding: 8px 14px;
 }
 
 .cart-checkout-btn {
     font-family: 'Poppins', sans-serif;
     background: #b85c38;
     color: white;
-    border: none;
-    padding: 12px 20px;
+    border: 2px solid #b85c38;
+    padding: 10px 20px;
     border-radius: 8px;
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(184, 92, 56, 0.2);
@@ -1170,7 +1176,7 @@ input[type="checkbox"], input[type="radio"] {
 .confirmation-item-details {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     width: 100%;
 }
 
@@ -1204,7 +1210,6 @@ input[type="checkbox"], input[type="radio"] {
     color: #28a745;
     white-space: nowrap;
     text-align: right;
-    min-width: 80px;
     flex-shrink: 0;
     font-size: 1.1rem;
     background: rgba(40, 167, 69, 0.1);
@@ -1713,7 +1718,7 @@ input[type="checkbox"], input[type="radio"] {
 .kiosk-order-item-details {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     width: 100%;
 }
 
@@ -1747,7 +1752,6 @@ input[type="checkbox"], input[type="radio"] {
     color: #b85c38;
     white-space: nowrap;
     text-align: right;
-    min-width: 80px;
     flex-shrink: 0;
     font-size: 1.1rem;
     background: rgba(184, 92, 56, 0.1);

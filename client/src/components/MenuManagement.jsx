@@ -34,7 +34,8 @@ const MenuManagement = () => {
         category: 'Chaat',
         description: '',
         otherOptions: [],
-        extraOptions: {}
+        extraOptions: {},
+        noModal: false // Add this new field
     });
 
     const categories = ['All', 'Chaat', 'Wraps', 'Drinks'];
@@ -220,7 +221,8 @@ const MenuManagement = () => {
             category: 'Chaat',
             description: '',
             otherOptions: [],
-            extraOptions: {}
+            extraOptions: {},
+            noModal: false // Add this line
         });
         setEditingItem(null);
         setShowAddForm(false);
@@ -244,7 +246,8 @@ const MenuManagement = () => {
             category: item.category,
             description: item.description,
             otherOptions: otherOptions,
-            extraOptions: item.extraOptions || {}
+            extraOptions: item.extraOptions || {},
+            noModal: item.noModal || false // Add this line
         });
         
         // Set preview for existing image
@@ -266,16 +269,13 @@ const MenuManagement = () => {
 
         let standardOptions = [];
         
+        // Only add automatic spice levels for Chaat and Wraps, not Drinks
         if (formData.category === 'Chaat' || formData.category === 'Wraps') {
             standardOptions = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
-        } else if (formData.category === 'Drinks') {
-            if (formData.name.toLowerCase().includes('lassi')) {
-                standardOptions = ['Ice', 'No Ice'];
-            } else if (formData.name.toLowerCase().includes('water')) {
-                standardOptions = ['Cold', 'Room Temperature'];
-            }
         }
-
+        // Remove the automatic drinks options completely
+        
+        // Create premium options array for the final options list
         const premiumOptionsForArray = Object.entries(formData.extraOptions).map(([option, price]) => {
             return `${option} (+$${price})`;
         });
@@ -491,7 +491,7 @@ const MenuManagement = () => {
                                 />
                             </div>
 
-                            {/* Spice Level Info */}
+                            {/* Spice Level Info - Updated to exclude drinks */}
                             <div className="form-group full-width">
                                 <div className="spice-level-info-box">
                                     <h4>🌶️ Spice Level Options (Automatic)</h4>
@@ -499,10 +499,32 @@ const MenuManagement = () => {
                                         {formData.category === 'Chaat' || formData.category === 'Wraps' 
                                             ? 'This item will automatically include: No Spice, Mild, Spicy, Extra Spicy'
                                             : formData.category === 'Drinks'
-                                            ? 'Drinks will automatically include appropriate temperature/ice options'
+                                            ? 'No automatic options for drinks. Use the options sections below or enable "No Options Modal" for simple drinks.'
                                             : 'Select a category to see automatic options'
                                         }
                                     </p>
+                                </div>
+                            </div>
+
+                            {/* Add the No Modal option here */}
+                            <div className="form-group full-width">
+                                <div className="no-modal-section">
+                                    <label className="no-modal-label">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.noModal}
+                                            onChange={(e) => setFormData(prev => ({
+                                                ...prev,
+                                                noModal: e.target.checked
+                                            }))}
+                                            className="no-modal-checkbox"
+                                        />
+                                        <span className="no-modal-text">
+                                            <strong>🚫 No Options Modal</strong>
+                                            <br />
+                                            <small>Check this to make the item add directly to cart without opening an options modal (like simple drinks)</small>
+                                        </span>
+                                    </label>
                                 </div>
                             </div>
 

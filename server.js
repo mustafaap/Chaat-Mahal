@@ -29,7 +29,7 @@ app.use(express.json());
 app.use(express.static('client/build'));
 
 // MongoDB connection
-mongoose.connect('mongodb+srv://mustafap12:Chaat123@cluster0.hoxvixj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
+mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })

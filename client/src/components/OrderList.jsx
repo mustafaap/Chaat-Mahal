@@ -283,10 +283,10 @@ const OrderList = ({ currentView, setCurrentView }) => {
 
     const addNewItemToEdit = (itemName) => {
         const menuItem = menuItems.find(item => item.name === itemName);
-        if (menuItem && menuItem.options && menuItem.options.length > 0) {
+        if (menuItem && !menuItem.noModal && menuItem.options && menuItem.options.length > 0) {
             openEditOptionsModal(itemName);
         } else {
-            // No options, add directly
+            // No options or noModal flag is true, add directly
             setEditOrderItems(prev => ({
                 ...prev,
                 [itemName]: (prev[itemName] || 0) + 1
@@ -311,11 +311,6 @@ const OrderList = ({ currentView, setCurrentView }) => {
             // Set default spice level for items that have spice options
             if (menuItem.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt))) {
                 defaultOptions.push('Mild'); // Default to Mild
-            }
-            
-            // Set default "Ice" option for Mango Lassi
-            if (menuItem.name === 'Mango Lassi') {
-                defaultOptions.push('Ice'); // Default to Ice
             }
             
             // Set default "Cold" option for Water
