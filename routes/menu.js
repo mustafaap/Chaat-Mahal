@@ -31,7 +31,7 @@ const readMenuItems = async () => {
                 name: 'Mango Lassi', 
                 price: 3, 
                 image: '/images/mango-lassi.jpg', 
-                options: ['Ice', 'No Ice'], 
+                options: [], // Remove options completely
                 extraOptions: {},
                 category: 'Drinks', 
                 description: 'Refreshing yogurt-based mango drink' 

@@ -129,13 +129,11 @@
     "name": "Mango Lassi",
     "price": 3,
     "image": "/images/mango-lassi.jpg",
-    "options": [
-      "Ice",
-      "No Ice"
-    ],
+    "options": [],
     "extraOptions": {},
     "category": "Drinks",
-    "description": "Refreshing yogurt-based mango drink"
+    "description": "Refreshing yogurt-based mango drink",
+    "noModal": true
   },
   {
     "id": 9,
@@ -148,6 +146,7 @@
     ],
     "extraOptions": {},
     "category": "Drinks",
-    "description": "Refreshing hydration"
+    "description": "Refreshing hydration",
+    "noModal": false
   }
 ]

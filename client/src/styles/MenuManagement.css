@@ -850,3 +850,41 @@
         margin-top: 5px;
     }
 }
+
+/* No Modal Section Styles */
+.no-modal-section {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.no-modal-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+}
+
+.no-modal-checkbox {
+    margin-top: 2px;
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
+.no-modal-text {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.no-modal-text strong {
+    color: #856404;
+    font-size: 1rem;
+}
+
+.no-modal-text small {
+    color: #6c757d;
+    font-size: 0.85rem;
+    font-weight: 400;
+}

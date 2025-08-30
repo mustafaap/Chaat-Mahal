@@ -30,7 +30,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                 console.error('Error fetching menu items:', error);
                 // Fallback to hardcoded menu if API fails
                 setMenuItems([
-                    { id: 1, name: 'Mango Lassi', price: 3, image: '/images/mango-lassi.jpg', options: ['Ice', 'No Ice'], category: 'Drinks', description: 'Refreshing yogurt-based mango drink' },
+                    { id: 1, name: 'Mango Lassi', price: 3, image: '/images/mango-lassi.jpg', options: [], category: 'Drinks', description: 'Refreshing yogurt-based mango drink' },
                     { id: 2, name: 'Panipuri', price: 3, image: '/images/panipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy shells filled with spiced water and chutneys' },
                     { id: 3, name: 'Masala Puri', price: 4, image: '/images/masala-puri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with spiced potatoes and chutneys' },
                     { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Puris filled with yogurt, chutneys and spices' },
@@ -167,7 +167,7 @@ const KioskForm = ({ initialStep = 1 }) => {
     const openModal = (item) => {
         setModalItem(item);
         
-        // Always reset options for this item when opening modal
+        // Set default options when opening modal
         let defaultOptions = [];
         
         // Set default spice level for items that have spice options
@@ -175,15 +175,12 @@ const KioskForm = ({ initialStep = 1 }) => {
             defaultOptions.push('Mild'); // Default to Mild
         }
         
-        // Set default "Ice" option for Mango Lassi
-        if (item.name === 'Mango Lassi') {
-            defaultOptions.push('Ice'); // Default to Ice
-        }
-        
         // Set default "Cold" option for Water
         if (item.name === 'Water') {
             defaultOptions.push('Cold'); // Default to Cold
         }
+        
+        // Remove Mango Lassi special handling completely
         
         // Reset the options for this item to defaults only
         setItemOptions(prev => ({
@@ -473,10 +470,11 @@ const KioskForm = ({ initialStep = 1 }) => {
                                                         <button
                                                             type="button"
                                                             onClick={() => {
-                                                                if (item.options && item.options.length > 0) {
-                                                                    openModal(item);
-                                                                } else {
+                                                                // Check if item has noModal flag set to true
+                                                                if (item.noModal || (!item.options || item.options.length === 0)) {
                                                                     addToCart(item.name, 1, []);
+                                                                } else {
+                                                                    openModal(item);
                                                                 }
                                                             }}
                                                             className="quantity-btn quantity-btn-plus"
@@ -731,15 +729,15 @@ const KioskForm = ({ initialStep = 1 }) => {
                             <div key={option} className="option-container">
                                 <label className="option-label">
                                     <input
-                                        type={modalItem.name === 'Mango Lassi' || modalItem.name === 'Water' ? 'radio' : 'checkbox'}
-                                        name={modalItem.name === 'Mango Lassi' ? 'mango-lassi-options' : modalItem.name === 'Water' ? 'water-options' : option}
+                                        type={modalItem.name === 'Water' ? 'radio' : 'checkbox'}
+                                        name={modalItem.name === 'Water' ? 'water-options' : option}
                                         checked={itemOptions[modalItem.name]?.includes(option) || false}
                                         onChange={(e) => {
                                             const checked = e.target.checked;
                                             setItemOptions(prev => {
                                                 const currentOptions = prev[modalItem.name] || [];
                                                 
-                                                if (modalItem.name === 'Mango Lassi' || modalItem.name === 'Water') {
+                                                if (modalItem.name === 'Water') {
                                                     return { ...prev, [modalItem.name]: checked ? [option] : [] };
                                                 } else {
                                                     if (checked) {
