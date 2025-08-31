@@ -493,7 +493,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                 </form>
             )}
             {step === 2 && (
-                <form onSubmit={handleNameSubmit}>
+                <form onSubmit={handleNameSubmit} className="checkout-form">
                     <div className="back-button-container">
                         <button
                             type="button"
@@ -503,6 +503,30 @@ const KioskForm = ({ initialStep = 1 }) => {
                             Back
                         </button>
                     </div>
+                    <h2>Enter Your Name</h2>
+                    <input
+                        type="text"
+                        placeholder="Enter your name"
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        required
+                        className="name-input"
+                    />
+                    <h2>Email for Receipt (Optional)</h2>
+                    <input
+                        type="email"
+                        placeholder="Enter your email"
+                        value={customerEmail}
+                        onChange={(e) => setCustomerEmail(e.target.value)}
+                        className="name-input"
+                    />
+                    <h2>Notes (Optional)</h2>
+                    <textarea
+                        placeholder="Enter any allergies, special requests or notes here..."
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        className="notes-textarea"
+                    />
                     <div className="order-card">
                         <h3 className="order-title">Your Order</h3>
                         
@@ -553,31 +577,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                         )}
                         <div className="tax-notice">*Taxes applied to card and tap payments only</div>
                     </div>
-                    <h2>Enter Your Name</h2>
-                    <input
-                        type="text"
-                        placeholder="Enter your name"
-                        value={customerName}
-                        onChange={(e) => setCustomerName(e.target.value)}
-                        required
-                        className="name-input"
-                    />
-                    <h2>Email for Receipt (Optional)</h2>
-                    <input
-                        type="email"
-                        placeholder="Enter your email"
-                        value={customerEmail}
-                        onChange={(e) => setCustomerEmail(e.target.value)}
-                        className="name-input"
-                    />
-                    <h2>Notes (Optional)</h2>
-                    <textarea
-                        placeholder="Enter any allergies, special requests or notes here..."
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        className="notes-textarea"
-                    />
-                    <div className="order-button-container">
+                    <div className="sticky-place-order">
                         <button
                             className="order-button"
                             type="submit"
