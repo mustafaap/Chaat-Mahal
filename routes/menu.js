@@ -24,13 +24,13 @@ const readMenuItems = async () => {
         const data = await fs.readFile(menuFilePath, 'utf8');
         return JSON.parse(data);
     } catch (error) {
-        // If file doesn't exist, return default menu items
+        // If file doesn't exist, return default menu items with default images
         return [
             { 
                 id: 1, 
                 name: 'Samosa', 
                 price: 2, 
-                image: '/images/samosa.JPG', 
+                image: '/images/samosa.JPG', // Keep existing images where available
                 options: [], 
                 extraOptions: {},
                 category: 'Chaat', 
@@ -41,7 +41,7 @@ const readMenuItems = async () => {
                 name: 'Panipuri', 
                 price: 3, 
                 image: '/images/panipuri.JPG', 
-                options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], // Only 3 spice levels
+                options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'],
                 extraOptions: {},
                 category: 'Chaat', 
                 description: 'Crispy shells filled with spiced water and chutneys' 
@@ -161,7 +161,9 @@ router.post('/', async (req, res) => {
         const newItem = {
             id: Math.max(...menuItems.map(item => item.id), 0) + 1,
             ...req.body,
-            price: parseFloat(req.body.price)
+            price: parseFloat(req.body.price),
+            // Set default image if none provided
+            image: req.body.image || '/images/default-food.jpg'
         };
         
         menuItems.push(newItem);
@@ -186,10 +188,13 @@ router.put('/:id', async (req, res) => {
         }
         
         const oldItem = menuItems[itemIndex];
-        const newImagePath = req.body.image;
+        const newImagePath = req.body.image || '/images/default-food.jpg';
         
-        // If image path changed, delete old image
-        if (oldItem.image && oldItem.image !== newImagePath && oldItem.image.startsWith('/images/')) {
+        // If image path changed and old image wasn't default, delete old image
+        if (oldItem.image && 
+            oldItem.image !== newImagePath && 
+            oldItem.image.startsWith('/images/') && 
+            oldItem.image !== '/images/default-food.jpg') {
             deleteImageFile(oldItem.image);
         }
         
@@ -197,7 +202,8 @@ router.put('/:id', async (req, res) => {
             ...menuItems[itemIndex],
             ...req.body,
             id: itemId,
-            price: parseFloat(req.body.price)
+            price: parseFloat(req.body.price),
+            image: newImagePath
         };
         
         await writeMenuItems(menuItems);

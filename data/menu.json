@@ -152,5 +152,20 @@
     "category": "Drinks",
     "description": "Refreshing hydration",
     "noModal": false
+  },
+  {
+    "id": 10,
+    "name": "dgwsg",
+    "price": 8,
+    "image": "/images/default-food.jpg",
+    "category": "Chaat",
+    "description": "afsf",
+    "extraOptions": {},
+    "noModal": true,
+    "options": [
+      "No Spice",
+      "Regular",
+      "Extra Spicy"
+    ]
   }
 ]

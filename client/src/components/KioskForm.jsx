@@ -30,8 +30,24 @@ const KioskForm = ({ initialStep = 1 }) => {
                 console.error('Error fetching menu items:', error);
                 // Fallback to hardcoded menu if API fails
                 setMenuItems([
-                    { id: 1, name: 'Samosa', price: 2, image: '/images/samosa.JPG', options: [], category: 'Chaat', description: 'Crispy pastry filled with spiced potatoes and peas' },
-                    { id: 2, name: 'Panipuri', price: 3, image: '/images/panipuri.JPG', options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy shells filled with spiced water and chutneys' },
+                    { 
+                        id: 1, 
+                        name: 'Samosa', 
+                        price: 2, 
+                        image: '/images/default-food.jpg', // Use default image for fallback
+                        options: [], 
+                        category: 'Chaat', 
+                        description: 'Crispy pastry filled with spiced potatoes and peas' 
+                    },
+                    { 
+                        id: 2, 
+                        name: 'Panipuri', 
+                        price: 3, 
+                        image: '/images/panipuri.JPG', // Keep existing images where available
+                        options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], 
+                        category: 'Chaat', 
+                        description: 'Crispy shells filled with spiced water and chutneys' 
+                    },
                     { id: 3, name: 'Masala Puri', price: 4, image: '/images/masala-puri.JPG', options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with spiced potatoes and chutneys' },
                     { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.JPG', options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Puris filled with yogurt, chutneys and spices' },
                     { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.JPG', options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with sev, vegetables and chutneys' },
@@ -678,9 +694,13 @@ const KioskForm = ({ initialStep = 1 }) => {
                         {/* Added item image to modal */}
                         <div className="modal-item-image-container">
                             <img 
-                                src={modalItem.image} 
+                                src={modalItem.image || '/images/default-food.jpg'} 
                                 alt={modalItem.name}
                                 className="modal-item-image"
+                                onError={(e) => {
+                                    // Fallback if image fails to load
+                                    e.target.src = '/images/default-food.jpg';
+                                }}
                             />
                         </div>
                         
