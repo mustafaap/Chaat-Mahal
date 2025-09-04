@@ -6,15 +6,15 @@
     "image": "/images/panipuri.JPG",
     "options": [
       "No Spice",
-      "Mild",
-      "Spicy",
+      "Regular",
       "Extra Spicy",
       "No Onions",
       "No Cilantro"
     ],
     "extraOptions": {},
     "category": "Chaat",
-    "description": "Crispy shells filled with spiced water and chutneys"
+    "description": "Crispy shells filled with spiced water and chutneys",
+    "noModal": false
   },
   {
     "id": 2,
@@ -23,15 +23,15 @@
     "image": "/images/masala-puri.JPG",
     "options": [
       "No Spice",
-      "Mild",
-      "Spicy",
+      "Regular",
       "Extra Spicy",
       "No Onions",
       "No Cilantro"
     ],
     "extraOptions": {},
     "category": "Chaat",
-    "description": "Crispy puris topped with spiced potatoes and chutneys"
+    "description": "Crispy puris topped with spiced potatoes and chutneys",
+    "noModal": false
   },
   {
     "id": 3,
@@ -40,15 +40,15 @@
     "image": "/images/dahipuri.JPG",
     "options": [
       "No Spice",
-      "Mild",
-      "Spicy",
+      "Regular",
       "Extra Spicy",
       "No Onions",
       "No Cilantro"
     ],
     "extraOptions": {},
     "category": "Chaat",
-    "description": "Puris filled with yogurt, chutneys and spices, topped with sev"
+    "description": "Puris filled with yogurt, chutneys and spices, topped with sev",
+    "noModal": false
   },
   {
     "id": 4,

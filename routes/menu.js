@@ -28,20 +28,20 @@ const readMenuItems = async () => {
         return [
             { 
                 id: 1, 
-                name: 'Mango Lassi', 
-                price: 3, 
-                image: '/images/mango-lassi.jpg', 
-                options: [], // Remove options completely
+                name: 'Samosa', 
+                price: 2, 
+                image: '/images/samosa.JPG', 
+                options: [], 
                 extraOptions: {},
-                category: 'Drinks', 
-                description: 'Refreshing yogurt-based mango drink' 
+                category: 'Chaat', 
+                description: 'Crispy pastry filled with spiced potatoes and peas' 
             },
             { 
                 id: 2, 
                 name: 'Panipuri', 
                 price: 3, 
                 image: '/images/panipuri.JPG', 
-                options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], 
+                options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], // Only 3 spice levels
                 extraOptions: {},
                 category: 'Chaat', 
                 description: 'Crispy shells filled with spiced water and chutneys' 
@@ -51,7 +51,7 @@ const readMenuItems = async () => {
                 name: 'Masala Puri', 
                 price: 4, 
                 image: '/images/masala-puri.JPG', 
-                options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], 
+                options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], // Only 3 spice levels
                 extraOptions: {},
                 category: 'Chaat', 
                 description: 'Crispy puris topped with spiced potatoes and chutneys' 
@@ -61,7 +61,7 @@ const readMenuItems = async () => {
                 name: 'Dahipuri', 
                 price: 6, 
                 image: '/images/dahipuri.JPG', 
-                options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], 
+                options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], // Only 3 spice levels
                 extraOptions: {},
                 category: 'Chaat', 
                 description: 'Puris filled with yogurt, chutneys and spices' 
@@ -71,7 +71,7 @@ const readMenuItems = async () => {
                 name: 'Sevpuri', 
                 price: 6, 
                 image: '/images/sevpuri.JPG', 
-                options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], 
+                options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], // Only 3 spice levels
                 extraOptions: {},
                 category: 'Chaat', 
                 description: 'Crispy puris topped with sev, vegetables and chutneys' 
@@ -81,7 +81,7 @@ const readMenuItems = async () => {
                 name: 'Bhelpuri', 
                 price: 7, 
                 image: '/images/bhelpuri.JPG', 
-                options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], 
+                options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], // Only 3 spice levels
                 extraOptions: {},
                 category: 'Chaat', 
                 description: 'Popular street snack with puffed rice and chutneys' 
@@ -90,18 +90,18 @@ const readMenuItems = async () => {
                 id: 7, 
                 name: 'Water', 
                 price: 1, 
-                image: '/images/water.jpg', 
+                image: '/images/water.JPG', 
                 options: ['Cold', 'Room Temperature'], 
                 extraOptions: {},
                 category: 'Drinks', 
-                description: 'Refreshing hydration' 
+                description: 'Refreshing drinking water' 
             },
             { 
                 id: 8, 
                 name: 'Paneer Wrap', 
                 price: 8, 
                 image: '/images/paneer-wrap.JPG', 
-                options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Paneer (+$2)'],
+                options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Paneer (+$2)'], // Only 3 spice levels
                 extraOptions: { 'Extra Paneer': 2 },
                 category: 'Wraps',
                 description: 'Grilled paneer with fresh vegetables wrapped in naan'
@@ -111,7 +111,7 @@ const readMenuItems = async () => {
                 name: 'Chicken Wrap', 
                 price: 9, 
                 image: '/images/chicken-wrap.JPG', 
-                options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Meat (+$2)'],
+                options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Meat (+$2)'], // Only 3 spice levels
                 extraOptions: { 'Extra Meat': 2 },
                 category: 'Wraps',
                 description: 'Tender spiced chicken with vegetables wrapped in naan'
@@ -229,6 +229,22 @@ router.delete('/:id', async (req, res) => {
     } catch (error) {
         console.error('Error deleting menu item:', error);
         res.status(500).json({ message: 'Failed to delete menu item' });
+    }
+});
+
+// Temporary route to reset menu items with updated spice levels
+router.post('/reset-menu', async (req, res) => {
+    try {
+        // Clear existing menu items
+        await MenuItem.deleteMany({});
+        
+        // Insert the new menu items with correct spice levels
+        await MenuItem.insertMany(defaultMenuItems);
+        
+        res.json({ message: 'Menu reset successfully with updated spice levels' });
+    } catch (error) {
+        console.error('Error resetting menu:', error);
+        res.status(500).json({ error: 'Failed to reset menu' });
     }
 });
 

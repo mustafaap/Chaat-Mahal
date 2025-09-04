@@ -231,7 +231,7 @@ const MenuManagement = () => {
     };
 
     const handleEdit = (item) => {
-        const standardSpiceLevels = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
+        const standardSpiceLevels = ['No Spice', 'Regular', 'Extra Spicy'];
         const existingOptions = item.options || [];
         
         const otherOptions = existingOptions.filter(opt => 
@@ -271,7 +271,7 @@ const MenuManagement = () => {
         
         // Only add automatic spice levels for Chaat and Wraps, not Drinks
         if (formData.category === 'Chaat' || formData.category === 'Wraps') {
-            standardOptions = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
+            standardOptions = ['No Spice', 'Regular', 'Extra Spicy']; // Updated to 3 levels
         }
         // Remove the automatic drinks options completely
         
@@ -497,7 +497,7 @@ const MenuManagement = () => {
                                     <h4>🌶️ Spice Level Options (Automatic)</h4>
                                     <p>
                                         {formData.category === 'Chaat' || formData.category === 'Wraps' 
-                                            ? 'This item will automatically include: No Spice, Mild, Spicy, Extra Spicy'
+                                            ? 'This item will automatically include: No Spice, Regular, Extra Spicy'
                                             : formData.category === 'Drinks'
                                             ? 'No automatic options for drinks. Use the options sections below or enable "No Options Modal" for simple drinks.'
                                             : 'Select a category to see automatic options'
