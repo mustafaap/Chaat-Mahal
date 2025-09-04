@@ -203,10 +203,23 @@
     align-items: center;    
     margin-bottom: 8px; /* Reduced from 10px */
 }
+.order-header-main {
+    display: flex;
+    align-items: center; /* Center items vertically */
+    gap: 15px;
+    width: 100%;
+    min-height: 40px; /* Ensure consistent height */
+}
 
-.order-header::before {
+.order-header-main::before {
     content: '📋';
     font-size: 1.3rem; /* Increased from 1.2rem */
+    word-wrap: break-word;        /* Break long words */
+    overflow-wrap: break-word;    /* Modern browsers */
+    word-break: break-word;       /* Force break if needed */
+    hyphens: auto;               /* Add hyphens when breaking */
+    white-space: normal;         /* Allow wrapping */
+    max-width: 100%;   
 }
 
 .order-timestamp {
@@ -236,7 +249,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Increased min width */
     gap: 12px; /* Reduced from 15px */
-    margin-top: 12px; /* Reduced from 15px */
+    margin-top: 8px; /* Reduced from 15px */
 }
 
 .info-card {
@@ -593,7 +606,7 @@
 
     .order-item {
         grid-template-columns: 1fr;
-        gap: 14px; /* Reduced from 18px */
+        gap: 10px; /* Reduced from 18px */
         padding: 14px; /* Reduced from 18px */
     }
 
@@ -623,7 +636,7 @@
 
 @media (max-width: 480px) {
     .order-list-container h1 {
-        font-size: 1.8rem; /* Increased from 1.6rem */
+        font-size: 1.6rem; /* Increased from 1.6rem */
     }
 
     .order-item {
@@ -647,30 +660,21 @@
 }
 
 /* Order Progress Bar */
-.order-header-main {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    width: 100%;
-    padding-right: 60px;
-    padding-left: 15px;
-}
-
 .order-progress-container {
     display: flex;
     align-items: center;
-    gap: 10px; /* Reduced from 12px */
-    margin-top: 8px; /* Reduced from 10px */
+    gap: 10px;
+    margin-top: 8px;
     width: 100%;
 }
 
 .order-progress-bar {
     flex: 1 1;
-    height: 6px; /* Reduced from 8px */
+    height: 6px;
     background: #e9ecef;
-    border-radius: 3px; /* Reduced from 4px */
+    border-radius: 3px;
     overflow: hidden;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); /* Reduced shadow */
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .order-progress-fill {
@@ -699,10 +703,34 @@
 
 .order-progress-text {
     font-family: 'Poppins', sans-serif;
-    font-size: 0.8rem; /* Reduced from 0.9rem */
+    font-size: 0.8rem;
     font-weight: 600;
     color: #666;
-    min-width: 70px; /* Reduced from 80px */
+    min-width: 70px;
+}
+
+/* Remove mobile responsive rules for progress bar */
+@media (max-width: 880px) {
+    .order-progress-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .order-progress-text {
+        text-align: center;
+        min-width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .order-progress-container {
+        margin-top: 5px;
+    }
+    
+    .order-progress-bar {
+        height: 6px;
+    }
 }
 
 /* Interactive Item Tracking */
@@ -862,6 +890,147 @@
     }
 }
 
+/* Mobile responsive for order items - single line */
+@media (max-width: 880px) {
+    .order-items {
+        padding: 10px;
+    }
+
+    .edit-order-btn {
+        padding: 4px 8px !important; 
+        font-size: 0.65rem !important; 
+    }
+
+    .order-item-detail {
+        padding: 5px 10px;
+        margin: 4px 0;
+    }
+
+    .item-content {
+        display: flex;
+        flex-direction: row !important; /* Force single row */
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .item-checkbox {
+        font-size: 1rem;
+        flex-shrink: 0;
+        margin-right: 4px;
+    }
+
+    .item-details {
+        flex: 1;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .item-status {
+        font-size: 0.65rem;
+        padding: 1px 6px;
+        border-radius: 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-width: 50px;
+        text-align: center;
+    }
+
+    /* Remove separate lines for different elements */
+    .item-content > * {
+        margin: 0 !important;
+        line-height: 1.2;
+    }
+}
+
+/* Mobile responsive adjustments for order header */
+@media (max-width: 880px) {
+    .admin-order-total {
+        font-size: 1.2rem; /* Reduced from 1.4rem */
+        padding: 8px; /* Reduced from 12px */
+    }
+    
+    .info-card{
+        padding: 0px;;
+    }
+
+    .order-header {
+        margin-bottom: 0px;
+    }
+
+    .order-header-main {
+        display: flex;
+        flex-direction: row !important; /* Force single row */
+        align-items: center;
+        justify-content: left;
+        gap: 8px;
+        flex-wrap: nowrap; /* Prevent wrapping */
+        font-size: 0.85rem; /* Smaller text */
+        padding: 0;
+        width: 100%;
+    }
+
+    .order-header::before {
+        font-size: 1rem; /* Smaller notepad icon */
+        margin-right: 4px;
+    }
+
+    .order-timestamp {
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Paid/Unpaid indicators - smaller on mobile */
+    .order-item.order-paid .order-header-main::after {
+        font-size: 0.6rem;
+        padding: 2px 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .order-item:not(.order-paid) .order-header-main::after {
+        font-size: 0.6rem;
+        padding: 2px 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .items-header-content {
+    font-size: 0.65rem; /* Reduced from 1rem */
+    }
+    
+}
+
+/* EMERGENCY TEXT OVERFLOW FIX */
+@media (max-width: 768px) {
+    .order-item, .order-item * {
+        word-break: break-all !important;
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+        max-width: 100% !important;
+        white-space: normal !important;
+        overflow: hidden !important;
+    }
+    
+    .order-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 8px !important;
+    }
+    
+    .order-number {
+        white-space: normal !important;
+        word-break: break-all !important;
+        max-width: 100% !important;
+        font-size: 0.8rem !important;
+    }
+}
+
 /* Paid Order Visual Indicators - Darker green background */
 .order-item.order-paid {
     border-left-color: #27ae60 !important;
@@ -948,6 +1117,7 @@
     white-space: nowrap;
     flex-shrink: 0; /* Prevent shrinking */
 }
+
 
 /* Add the unpaid indicator inside order-header-main for unpaid orders */
 .order-item:not(.order-paid) .order-header-main::after {
@@ -1447,7 +1617,7 @@
 }
 
 .spice-slider {
-    width: 100%;
+    width: 77%;
     margin-bottom: 10px;
 }
 

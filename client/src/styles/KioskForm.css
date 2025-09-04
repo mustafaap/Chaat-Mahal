@@ -630,6 +630,7 @@ form {
     align-items: center;
     z-index: 1000;
     backdrop-filter: blur(5px);
+    overflow: hidden !important; 
 }
 
 .modal-content {
@@ -642,8 +643,8 @@ form {
     text-align: center;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     animation: modalSlide 0.3s ease;
-    max-height: 90vh;
-    overflow-y: auto;
+    max-height: 80vh !important;
+    overflow-y: auto !important;
     position: relative; /* For absolute positioning of close button */
 }
 
@@ -1369,7 +1370,7 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .spice-slider {
-    width: 85%;
+    width: 80%;
     margin-top: 15px;
     display: block;
     margin-left: auto;
@@ -1400,8 +1401,7 @@ input[type="checkbox"], input[type="radio"] {
 .spice-levels {
     font-family: 'Inter', sans-serif;
     display: flex;
-    justify-content: center;
-    gap: 22%;
+    justify-content: space-between; /* This will automatically space the 3 items evenly */
     color: #b85c38;
     font-size: 0.9rem;
     font-weight: 500;
@@ -1672,7 +1672,7 @@ input[type="checkbox"], input[type="radio"] {
     text-align: center;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     animation: modalSlide 0.3s ease;
-    max-height: 90vh;
+    max-height: 85vh !important;
     overflow-y: auto;
     position: relative; /* For absolute positioning of close button */
 }
@@ -1702,6 +1702,8 @@ input[type="checkbox"], input[type="radio"] {
     
     .modal-content {
         padding: 35px 25px 25px 25px; /* Adjusted for smaller screens */
+        max-height: 75vh !important;
+        max-width: 80% !important;
     }
 }
 
@@ -1804,19 +1806,4 @@ input[type="checkbox"], input[type="radio"] {
 
 .order-button:active {
     transform: scale(0.98);
-}
-
-@media (max-width: 600px) {
-    .sticky-place-order {
-        padding: 0 0 0 0;
-    }
-    .order-button {
-        font-size: 1rem;
-        padding: 14px 0;
-        border-radius: 10px;
-    }
-
-    .back-button{
-        font-size: 1rem;
-    }
 }

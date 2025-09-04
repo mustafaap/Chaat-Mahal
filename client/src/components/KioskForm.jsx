@@ -30,19 +30,35 @@ const KioskForm = ({ initialStep = 1 }) => {
                 console.error('Error fetching menu items:', error);
                 // Fallback to hardcoded menu if API fails
                 setMenuItems([
-                    { id: 1, name: 'Mango Lassi', price: 3, image: '/images/mango-lassi.jpg', options: [], category: 'Drinks', description: 'Refreshing yogurt-based mango drink' },
-                    { id: 2, name: 'Panipuri', price: 3, image: '/images/panipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy shells filled with spiced water and chutneys' },
-                    { id: 3, name: 'Masala Puri', price: 4, image: '/images/masala-puri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with spiced potatoes and chutneys' },
-                    { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Puris filled with yogurt, chutneys and spices' },
-                    { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with sev, vegetables and chutneys' },
-                    { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.JPG', options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Popular street snack with puffed rice and chutneys' },
-                    { id: 7, name: 'Water', price: 1, image: '/images/water.jpg', options: ['Cold', 'Room Temperature'], category: 'Drinks', description: 'Refreshing hydration' },
+                    { 
+                        id: 1, 
+                        name: 'Samosa', 
+                        price: 2, 
+                        image: '/images/default-food.jpg', // Use default image for fallback
+                        options: [], 
+                        category: 'Chaat', 
+                        description: 'Crispy pastry filled with spiced potatoes and peas' 
+                    },
+                    { 
+                        id: 2, 
+                        name: 'Panipuri', 
+                        price: 3, 
+                        image: '/images/panipuri.JPG', // Keep existing images where available
+                        options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], 
+                        category: 'Chaat', 
+                        description: 'Crispy shells filled with spiced water and chutneys' 
+                    },
+                    { id: 3, name: 'Masala Puri', price: 4, image: '/images/masala-puri.JPG', options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with spiced potatoes and chutneys' },
+                    { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.JPG', options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Puris filled with yogurt, chutneys and spices' },
+                    { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.JPG', options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with sev, vegetables and chutneys' },
+                    { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.JPG', options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Popular street snack with puffed rice and chutneys' },
+                    { id: 7, name: 'Water', price: 1, image: '/images/water.JPG', options: ['Cold', 'Room Temperature'], category: 'Drinks', description: 'Refreshing drinking water' },
                     { 
                         id: 8, 
                         name: 'Paneer Wrap', 
                         price: 8, 
                         image: '/images/paneer-wrap.JPG', 
-                        options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Paneer (+$2)'],
+                        options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Paneer (+$2)'],
                         extraOptions: { 'Extra Paneer': 2 },
                         category: 'Wraps',
                         description: 'Grilled paneer with fresh vegetables wrapped in naan'
@@ -52,7 +68,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                         name: 'Chicken Wrap', 
                         price: 9, 
                         image: '/images/chicken-wrap.JPG', 
-                        options: ['No Spice', 'Mild', 'Spicy', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Meat (+$2)'],
+                        options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Meat (+$2)'],
                         extraOptions: { 'Extra Meat': 2 },
                         category: 'Wraps',
                         description: 'Tender spiced chicken with vegetables wrapped in naan'
@@ -171,16 +187,14 @@ const KioskForm = ({ initialStep = 1 }) => {
         let defaultOptions = [];
         
         // Set default spice level for items that have spice options
-        if (item.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt))) {
-            defaultOptions.push('Mild'); // Default to Mild
+        if (item.options?.some(opt => ['No Spice', 'Regular', 'Extra Spicy'].includes(opt))) {
+            defaultOptions.push('Regular'); // Default to Regular
         }
         
         // Set default "Cold" option for Water
         if (item.name === 'Water') {
             defaultOptions.push('Cold'); // Default to Cold
         }
-        
-        // Remove Mango Lassi special handling completely
         
         // Reset the options for this item to defaults only
         setItemOptions(prev => ({
@@ -543,7 +557,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                                                         {options.length > 0 && (
                                                             <span className="kiosk-order-item-options">
                                                                 Options: {options.map(option => {
-                                                                    const spiceLevels = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
+                                                                    const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy']; // Updated array
                                                                     if (spiceLevels.includes(option)) {
                                                                         return `${option}`;
                                                                     }
@@ -680,35 +694,39 @@ const KioskForm = ({ initialStep = 1 }) => {
                         {/* Added item image to modal */}
                         <div className="modal-item-image-container">
                             <img 
-                                src={modalItem.image} 
+                                src={modalItem.image || '/images/default-food.jpg'} 
                                 alt={modalItem.name}
                                 className="modal-item-image"
+                                onError={(e) => {
+                                    // Fallback if image fails to load
+                                    e.target.src = '/images/default-food.jpg';
+                                }}
                             />
                         </div>
                         
                         <h2>{modalItem.name} Options</h2>
 
                         {/* Slider for Spice Level */}
-                        {modalItem.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)) && (
+                        {modalItem.options?.some(opt => ['No Spice', 'Regular', 'Extra Spicy'].includes(opt)) && (
                             <div className="spice-slider-container">
                                 <label htmlFor="spice-slider" className="spice-slider-label">Spice Level:</label>
                                 <input
                                     type="range"
                                     id="spice-slider"
                                     min={0}
-                                    max={3}
+                                    max={2}  // Changed from 3 to 2 (3 levels: 0, 1, 2)
                                     step={1}
                                     value={(() => {
-                                        const spiceLevels = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
+                                        const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy']; // Updated array
                                         const selected = itemOptions[modalItem.name]?.find(opt => spiceLevels.includes(opt));
-                                        return selected ? spiceLevels.indexOf(selected) : 1;
+                                        return selected ? spiceLevels.indexOf(selected) : 1; // Default to Regular (index 1)
                                     })()}
                                     onChange={(e) => {
-                                        const newLevel = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'][parseInt(e.target.value)];
+                                        const newLevel = ['No Spice', 'Regular', 'Extra Spicy'][parseInt(e.target.value)]; // Updated array
                                         setItemOptions(prev => ({
                                             ...prev,
                                             [modalItem.name]: [
-                                                ...(prev[modalItem.name]?.filter(opt => !['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)) || []),
+                                                ...(prev[modalItem.name]?.filter(opt => !['No Spice', 'Regular', 'Extra Spicy'].includes(opt)) || []),
                                                 newLevel
                                             ]
                                         }));
@@ -717,15 +735,14 @@ const KioskForm = ({ initialStep = 1 }) => {
                                 />
                                 <div className="spice-levels">
                                     <span title="No Spice">No Spice</span>
-                                    <span title="Mild">Mild</span>
-                                    <span title="Spicy">Spicy</span>
+                                    <span title="Regular">Regular</span>
                                     <span title="Extra Spicy">Extra Spicy</span>
                                 </div>
                             </div>
                         )}
 
                         {/* Other Options */}
-                        {modalItem.options?.filter(opt => !['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)).map(option => (
+                        {modalItem.options?.filter(opt => !['No Spice', 'Regular', 'Extra Spicy'].includes(opt)).map(option => (
                             <div key={option} className="option-container">
                                 <label className="option-label">
                                     <input

@@ -6,15 +6,15 @@
     "image": "/images/panipuri.JPG",
     "options": [
       "No Spice",
-      "Mild",
-      "Spicy",
+      "Regular",
       "Extra Spicy",
       "No Onions",
       "No Cilantro"
     ],
     "extraOptions": {},
     "category": "Chaat",
-    "description": "Crispy shells filled with spiced water and chutneys"
+    "description": "Crispy shells filled with spiced water and chutneys",
+    "noModal": false
   },
   {
     "id": 2,
@@ -23,15 +23,15 @@
     "image": "/images/masala-puri.JPG",
     "options": [
       "No Spice",
-      "Mild",
-      "Spicy",
+      "Regular",
       "Extra Spicy",
       "No Onions",
       "No Cilantro"
     ],
     "extraOptions": {},
     "category": "Chaat",
-    "description": "Crispy puris topped with spiced potatoes and chutneys"
+    "description": "Crispy puris topped with spiced potatoes and chutneys",
+    "noModal": false
   },
   {
     "id": 3,
@@ -40,15 +40,15 @@
     "image": "/images/dahipuri.JPG",
     "options": [
       "No Spice",
-      "Mild",
-      "Spicy",
+      "Regular",
       "Extra Spicy",
       "No Onions",
       "No Cilantro"
     ],
     "extraOptions": {},
     "category": "Chaat",
-    "description": "Puris filled with yogurt, chutneys and spices, topped with sev"
+    "description": "Puris filled with yogurt, chutneys and spices, topped with sev",
+    "noModal": false
   },
   {
     "id": 4,
@@ -116,13 +116,17 @@
       "Extra Spicy",
       "No Onions",
       "No Cilantro",
+      "A",
+      "B",
+      "C",
       "Extra Meat (+$2)"
     ],
     "extraOptions": {
       "Extra Meat": 2
     },
     "category": "Wraps",
-    "description": "Tender spiced chicken with vegetables wrapped in naan"
+    "description": "Tender spiced chicken with vegetables wrapped in naan",
+    "noModal": false
   },
   {
     "id": 8,
@@ -148,5 +152,20 @@
     "category": "Drinks",
     "description": "Refreshing hydration",
     "noModal": false
+  },
+  {
+    "id": 10,
+    "name": "dgwsg",
+    "price": 8,
+    "image": "/images/default-food.jpg",
+    "category": "Chaat",
+    "description": "afsf",
+    "extraOptions": {},
+    "noModal": true,
+    "options": [
+      "No Spice",
+      "Regular",
+      "Extra Spicy"
+    ]
   }
 ]

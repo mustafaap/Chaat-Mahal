@@ -211,14 +211,6 @@ const OrderList = ({ currentView, setCurrentView }) => {
         return Object.keys(itemCounts).every(itemName => orderGivenItems[itemName]);
     };
 
-    // Calculate completion percentage
-    const getCompletionPercentage = (orderId, itemCounts) => {
-        const orderGivenItems = givenItems[orderId] || {};
-        const totalItems = Object.keys(itemCounts).length;
-        const givenCount = Object.keys(itemCounts).filter(itemName => orderGivenItems[itemName]).length;
-        return totalItems > 0 ? Math.round((givenCount / totalItems) * 100) : 0;
-    };
-
     // Helper function to calculate time since order was placed
     const getOrderAge = (createdAt) => {
         const now = new Date();
@@ -309,8 +301,8 @@ const OrderList = ({ currentView, setCurrentView }) => {
             let defaultOptions = [];
             
             // Set default spice level for items that have spice options
-            if (menuItem.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt))) {
-                defaultOptions.push('Mild'); // Default to Mild
+            if (menuItem.options?.some(opt => ['No Spice', 'Regular', 'Extra Spicy'].includes(opt))) {
+                defaultOptions.push('Regular'); // Default to Regular
             }
             
             // Set default "Cold" option for Water
@@ -532,7 +524,6 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                 });
 
                                 const orderAge = getOrderAge(order.createdAt);
-                                const completionPercentage = getCompletionPercentage(order._id, itemCounts);
                                 const allItemsGiven = areAllItemsGiven(order._id, itemCounts);
                                 const isBeingEdited = editingOrder?._id === order._id;
 
@@ -544,19 +535,6 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                     Order #{order.orderNumber || order._id.slice(-4)} - {order.customerName}
                                                     <span className="order-timestamp">
                                                         {orderAge}
-                                                    </span>
-                                                </div>
-                                                
-                                                {/* Progress Bar */}
-                                                <div className="order-progress-container">
-                                                    <div className="order-progress-bar">
-                                                        <div 
-                                                            className="order-progress-fill" 
-                                                            style={{ width: `${completionPercentage}%` }}
-                                                        ></div>
-                                                    </div>
-                                                    <span className="order-progress-text">
-                                                        {completionPercentage}% Complete
                                                     </span>
                                                 </div>
                                             </div>
@@ -936,22 +914,22 @@ const OrderList = ({ currentView, setCurrentView }) => {
                         
                         <div className="edit-options-content">
                             {/* Spice Level Slider */}
-                            {editOptionModal.menuItem.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)) && (
+                            {editOptionModal.menuItem.options?.some(opt => ['No Spice', 'Regular', 'Extra Spicy'].includes(opt)) && (
                                 <div className="spice-section">
                                     <label>Spice Level:</label>
                                     <div className="spice-selector">
                                         <input
                                             type="range"
                                             min="0"
-                                            max="3"
+                                            max="2"  // Changed from 3 to 2
                                             value={(() => {
                                                 const currentOptions = editItemOptions[editOptionModal.itemName] || [];
-                                                const spiceLevels = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
+                                                const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy']; // Updated array
                                                 const currentSpice = currentOptions.find(opt => spiceLevels.includes(opt));
-                                                return spiceLevels.indexOf(currentSpice) !== -1 ? spiceLevels.indexOf(currentSpice) : 1;
+                                                return spiceLevels.indexOf(currentSpice) !== -1 ? spiceLevels.indexOf(currentSpice) : 1; // Default to Regular
                                             })()}
                                             onChange={(e) => {
-                                                const spiceLevels = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
+                                                const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy']; // Updated array
                                                 const newLevel = spiceLevels[parseInt(e.target.value)];
                                                 setEditItemOptions(prev => ({
                                                     ...prev,
@@ -965,8 +943,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                         />
                                         <div className="spice-levels">
                                             <span>No Spice</span>
-                                            <span>Mild</span>
-                                            <span>Spicy</span>
+                                            <span>Regular</span>
                                             <span>Extra Spicy</span>
                                         </div>
                                     </div>
@@ -974,7 +951,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                             )}
 
                             {/* Other Options */}
-                            {editOptionModal.menuItem.options?.filter(opt => !['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)).map(option => (
+                            {editOptionModal.menuItem.options?.filter(opt => !['No Spice', 'Regular', 'Extra Spicy'].includes(opt)).map(option => (
                                 <div key={option} className="option-container">
                                     <label className="option-label">
                                         <input
@@ -984,7 +961,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                             onChange={(e) => {
                                                 const checked = e.target.checked;
                                                 setEditItemOptions(prev => {
-                                                    const currentOptions = prev[editOptionModal.itemName] || [];
+                                                    const currentOptions = prev[editOptionModal.itemName] || {};
                                                     
                                                     if (editOptionModal.menuItem.name === 'Mango Lassi' || editOptionModal.menuItem.name === 'Water') {
                                                         return { ...prev, [editOptionModal.itemName]: checked ? [option] : [] };

@@ -231,7 +231,7 @@ const MenuManagement = () => {
     };
 
     const handleEdit = (item) => {
-        const standardSpiceLevels = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
+        const standardSpiceLevels = ['No Spice', 'Regular', 'Extra Spicy'];
         const existingOptions = item.options || [];
         
         const otherOptions = existingOptions.filter(opt => 
@@ -271,9 +271,8 @@ const MenuManagement = () => {
         
         // Only add automatic spice levels for Chaat and Wraps, not Drinks
         if (formData.category === 'Chaat' || formData.category === 'Wraps') {
-            standardOptions = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
+            standardOptions = ['No Spice', 'Regular', 'Extra Spicy'];
         }
-        // Remove the automatic drinks options completely
         
         // Create premium options array for the final options list
         const premiumOptionsForArray = Object.entries(formData.extraOptions).map(([option, price]) => {
@@ -289,7 +288,9 @@ const MenuManagement = () => {
         const itemData = {
             ...formData,
             price: parseFloat(formData.price),
-            options: combinedOptions
+            options: combinedOptions,
+            // Use default image if no image is provided
+            image: formData.image || '/images/default-food.jpg'
         };
 
         delete itemData.otherOptions;
@@ -307,9 +308,9 @@ const MenuManagement = () => {
                 alert('Menu item added successfully!');
             }
             
-            // Clear uploaded image state after successful save (but don't delete file)
+            // Clear uploaded image state after successful save
             setUploadedImage(null);
-            resetForm(false); // ✅ Pass false to indicate this is NOT a cancellation
+            resetForm(false);
         } catch (error) {
             console.error('Error saving menu item:', error);
             alert('Failed to save menu item. Please try again.');
@@ -497,7 +498,7 @@ const MenuManagement = () => {
                                     <h4>🌶️ Spice Level Options (Automatic)</h4>
                                     <p>
                                         {formData.category === 'Chaat' || formData.category === 'Wraps' 
-                                            ? 'This item will automatically include: No Spice, Mild, Spicy, Extra Spicy'
+                                            ? 'This item will automatically include: No Spice, Regular, Extra Spicy'
                                             : formData.category === 'Drinks'
                                             ? 'No automatic options for drinks. Use the options sections below or enable "No Options Modal" for simple drinks.'
                                             : 'Select a category to see automatic options'
@@ -664,12 +665,24 @@ const MenuManagement = () => {
                     filteredItems.map(item => (
                         <div key={item.id} className="menu-item-card">
                             <div className="item-image">
-                                {item.image ? (
+                                {item.image && item.image !== '/images/default-food.jpg' ? (
                                     <img src={item.image} alt={item.name} />
                                 ) : (
                                     <div className="placeholder-image">
-                                        <span>📷</span>
-                                        <p>No Image</p>
+                                        <img 
+                                            src="/images/default-food.jpg" 
+                                            alt="Default food image" 
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                                opacity: '0.7'
+                                            }}
+                                        />
+                                        <div className="placeholder-overlay">
+                                            <span>📷</span>
+                                            <p>Default Image</p>
+                                        </div>
                                     </div>
                                 )}
                                 <div className="item-category-badge">{item.category}</div>

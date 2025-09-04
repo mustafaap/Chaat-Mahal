@@ -76,20 +76,25 @@ const generateOrderEmailHTML = (orderData) => {
                 <div class="rating-section">
                     <h3>❤️ Loved your meal?</h3>
                     <p>Help us spread the word! Your review means the world to our business.</p>
-                    <a href="https://www.google.com/maps/place/Chaat+Mahal/@35.3113509,-80.7489563,17z/data=!4m8!3m7!1s0x88541ddc5479ff77:0xcae7dbafe53489d9!8m2!3d35.3113509!4d-80.7489563!9m1!1b1!16s%2Fg%2F11y3_8h8qy?entry=ttu&g_ep=EgoyMDI1MDExNS4wIKXMDSoASAFQAw%3D%3D" 
-                       class="rating-button" 
-                       target="_blank">
+                    <a href="https://www.google.com/maps/place/Chaat+Mahal/@35.3113509,-80.7489563,17z/data=!4m8!3m7!1s0x88541ddc5479ff77:0xcae7dbafe53489d9!8m2!3d35.3113509!4d-80.7489563!9m1!1b1!16s%2Fg%2F11y3_8h8qy?entry=ttu&g_ep=EgoyMDI1MDExNS4wIKXMDSoASAFQAw%3D%3D" target="_blank">
+                       <div class="rating-button">
                         ⭐ Leave a Google Review
                     </a>
                     <p class="rating-subtitle">It only takes a minute and helps other food lovers find us!</p>
                 </div>
                 
                 <div class="footer">
-                    <p><strong>Chaat Mahal Food Truck</strong></p>
-                    <p>📍 Parking lot, 9311 JW Clay Blvd, Charlotte, NC 28262</p>
+                    <p>
+                        <strong>Chaat Mahal Food Truck</strong>
+                    </p>
+                    <p> 
+                        <a href="https://maps.app.goo.gl/m8DxsdJ41BKaZVEU7">
+                           📍 Parking lot, 9311 JW Clay Blvd, Charlotte, NC 28262
+                        </a>
+                    </p>
                     <p>📞 Phone: (704) 418-0330</p>
                     <p>✉️ Email: snackit@chaatmahal.com</p>
-                    <p>Follow us on Instagram: @the.chaat.mahal</p>
+                    <p>Follow us on Instagram: <a href="https://www.instagram.com/the.chaat.mahal/">@the.chaat.mahal</a></p>
                     <p>This email was sent automatically. Please don't reply to this email.</p>
                 </div>
             </div>
