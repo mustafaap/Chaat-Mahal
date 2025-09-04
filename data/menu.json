@@ -116,13 +116,17 @@
       "Extra Spicy",
       "No Onions",
       "No Cilantro",
+      "A",
+      "B",
+      "C",
       "Extra Meat (+$2)"
     ],
     "extraOptions": {
       "Extra Meat": 2
     },
     "category": "Wraps",
-    "description": "Tender spiced chicken with vegetables wrapped in naan"
+    "description": "Tender spiced chicken with vegetables wrapped in naan",
+    "noModal": false
   },
   {
     "id": 8,
