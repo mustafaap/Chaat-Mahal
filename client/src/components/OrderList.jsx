@@ -211,14 +211,6 @@ const OrderList = ({ currentView, setCurrentView }) => {
         return Object.keys(itemCounts).every(itemName => orderGivenItems[itemName]);
     };
 
-    // Calculate completion percentage
-    const getCompletionPercentage = (orderId, itemCounts) => {
-        const orderGivenItems = givenItems[orderId] || {};
-        const totalItems = Object.keys(itemCounts).length;
-        const givenCount = Object.keys(itemCounts).filter(itemName => orderGivenItems[itemName]).length;
-        return totalItems > 0 ? Math.round((givenCount / totalItems) * 100) : 0;
-    };
-
     // Helper function to calculate time since order was placed
     const getOrderAge = (createdAt) => {
         const now = new Date();
@@ -532,7 +524,6 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                 });
 
                                 const orderAge = getOrderAge(order.createdAt);
-                                const completionPercentage = getCompletionPercentage(order._id, itemCounts);
                                 const allItemsGiven = areAllItemsGiven(order._id, itemCounts);
                                 const isBeingEdited = editingOrder?._id === order._id;
 
@@ -544,19 +535,6 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                     Order #{order.orderNumber || order._id.slice(-4)} - {order.customerName}
                                                     <span className="order-timestamp">
                                                         {orderAge}
-                                                    </span>
-                                                </div>
-                                                
-                                                {/* Progress Bar */}
-                                                <div className="order-progress-container">
-                                                    <div className="order-progress-bar">
-                                                        <div 
-                                                            className="order-progress-fill" 
-                                                            style={{ width: `${completionPercentage}%` }}
-                                                        ></div>
-                                                    </div>
-                                                    <span className="order-progress-text">
-                                                        {completionPercentage}% Complete
                                                     </span>
                                                 </div>
                                             </div>
@@ -773,7 +751,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                             <div className="order-header">
                                                 <div className="order-header-with-revert">
                                                     <div className="order-header-main">
-                                                        Order #{order._id.slice(-4)} - {order.customerName}
+                                                        Order #{order.orderNumber ||order._id.slice(-4)} - {order.customerName}
                                                         <span className="order-timestamp">
                                                             Completed {completedTime}
                                                         </span>
@@ -845,7 +823,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                             <div className="order-header">
                                                 <div className="order-header-with-revert">
                                                     <div className="order-header-main">
-                                                        Order #{order._id.slice(-4)} - {order.customerName}
+                                                        Order #{order.orderNumber || order._id.slice(-4)} - {order.customerName}
                                                         <span className="order-timestamp">
                                                             Cancelled {cancelledTime}
                                                         </span>
@@ -983,7 +961,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                             onChange={(e) => {
                                                 const checked = e.target.checked;
                                                 setEditItemOptions(prev => {
-                                                    const currentOptions = prev[editOptionModal.itemName] || [];
+                                                    const currentOptions = prev[editOptionModal.itemName] || {};
                                                     
                                                     if (editOptionModal.menuItem.name === 'Mango Lassi' || editOptionModal.menuItem.name === 'Water') {
                                                         return { ...prev, [editOptionModal.itemName]: checked ? [option] : [] };
