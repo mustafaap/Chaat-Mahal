@@ -309,8 +309,8 @@ const OrderList = ({ currentView, setCurrentView }) => {
             let defaultOptions = [];
             
             // Set default spice level for items that have spice options
-            if (menuItem.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt))) {
-                defaultOptions.push('Mild'); // Default to Mild
+            if (menuItem.options?.some(opt => ['No Spice', 'Regular', 'Extra Spicy'].includes(opt))) {
+                defaultOptions.push('Regular'); // Default to Regular
             }
             
             // Set default "Cold" option for Water
@@ -936,22 +936,22 @@ const OrderList = ({ currentView, setCurrentView }) => {
                         
                         <div className="edit-options-content">
                             {/* Spice Level Slider */}
-                            {editOptionModal.menuItem.options?.some(opt => ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)) && (
+                            {editOptionModal.menuItem.options?.some(opt => ['No Spice', 'Regular', 'Extra Spicy'].includes(opt)) && (
                                 <div className="spice-section">
                                     <label>Spice Level:</label>
                                     <div className="spice-selector">
                                         <input
                                             type="range"
                                             min="0"
-                                            max="3"
+                                            max="2"  // Changed from 3 to 2
                                             value={(() => {
                                                 const currentOptions = editItemOptions[editOptionModal.itemName] || [];
-                                                const spiceLevels = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
+                                                const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy']; // Updated array
                                                 const currentSpice = currentOptions.find(opt => spiceLevels.includes(opt));
-                                                return spiceLevels.indexOf(currentSpice) !== -1 ? spiceLevels.indexOf(currentSpice) : 1;
+                                                return spiceLevels.indexOf(currentSpice) !== -1 ? spiceLevels.indexOf(currentSpice) : 1; // Default to Regular
                                             })()}
                                             onChange={(e) => {
-                                                const spiceLevels = ['No Spice', 'Mild', 'Spicy', 'Extra Spicy'];
+                                                const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy']; // Updated array
                                                 const newLevel = spiceLevels[parseInt(e.target.value)];
                                                 setEditItemOptions(prev => ({
                                                     ...prev,
@@ -965,8 +965,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                         />
                                         <div className="spice-levels">
                                             <span>No Spice</span>
-                                            <span>Mild</span>
-                                            <span>Spicy</span>
+                                            <span>Regular</span>
                                             <span>Extra Spicy</span>
                                         </div>
                                     </div>
@@ -974,7 +973,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                             )}
 
                             {/* Other Options */}
-                            {editOptionModal.menuItem.options?.filter(opt => !['No Spice', 'Mild', 'Spicy', 'Extra Spicy'].includes(opt)).map(option => (
+                            {editOptionModal.menuItem.options?.filter(opt => !['No Spice', 'Regular', 'Extra Spicy'].includes(opt)).map(option => (
                                 <div key={option} className="option-container">
                                     <label className="option-label">
                                         <input

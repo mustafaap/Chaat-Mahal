@@ -1370,7 +1370,7 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .spice-slider {
-    width: 85%;
+    width: 80%;
     margin-top: 15px;
     display: block;
     margin-left: auto;
@@ -1401,8 +1401,7 @@ input[type="checkbox"], input[type="radio"] {
 .spice-levels {
     font-family: 'Inter', sans-serif;
     display: flex;
-    justify-content: center;
-    gap: 22%;
+    justify-content: space-between; /* This will automatically space the 3 items evenly */
     color: #b85c38;
     font-size: 0.9rem;
     font-weight: 500;
@@ -1807,19 +1806,4 @@ input[type="checkbox"], input[type="radio"] {
 
 .order-button:active {
     transform: scale(0.98);
-}
-
-@media (max-width: 600px) {
-    .sticky-place-order {
-        padding: 0 0 0 0;
-    }
-    .order-button {
-        font-size: 1rem;
-        padding: 14px 0;
-        border-radius: 10px;
-    }
-
-    .back-button{
-        font-size: 1rem;
-    }
 }
