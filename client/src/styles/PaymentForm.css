@@ -58,6 +58,7 @@
     font-weight: 600;
     color: #2c3e50;
     margin-bottom: 8px;
+    margin-top: 12px;
     font-size: 1rem;
 }
 
@@ -499,4 +500,30 @@
 .back-button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+/* Digital Wallet Section */
+.digital-wallet-section {
+  margin-bottom: 24px;
+}
+
+.payment-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.payment-divider::before,
+.payment-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.payment-divider span {
+  padding: 0 16px;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
