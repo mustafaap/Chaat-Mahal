@@ -33,6 +33,23 @@ const orderSchema = new mongoose.Schema({
     paid: {
         type: Boolean,
         default: false
+    },
+    paymentId: {
+        type: String,
+        default: null
+    },
+    givenItems: {
+        type: Map,
+        of: Boolean,
+        default: {}
+    },
+    readyEmailSent: {
+        type: Boolean,
+        default: false
+    },
+    readyEmailSentAt: {
+        type: Date,
+        default: null
     }
 }, {
     timestamps: true

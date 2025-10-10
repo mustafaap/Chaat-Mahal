@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import PaymentForm from './PaymentForm';
 import '../styles/KioskForm.css';
 
 const KioskForm = ({ initialStep = 1 }) => {
     const [menuItems, setMenuItems] = useState([]);
     const [isLoadingMenu, setIsLoadingMenu] = useState(true);
     const [customerName, setCustomerName] = useState('');
-    const [customerEmail, setCustomerEmail] = useState(''); // New state for customer email
+    const [customerEmail, setCustomerEmail] = useState('');
     const [selectedItems, setSelectedItems] = useState({});
     const [step, setStep] = useState(initialStep);
     const [orderNumber, setOrderNumber] = useState(null);
@@ -16,9 +17,27 @@ const KioskForm = ({ initialStep = 1 }) => {
     const [notes, setNotes] = useState('');
     const [showCartSummary, setShowCartSummary] = useState(false);
     const [cartTotal, setCartTotal] = useState(0);
+    const [paymentId, setPaymentId] = useState(null);
+    const [settings, setSettings] = useState({ onlinePaymentEnabled: true }); // Add this line
     
     // State for floating index
     const [activeSection, setActiveSection] = useState('Chaat');
+
+    // Fetch settings on component mount
+    useEffect(() => {
+        fetchSettings();
+    }, []);
+
+    const fetchSettings = async () => {
+        try {
+            const response = await axios.get('/api/settings');
+            setSettings(response.data);
+        } catch (error) {
+            console.error('Error fetching settings:', error);
+            // Fallback to default settings if fetch fails
+            setSettings({ onlinePaymentEnabled: true });
+        }
+    };
 
     // Fetch menu items from API
     useEffect(() => {
@@ -183,37 +202,77 @@ const KioskForm = ({ initialStep = 1 }) => {
     const openModal = (item) => {
         setModalItem(item);
         
-        // Set default options when opening modal
-        let defaultOptions = [];
+        // Initialize with default Regular spice for items with spice option
+        const hasSpice = item.options && item.options.some(opt => 
+            ['No Spice', 'Regular', 'Extra Spicy'].includes(opt)
+        );
         
-        // Set default spice level for items that have spice options
-        if (item.options?.some(opt => ['No Spice', 'Regular', 'Extra Spicy'].includes(opt))) {
-            defaultOptions.push('Regular'); // Default to Regular
-        }
-        
-        // Set default "Cold" option for Water
-        if (item.name === 'Water') {
-            defaultOptions.push('Cold'); // Default to Cold
-        }
-        
-        // Reset the options for this item to defaults only
-        setItemOptions(prev => ({
-            ...prev,
-            [item.name]: defaultOptions
-        }));
+        setItemOptions({
+            spiceLevel: hasSpice ? 'Regular' : null,
+            otherOptions: [],
+            extraOptions: []
+        });
     };
 
     const closeModal = () => {
         setModalItem(null);
+        setItemOptions({
+            spiceLevel: null,
+            otherOptions: [],
+            extraOptions: []
+        });
+    };
+
+    const handleSpiceChange = (level) => {
+        setItemOptions(prev => ({
+            ...prev,
+            spiceLevel: level
+        }));
+    };
+
+    const handleOtherOptionToggle = (option) => {
+        setItemOptions(prev => {
+            const isSelected = prev.otherOptions.includes(option);
+            return {
+                ...prev,
+                otherOptions: isSelected 
+                    ? prev.otherOptions.filter(o => o !== option)
+                    : [...prev.otherOptions, option]
+            };
+        });
+    };
+
+    const handleExtraOptionToggle = (optionName) => {
+        setItemOptions(prev => {
+            const isSelected = prev.extraOptions.includes(optionName);
+            return {
+                ...prev,
+                extraOptions: isSelected
+                    ? prev.extraOptions.filter(o => o !== optionName)
+                    : [...prev.extraOptions, optionName]
+            };
+        });
     };
 
     const handleOptionSubmit = () => {
-        const options = itemOptions[modalItem.name] || [];
-        // Filter out empty options and ensure consistency
-        const cleanOptions = options.filter(opt => opt && opt.trim() !== '');
+        if (!modalItem) return;
         
-        console.log('Submitting options:', cleanOptions);
-        addToCart(modalItem.name, 1, cleanOptions);
+        // Combine all selected options
+        const allOptions = [];
+        
+        // Add spice level if selected
+        if (itemOptions.spiceLevel) {
+            allOptions.push(itemOptions.spiceLevel);
+        }
+        
+        // Add other options
+        allOptions.push(...itemOptions.otherOptions);
+        
+        // Add extra options
+        allOptions.push(...itemOptions.extraOptions);
+        
+        // Add to cart with all options
+        addToCart(modalItem.name, 1, allOptions);
         closeModal();
     };
 
@@ -257,36 +316,96 @@ const KioskForm = ({ initialStep = 1 }) => {
     const handleNameSubmit = async (e) => {
         e.preventDefault();
         
+        // Only require name and at least one item - email is optional
         if (customerName && Object.keys(selectedItems).length > 0) {
-            setIsSubmitting(true);
-            
-            const orderData = {
-                customerName,
-                customerEmail, // Include email in the orderData
-                items: Object.values(selectedItems).flatMap(item => 
-                    Array(item.quantity).fill(item.options.length > 0 ? `${item.name} (${item.options.join(', ')})` : item.name)
-                ),
-                total: Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
-                    const itemPrice = calculateItemPrice(name, options);
-                    return sum + (itemPrice * quantity);
-                }, 0),
-                notes: notes || ''
-            };
-
-            try {
-                const response = await axios.post('/api/orders', orderData);
-                setOrderNumber(response.data.orderNumber);
-                setStep(3);
-            } catch (error) {
-                console.error('Error submitting order:', error);
-                alert('There was an error submitting your order. Please try again.');
-            } finally {
-                setIsSubmitting(false);
+            // Check if online payments are enabled
+            if (settings.onlinePaymentEnabled) {
+                // Move to payment step
+                setStep(3); 
+            } else {
+                // Skip payment step and go directly to counter payment
+                handlePayAtCounter();
             }
         } else {
             alert('Please enter your name and select at least one item.');
+        }
+    };
+
+    const handlePayAtCounter = async () => {
+        setIsSubmitting(true);
+        
+        const subtotal = Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+            const itemPrice = calculateItemPrice(name, options);
+            return sum + (itemPrice * quantity);
+        }, 0);
+
+        // For counter payments, only send subtotal (no tax or convenience fee)
+        const orderData = {
+            customerName,
+            customerEmail,
+            items: Object.values(selectedItems).flatMap(item => 
+                Array(item.quantity).fill(item.options.length > 0 ? `${item.name} (${item.options.join(', ')})` : item.name)
+            ),
+            total: subtotal, // Send only subtotal for counter payments
+            notes: notes || '',
+            paymentId: null,
+            paid: false
+        };
+
+        try {
+            const response = await axios.post('/api/orders', orderData);
+            setOrderNumber(response.data.orderNumber);
+            setStep(4);
+        } catch (error) {
+            console.error('Error submitting order:', error);
+            alert('There was an error submitting your order. Please try again.');
+        } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handlePaymentSuccess = async (paymentId) => {
+        setPaymentId(paymentId);
+        setIsSubmitting(true);
+        
+        const subtotal = Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+            const itemPrice = calculateItemPrice(name, options);
+            return sum + (itemPrice * quantity);
+        }, 0);
+
+        const taxAmount = subtotal * 0.0825;
+        const totalWithTax = +(subtotal + taxAmount + 0.35).toFixed(2);
+
+        // For online payments, send total with tax
+        const orderData = {
+            customerName,
+            customerEmail,
+            items: Object.values(selectedItems).flatMap(item => 
+                Array(item.quantity).fill(item.options.length > 0 ? `${item.name} (${item.options.join(', ')})` : item.name)
+            ),
+            total: totalWithTax, // Send total with tax for online payments
+            notes: notes || '',
+            paymentId: paymentId,
+            paid: true
+        };
+
+        console.log('Submitting order with payment data:', orderData);
+
+        try {
+            const response = await axios.post('/api/orders', orderData);
+            console.log('Order creation response:', response.data);
+            setOrderNumber(response.data.orderNumber);
+            setStep(4);
+        } catch (error) {
+            console.error('Error submitting order:', error);
+            alert('Payment successful, but there was an error submitting your order. Please contact us with payment ID: ' + paymentId);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handlePaymentCancel = () => {
+        setStep(2); // Go back to order review
     };
 
     // Scroll to top when step changes
@@ -517,26 +636,26 @@ const KioskForm = ({ initialStep = 1 }) => {
                             Back
                         </button>
                     </div>
-                    <h2>Enter Your Name</h2>
+                    <h3>Enter Your Name</h3>
                     <input
                         type="text"
-                        placeholder="Enter your name"
+                        placeholder="Enter your name *"
                         value={customerName}
                         onChange={(e) => setCustomerName(e.target.value)}
                         required
                         className="name-input"
                     />
-                    <h2>Email for Receipt (Optional)</h2>
+                    <h3>Email</h3>
                     <input
                         type="email"
-                        placeholder="Enter your email"
+                        placeholder="Enter your email (optional)"
                         value={customerEmail}
                         onChange={(e) => setCustomerEmail(e.target.value)}
                         className="name-input"
                     />
-                    <h2>Notes (Optional)</h2>
+                    <h3>Notes</h3>
                     <textarea
-                        placeholder="Enter any allergies, special requests or notes here..."
+                        placeholder="Enter any allergies, ToGo requests or notes here... (optional)"
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         className="notes-textarea"
@@ -557,7 +676,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                                                         {options.length > 0 && (
                                                             <span className="kiosk-order-item-options">
                                                                 Options: {options.map(option => {
-                                                                    const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy']; // Updated array
+                                                                    const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy'];
                                                                     if (spiceLevels.includes(option)) {
                                                                         return `${option}`;
                                                                     }
@@ -577,7 +696,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                             </ul>
                         </div>
                         <div className="confirmation-total">
-                            Total: $
+                            Subtotal: $
                             {Object.entries(selectedItems)
                                 .reduce((sum, [key, { name, quantity, options }]) => {
                                     return sum + (calculateItemPrice(name, options) * quantity);
@@ -589,7 +708,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                                 <strong>Notes:</strong> {notes}
                             </div>
                         )}
-                        <div className="tax-notice">*Taxes applied to card and tap payments only</div>
+                        <div className="tax-notice">*Note: Tax (8.25%) and convenience fee ($0.35) will be added at checkout</div>
                     </div>
                     <div className="sticky-place-order">
                         <button
@@ -602,18 +721,49 @@ const KioskForm = ({ initialStep = 1 }) => {
                     </div>
                 </form>
             )}
-            {step === 3 && (
+            {step === 3 && settings.onlinePaymentEnabled && (
+                <PaymentForm
+                    orderTotal={Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+                        const itemPrice = calculateItemPrice(name, options);
+                        return sum + (itemPrice * quantity);
+                    }, 0)}
+                    onPaymentSuccess={handlePaymentSuccess}
+                    onPaymentCancel={handlePaymentCancel}
+                    onPayAtCounter={handlePayAtCounter}
+                    customerName={customerName}
+                    orderItems={Object.entries(selectedItems).map(([key, { name, quantity, options }]) => ({
+                        name,
+                        quantity,
+                        options,
+                        price: calculateItemPrice(name, options)
+                    }))}
+                />
+            )}
+            
+            {step === 4 && (
                 <div className="confirmation-container">
-                    <h1>Order Confirmation</h1>
+                    <h2>Order Confirmation</h2>
                     <p className="confirmation-details">Order Number: {orderNumber}</p>
                     <p className="confirmation-name">Name: {customerName}</p>
                     
-                    {/* Move payment notice to top for better visibility */}
-                    <div className="confirmation-payment-divider">
-                        <p className="confirmation-payment-notice">
-                            Please pay at the counter to enter the order preparation line.
-                        </p>
-                    </div>
+                    {paymentId ? (
+                        <div className="confirmation-payment-success">
+                            <div className="confirmation-success-heading">
+                                <p>✅ Payment Successful!</p>
+                            </div>
+                            <p>Your order is now in queue.</p>
+                        </div>
+                    ) : (
+                        <div className="confirmation-payment-counter">
+                            <div className="confirmation-counter-heading">
+                                <p>💵 Pay at Counter</p>
+                            </div>
+                            <p>Please pay at the counter to enter preparation queue.</p>
+                            <p className="counter-payment-disclaimer">
+                                <em>Note: Price may vary slightly due to convenience fees.</em>
+                            </p>
+                        </div>
+                    )}
 
                     <div className="confirmation-divider">
                     <div className="confirmation-order-card">
@@ -645,19 +795,46 @@ const KioskForm = ({ initialStep = 1 }) => {
                                     ))}
                             </ul>
                         </div>
+                        
+                        {/* Price Breakdown */}
+                        <div className="confirmation-pricing-breakdown">
+                            <div className="pricing-row">
+                                <span>Subtotal:</span>
+                                <span>${Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+                                    const itemPrice = calculateItemPrice(name, options);
+                                    return sum + (itemPrice * quantity);
+                                }, 0).toFixed(2)}</span>
+                            </div>
+                            <div className="pricing-row">
+                                <span>Tax (8.25%):</span>
+                                <span>${(Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+                                    const itemPrice = calculateItemPrice(name, options);
+                                    return sum + (itemPrice * quantity);
+                                }, 0) * 0.0825).toFixed(2)}</span>
+                            </div>
+                            <div className="pricing-row">
+                                <span>Convenience Fee:</span>
+                                <span>$0.35</span>
+                            </div>
+                        </div>
+
                         <div className="confirmation-total">
                             Total: $
-                            {Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
-                                const itemPrice = calculateItemPrice(name, options);
-                                return sum + (itemPrice * quantity);
-                            }, 0).toFixed(2)}
+                            {(() => {
+                                const subtotal = Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+                                    const itemPrice = calculateItemPrice(name, options);
+                                    return sum + (itemPrice * quantity);
+                                }, 0);
+                                const tax = subtotal * 0.0825;
+                                const convenienceFee = 0.35;
+                                return (subtotal + tax + convenienceFee).toFixed(2);
+                            })()}
                         </div>
                         {notes && (
                             <div className="confirmation-notes">
                                 <strong>Notes:</strong> {notes}
                             </div>
                         )}
-                        <div className="confirmation-tax-notice">*Taxes applied to card and tap payments only</div>
                     </div>
                     </div>
                     
@@ -667,8 +844,9 @@ const KioskForm = ({ initialStep = 1 }) => {
                                 setStep(1);
                                 setSelectedItems({});
                                 setCustomerName('');
-                                setCustomerEmail(''); // Reset email on new order
+                                setCustomerEmail('');
                                 setNotes('');
+                                setPaymentId(null);
                             }}
                             className="another-order-button"
                         >
@@ -680,32 +858,29 @@ const KioskForm = ({ initialStep = 1 }) => {
 
             {/* Modal - Enhanced with X close button instead of Cancel button */}
             {modalItem && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        {/* Close button at top right */}
+                <div className="modal-overlay" onClick={closeModal}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <button 
+                            type="button"
                             className="modal-close-btn"
                             onClick={closeModal}
-                            title="Close"
+                            aria-label="Close"
                         >
                             ×
                         </button>
-                        
-                        {/* Added item image to modal */}
-                        <div className="modal-item-image-container">
-                            <img 
-                                src={modalItem.image || '/images/default-food.jpg'} 
-                                alt={modalItem.name}
-                                className="modal-item-image"
-                                onError={(e) => {
-                                    // Fallback if image fails to load
-                                    e.target.src = '/images/default-food.jpg';
-                                }}
-                            />
-                        </div>
-                        
-                        <h2>{modalItem.name} Options</h2>
 
+                        {modalItem.image && (
+                            <div className="modal-item-image-container">
+                                <img 
+                                    src={modalItem.image} 
+                                    alt={modalItem.name} 
+                                    className="modal-item-image"
+                                />
+                            </div>
+                        )}
+
+                        <h2>{modalItem.name} Options</h2>
+                        
                         {/* Slider for Spice Level */}
                         {modalItem.options?.some(opt => ['No Spice', 'Regular', 'Extra Spicy'].includes(opt)) && (
                             <div className="spice-slider-container">
@@ -714,22 +889,15 @@ const KioskForm = ({ initialStep = 1 }) => {
                                     type="range"
                                     id="spice-slider"
                                     min={0}
-                                    max={2}  // Changed from 3 to 2 (3 levels: 0, 1, 2)
+                                    max={2}
                                     step={1}
                                     value={(() => {
-                                        const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy']; // Updated array
-                                        const selected = itemOptions[modalItem.name]?.find(opt => spiceLevels.includes(opt));
-                                        return selected ? spiceLevels.indexOf(selected) : 1; // Default to Regular (index 1)
+                                        const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy'];
+                                        return itemOptions.spiceLevel ? spiceLevels.indexOf(itemOptions.spiceLevel) : 1;
                                     })()}
                                     onChange={(e) => {
-                                        const newLevel = ['No Spice', 'Regular', 'Extra Spicy'][parseInt(e.target.value)]; // Updated array
-                                        setItemOptions(prev => ({
-                                            ...prev,
-                                            [modalItem.name]: [
-                                                ...(prev[modalItem.name]?.filter(opt => !['No Spice', 'Regular', 'Extra Spicy'].includes(opt)) || []),
-                                                newLevel
-                                            ]
-                                        }));
+                                        const newLevel = ['No Spice', 'Regular', 'Extra Spicy'][parseInt(e.target.value)];
+                                        handleSpiceChange(newLevel);
                                     }}
                                     className="spice-slider"
                                 />
@@ -741,42 +909,58 @@ const KioskForm = ({ initialStep = 1 }) => {
                             </div>
                         )}
 
-                        {/* Other Options */}
-                        {modalItem.options?.filter(opt => !['No Spice', 'Regular', 'Extra Spicy'].includes(opt)).map(option => (
-                            <div key={option} className="option-container">
-                                <label className="option-label">
-                                    <input
-                                        type={modalItem.name === 'Water' ? 'radio' : 'checkbox'}
-                                        name={modalItem.name === 'Water' ? 'water-options' : option}
-                                        checked={itemOptions[modalItem.name]?.includes(option) || false}
-                                        onChange={(e) => {
-                                            const checked = e.target.checked;
-                                            setItemOptions(prev => {
-                                                const currentOptions = prev[modalItem.name] || [];
-                                                
-                                                if (modalItem.name === 'Water') {
-                                                    return { ...prev, [modalItem.name]: checked ? [option] : [] };
-                                                } else {
-                                                    if (checked) {
-                                                        return { ...prev, [modalItem.name]: [...currentOptions, option] };
-                                                    } else {
-                                                        return {
-                                                            ...prev,
-                                                            [modalItem.name]: currentOptions.filter(opt => opt !== option)
-                                                        };
-                                                    }
-                                                }
-                                            });
-                                        }}
-                                        className="option-checkbox"
-                                    />
-                                    {option}
-                                </label>
+                        {/* Other Options (No Onions, No Cilantro, etc.) - Pill Style */}
+                        {(() => {
+                            const otherOptions = modalItem.options?.filter(opt => 
+                                !['No Spice', 'Regular', 'Extra Spicy'].includes(opt) &&
+                                !opt.includes('(+$')
+                            ) || [];
+                            
+                            return otherOptions.length > 0 && (
+                                <div className="modal-section">
+                                    <label className="modal-section-label">Customizations:</label>
+                                    <div className="option-pills">
+                                        {otherOptions.map((option) => (
+                                            <button
+                                                key={option}
+                                                type="button"
+                                                className={`option-pill ${itemOptions.otherOptions.includes(option) ? 'selected' : ''}`}
+                                                onClick={() => handleOtherOptionToggle(option)}
+                                            >
+                                                {option}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })()}
+
+                        {/* Extra Options (Premium add-ons) */}
+                        {modalItem.extraOptions && Object.keys(modalItem.extraOptions).length > 0 && (
+                            <div className="modal-section">
+                                <label className="modal-section-label">Add Extra:</label>
+                                <div className="option-pills">
+                                    {Object.entries(modalItem.extraOptions).map(([optionName, price]) => (
+                                        <button
+                                            key={optionName}
+                                            type="button"
+                                            className={`option-pill premium ${itemOptions.extraOptions.includes(optionName) ? 'selected' : ''}`}
+                                            onClick={() => handleExtraOptionToggle(optionName)}
+                                        >
+                                            {optionName}
+                                            <span className="option-pill-price">+${price}</span>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                        ))}
+                        )}
 
                         <div className="modal-buttons single-button">
-                            <button onClick={handleOptionSubmit} className="modal-add-button">
+                            <button 
+                                type="button"
+                                onClick={handleOptionSubmit}
+                                className="modal-add-button"
+                            >
                                 Add to Order
                             </button>
                         </div>

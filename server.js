@@ -9,6 +9,7 @@ const { Server } = require('socket.io');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+const Menu = require('./models/Menu');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -33,7 +34,10 @@ mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
-.then(() => console.log('MongoDB connected'))
+.then(() => {
+    console.log('MongoDB connected');
+    seedDatabase(); // Add this line
+})
 .catch(err => console.error('MongoDB connection error:', err));
 
 // Pass io to routes
@@ -120,9 +124,13 @@ app.use(express.static(path.join(__dirname, 'client', 'build')));
 // Routes
 const orderRoutes = require('./routes/orders');
 const menuRoutes = require('./routes/menu');
+const paymentRoutes = require('./routes/payments');
+const settingsRoutes = require('./routes/settings'); // Add this line
 
 app.use('/api/orders', orderRoutes);
 app.use('/api/menu', menuRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/settings', settingsRoutes); // Add this line
 
 // Serve React app
 app.get('*', (req, res) => {
@@ -142,3 +150,15 @@ io.on('connection', (socket) => {
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+// Add this seed function after your MongoDB connection
+const seedDatabase = async () => {
+    try {
+        const count = await Menu.countDocuments();
+        if (count === 0) {
+            console.log('No menu items found. Run migration script to populate menu.');
+        }
+    } catch (error) {
+        console.error('Error checking menu items:', error);
+    }
+};

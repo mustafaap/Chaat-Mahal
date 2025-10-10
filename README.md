@@ -34,7 +34,7 @@ chaat-mahal-kiosk
 
 2. **Install dependencies:**
    ```
-   npm install --prefix client && npm run build --prefix client && npm install
+   npm install
    ```
 
 3. **Set up the MongoDB database:**

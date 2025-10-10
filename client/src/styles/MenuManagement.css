@@ -22,7 +22,7 @@
 .menu-subtitle {
     color: #7f8c8d;
     font-size: 1.1rem;
-    margin-bottom: 30px;
+    margin: 20px 0px;
 }
 
 .menu-management-actions {
@@ -398,6 +398,55 @@
     flex: 1; /* Take up remaining space */
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Quick toggle button styling */
+.status-toggle-btn {
+    background: none;
+    border: 1px solid #dee2e6;
+    color: #6c757d;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 6px 12px;
+    border-radius: 20px;
+    margin-top: 8px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 100%;
+}
+
+.status-toggle-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.status-toggle-btn.activate {
+    border-color: #28a745;
+    color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.status-toggle-btn.activate:hover {
+    background: #28a745;
+    color: white;
+    box-shadow: 0 3px 12px rgba(40, 167, 69, 0.3);
+}
+
+.status-toggle-btn.deactivate {
+    border-color: #dc3545;
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.status-toggle-btn.deactivate:hover {
+    background: #dc3545;
+    color: white;
+    box-shadow: 0 3px 12px rgba(220, 53, 69, 0.3);
 }
 
 .item-name {
@@ -886,5 +935,145 @@
 .no-modal-text small {
     color: #6c757d;
     font-size: 0.85rem;
-    font-weight: 400;
+}
+
+/* Active Status Section Styles */
+.active-status-section {
+    background: #e8f5e8;
+    border: 2px solid #28a745;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.active-status-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+}
+
+.active-status-checkbox {
+    margin-top: 2px;
+    transform: scale(1.2);
+    cursor: pointer;
+    accent-color: #28a745;
+}
+
+.active-status-text {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.active-status-text strong {
+    color: #155724;
+    font-size: 1rem;
+}
+
+.active-status-text small {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+/* Inactive item styling in the grid */
+.menu-item-card.inactive {
+    opacity: 0.6;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #dee2e6;
+}
+
+.menu-item-card.inactive .item-category-badge {
+    background: rgba(108, 117, 125, 0.9);
+}
+
+.inactive-overlay {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    z-index: 2;
+}
+
+/* Update the section to reflect availability */
+.active-status-section {
+    background: #e8f5e8;
+    border: 2px solid #28a745;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.active-status-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+}
+
+.active-status-checkbox {
+    margin-top: 2px;
+    transform: scale(1.2);
+    cursor: pointer;
+    accent-color: #28a745;
+}
+
+.active-status-text {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.active-status-text strong {
+    color: #155724;
+    font-size: 1rem;
+}
+
+.active-status-text small {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+/* Update inactive item styling to reflect unavailable status */
+.menu-item-card.inactive {
+    opacity: 0.6;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #dee2e6;
+}
+
+.menu-item-card.inactive .item-category-badge {
+    background: rgba(108, 117, 125, 0.9);
+}
+
+/* Update the overlay to say UNAVAILABLE */
+.menu-item-card.inactive .inactive-overlay::after {
+    content: 'UNAVAILABLE';
+}
+
+/* Update toggle button classes to reflect availability */
+.status-toggle-btn.activate {
+    border-color: #28a745;
+    color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.status-toggle-btn.activate:hover {
+    background: #28a745;
+    color: white;
+    box-shadow: 0 3px 12px rgba(40, 167, 69, 0.3);
+}
+
+.status-toggle-btn.deactivate {
+    border-color: #dc3545;
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.status-toggle-btn.deactivate:hover {
+    background: #dc3545;
+    color: white;
+    box-shadow: 0 3px 12px rgba(220, 53, 69, 0.3);
 }

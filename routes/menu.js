@@ -1,134 +1,13 @@
 const express = require('express');
 const router = express.Router();
+const Menu = require('../models/Menu');
 const fs = require('fs').promises;
 const path = require('path');
 const fsSync = require('fs');
 
-// Path to store menu items (you can also use a database)
-const menuFilePath = path.join(__dirname, '..', 'data', 'menu.json');
-
-// Ensure data directory exists
-const ensureDataDirectory = async () => {
-    const dataDir = path.dirname(menuFilePath);
-    try {
-        await fs.access(dataDir);
-    } catch {
-        await fs.mkdir(dataDir, { recursive: true });
-    }
-};
-
-// Helper function to read menu items
-const readMenuItems = async () => {
-    try {
-        await ensureDataDirectory();
-        const data = await fs.readFile(menuFilePath, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        // If file doesn't exist, return default menu items with default images
-        return [
-            { 
-                id: 1, 
-                name: 'Samosa', 
-                price: 2, 
-                image: '/images/samosa.JPG', // Keep existing images where available
-                options: [], 
-                extraOptions: {},
-                category: 'Chaat', 
-                description: 'Crispy pastry filled with spiced potatoes and peas' 
-            },
-            { 
-                id: 2, 
-                name: 'Panipuri', 
-                price: 3, 
-                image: '/images/panipuri.JPG', 
-                options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'],
-                extraOptions: {},
-                category: 'Chaat', 
-                description: 'Crispy shells filled with spiced water and chutneys' 
-            },
-            { 
-                id: 3, 
-                name: 'Masala Puri', 
-                price: 4, 
-                image: '/images/masala-puri.JPG', 
-                options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], // Only 3 spice levels
-                extraOptions: {},
-                category: 'Chaat', 
-                description: 'Crispy puris topped with spiced potatoes and chutneys' 
-            },
-            { 
-                id: 4, 
-                name: 'Dahipuri', 
-                price: 6, 
-                image: '/images/dahipuri.JPG', 
-                options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], // Only 3 spice levels
-                extraOptions: {},
-                category: 'Chaat', 
-                description: 'Puris filled with yogurt, chutneys and spices' 
-            },
-            { 
-                id: 5, 
-                name: 'Sevpuri', 
-                price: 6, 
-                image: '/images/sevpuri.JPG', 
-                options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], // Only 3 spice levels
-                extraOptions: {},
-                category: 'Chaat', 
-                description: 'Crispy puris topped with sev, vegetables and chutneys' 
-            },
-            { 
-                id: 6, 
-                name: 'Bhelpuri', 
-                price: 7, 
-                image: '/images/bhelpuri.JPG', 
-                options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], // Only 3 spice levels
-                extraOptions: {},
-                category: 'Chaat', 
-                description: 'Popular street snack with puffed rice and chutneys' 
-            },
-            { 
-                id: 7, 
-                name: 'Water', 
-                price: 1, 
-                image: '/images/water.JPG', 
-                options: ['Cold', 'Room Temperature'], 
-                extraOptions: {},
-                category: 'Drinks', 
-                description: 'Refreshing drinking water' 
-            },
-            { 
-                id: 8, 
-                name: 'Paneer Wrap', 
-                price: 8, 
-                image: '/images/paneer-wrap.JPG', 
-                options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Paneer (+$2)'], // Only 3 spice levels
-                extraOptions: { 'Extra Paneer': 2 },
-                category: 'Wraps',
-                description: 'Grilled paneer with fresh vegetables wrapped in naan'
-            },
-            { 
-                id: 9, 
-                name: 'Chicken Wrap', 
-                price: 9, 
-                image: '/images/chicken-wrap.JPG', 
-                options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Meat (+$2)'], // Only 3 spice levels
-                extraOptions: { 'Extra Meat': 2 },
-                category: 'Wraps',
-                description: 'Tender spiced chicken with vegetables wrapped in naan'
-            }
-        ];
-    }
-};
-
-// Helper function to write menu items
-const writeMenuItems = async (menuItems) => {
-    await ensureDataDirectory();
-    await fs.writeFile(menuFilePath, JSON.stringify(menuItems, null, 2));
-};
-
 // Helper function to delete image file
 const deleteImageFile = (imagePath) => {
-    if (imagePath && imagePath.startsWith('/images/')) {
+    if (imagePath && imagePath.startsWith('/images/') && imagePath !== '/images/default-food.jpg') {
         const filename = path.basename(imagePath);
         const fullPath = path.join(__dirname, '..', 'client', 'public', 'images', filename);
         
@@ -146,10 +25,14 @@ const deleteImageFile = (imagePath) => {
 // Get all menu items
 router.get('/', async (req, res) => {
     try {
-        const menuItems = await readMenuItems();
+        const includeInactive = req.query.includeInactive === 'true';
+        
+        const filter = includeInactive ? {} : { active: { $ne: false } };
+        const menuItems = await Menu.find(filter).sort({ id: 1 });
+        
         res.json(menuItems);
     } catch (error) {
-        console.error('Error reading menu items:', error);
+        console.error('Error fetching menu items:', error);
         res.status(500).json({ message: 'Failed to load menu items' });
     }
 });
@@ -157,18 +40,18 @@ router.get('/', async (req, res) => {
 // Add new menu item
 router.post('/', async (req, res) => {
     try {
-        const menuItems = await readMenuItems();
-        const newItem = {
-            id: Math.max(...menuItems.map(item => item.id), 0) + 1,
+        // Get the highest ID and increment
+        const lastItem = await Menu.findOne().sort({ id: -1 });
+        const newId = lastItem ? lastItem.id + 1 : 1;
+        
+        const newItem = new Menu({
             ...req.body,
+            id: newId,
             price: parseFloat(req.body.price),
-            // Set default image if none provided
             image: req.body.image || '/images/default-food.jpg'
-        };
+        });
         
-        menuItems.push(newItem);
-        await writeMenuItems(menuItems);
-        
+        await newItem.save();
         res.status(201).json(newItem);
     } catch (error) {
         console.error('Error adding menu item:', error);
@@ -179,15 +62,13 @@ router.post('/', async (req, res) => {
 // Update menu item
 router.put('/:id', async (req, res) => {
     try {
-        const menuItems = await readMenuItems();
         const itemId = parseInt(req.params.id);
-        const itemIndex = menuItems.findIndex(item => item.id === itemId);
+        const oldItem = await Menu.findOne({ id: itemId });
         
-        if (itemIndex === -1) {
+        if (!oldItem) {
             return res.status(404).json({ message: 'Menu item not found' });
         }
         
-        const oldItem = menuItems[itemIndex];
         const newImagePath = req.body.image || '/images/default-food.jpg';
         
         // If image path changed and old image wasn't default, delete old image
@@ -198,16 +79,17 @@ router.put('/:id', async (req, res) => {
             deleteImageFile(oldItem.image);
         }
         
-        menuItems[itemIndex] = {
-            ...menuItems[itemIndex],
-            ...req.body,
-            id: itemId,
-            price: parseFloat(req.body.price),
-            image: newImagePath
-        };
+        const updatedItem = await Menu.findOneAndUpdate(
+            { id: itemId },
+            {
+                ...req.body,
+                price: parseFloat(req.body.price),
+                image: newImagePath
+            },
+            { new: true }
+        );
         
-        await writeMenuItems(menuItems);
-        res.json(menuItems[itemIndex]);
+        res.json(updatedItem);
     } catch (error) {
         console.error('Error updating menu item:', error);
         res.status(500).json({ message: 'Failed to update menu item' });
@@ -217,9 +99,8 @@ router.put('/:id', async (req, res) => {
 // Delete menu item
 router.delete('/:id', async (req, res) => {
     try {
-        const menuItems = await readMenuItems();
         const itemId = parseInt(req.params.id);
-        const itemToDelete = menuItems.find(item => item.id === itemId);
+        const itemToDelete = await Menu.findOne({ id: itemId });
         
         if (!itemToDelete) {
             return res.status(404).json({ message: 'Menu item not found' });
@@ -228,29 +109,12 @@ router.delete('/:id', async (req, res) => {
         // Delete the associated image file
         deleteImageFile(itemToDelete.image);
         
-        const filteredItems = menuItems.filter(item => item.id !== itemId);
-        await writeMenuItems(filteredItems);
+        await Menu.findOneAndDelete({ id: itemId });
         
         res.json({ message: 'Menu item and image deleted successfully' });
     } catch (error) {
         console.error('Error deleting menu item:', error);
         res.status(500).json({ message: 'Failed to delete menu item' });
-    }
-});
-
-// Temporary route to reset menu items with updated spice levels
-router.post('/reset-menu', async (req, res) => {
-    try {
-        // Clear existing menu items
-        await MenuItem.deleteMany({});
-        
-        // Insert the new menu items with correct spice levels
-        await MenuItem.insertMany(defaultMenuItems);
-        
-        res.json({ message: 'Menu reset successfully with updated spice levels' });
-    } catch (error) {
-        console.error('Error resetting menu:', error);
-        res.status(500).json({ error: 'Failed to reset menu' });
     }
 });
 

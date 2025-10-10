@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
 import ConfirmationModal from './ConfirmationModal';
+import ItemSummary from './ItemSummary'; // Import ItemSummary component
 import '../styles/OrderList.css';
 
 const socket = io();
@@ -9,13 +10,16 @@ const socket = io();
 const OrderList = ({ currentView, setCurrentView }) => {
     const [orders, setOrders] = useState([]);
     const [showScrollTop, setShowScrollTop] = useState(false);
-    const [givenItems, setGivenItems] = useState({});
-    const [menuItems, setMenuItems] = useState([]); // Add menu items state
-    const [editingOrder, setEditingOrder] = useState(null); // Add editing state
-    const [editOrderItems, setEditOrderItems] = useState({}); // Add edit items state
-    const [editItemPrices, setEditItemPrices] = useState({}); // Add this line
-    const [editOptionModal, setEditOptionModal] = useState(null); // Add this
-    const [editItemOptions, setEditItemOptions] = useState({}); // Add this
+    const [menuItems, setMenuItems] = useState([]);
+    const [editingOrder, setEditingOrder] = useState(null);
+    const [editOrderItems, setEditOrderItems] = useState({});
+    const [editItemPrices, setEditItemPrices] = useState({});
+    const [editOptionModal, setEditOptionModal] = useState(null);
+    const [editItemOptions, setEditItemOptions] = useState({});
+    
+    // Add pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [ordersPerPage] = useState(10);
     
     // Modal states
     const [modalState, setModalState] = useState({
@@ -111,12 +115,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                     setOrders(orders.map(order =>
                         order._id === id ? { ...order, status: 'Completed' } : order
                     ));
-                    // Clear given items for this order when completed
-                    setGivenItems(prev => {
-                        const updated = { ...prev };
-                        delete updated[id];
-                        return updated;
-                    });
+                    // No need to clear givenItems - it's preserved in the database
                 } catch (error) {
                     console.error('Error completing order:', error);
                     alert('Failed to complete order. Please try again.');
@@ -155,11 +154,6 @@ const OrderList = ({ currentView, setCurrentView }) => {
                         order._id === id ? { ...order, status: 'Cancelled' } : order
                     ));
                     // Clear given items for this order when cancelled
-                    setGivenItems(prev => {
-                        const updated = { ...prev };
-                        delete updated[id];
-                        return updated;
-                    });
                 } catch (error) {
                     console.error('Error deleting order:', error);
                     alert('Failed to delete the order. Please try again.');
@@ -191,23 +185,40 @@ const OrderList = ({ currentView, setCurrentView }) => {
     };
 
     // Toggle item as given/not given
-    const toggleItemGiven = (orderId, itemKey) => {
-        setGivenItems(prev => {
-            const orderItems = prev[orderId] || {};
-            const updated = {
-                ...prev,
-                [orderId]: {
-                    ...orderItems,
-                    [itemKey]: !orderItems[itemKey]
-                }
-            };
-            return updated;
-        });
+    const toggleItemGiven = async (orderId, itemKey) => {
+        try {
+            const order = orders.find(o => o._id === orderId);
+            const currentStatus = order?.givenItems?.[itemKey] || false;
+            const newStatus = !currentStatus;
+            
+            await axios.patch(`/api/orders/${orderId}/item-given`, {
+                itemKey,
+                isGiven: newStatus
+            });
+            
+            // Update local state immediately for better UX
+            setOrders(prevOrders => 
+                prevOrders.map(order => 
+                    order._id === orderId 
+                        ? {
+                            ...order,
+                            givenItems: {
+                                ...order.givenItems,
+                                [itemKey]: newStatus
+                            }
+                        }
+                        : order
+                )
+            );
+        } catch (error) {
+            console.error('Error toggling item given status:', error);
+            alert('Failed to update item status. Please try again.');
+        }
     };
 
     // Check if all items in an order have been given
-    const areAllItemsGiven = (orderId, itemCounts) => {
-        const orderGivenItems = givenItems[orderId] || {};
+    const areAllItemsGiven = (order, itemCounts) => {
+        const orderGivenItems = order.givenItems || {};
         return Object.keys(itemCounts).every(itemName => orderGivenItems[itemName]);
     };
 
@@ -470,16 +481,74 @@ const OrderList = ({ currentView, setCurrentView }) => {
             ));
             
             // Clear given items for this order since items have changed
-            setGivenItems(prev => {
-                const updated = { ...prev };
-                delete updated[editingOrder._id];
-                return updated;
-            });
-            
             cancelEditingOrder();
         } catch (error) {
             console.error('Error updating order:', error);
             alert('Failed to update order. Please try again.');
+        }
+    };
+
+    // Pagination helper functions
+    const indexOfLastOrder = currentPage * ordersPerPage;
+    const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+    
+    const paginateOrders = (ordersList) => {
+        return ordersList.slice(indexOfFirstOrder, indexOfLastOrder);
+    };
+    
+    const totalPages = (ordersList) => {
+        return Math.ceil(ordersList.length / ordersPerPage);
+    };
+    
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    
+    // Reset to page 1 when view changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [view]);
+
+    const [emailSending, setEmailSending] = useState({});
+
+    // Add this state for tracking green button status
+    const [emailButtonClicked, setEmailButtonClicked] = useState({});
+
+    const sendOrderReadyNotification = async (orderId) => {
+        try {
+            const order = orders.find(o => o._id === orderId);
+            if (!order.customerEmail) {
+                alert('No email address found for this order. Cannot send notification.');
+                return;
+            }
+
+            openModal({
+                type: 'default',
+                title: 'Send Ready Notification',
+                message: `Send "Order Ready" email to ${order.customerName} at ${order.customerEmail}?`,
+                confirmText: 'Send Email',
+                cancelText: 'Cancel',
+                onConfirm: async () => {
+                    try {
+                        const response = await axios.post(`/api/orders/${orderId}/notify-ready`);
+                        
+                        // Turn button green after email is sent
+                        setEmailButtonClicked(prev => ({ ...prev, [orderId]: true }));
+                        
+                    } catch (error) {
+                        console.error('Error sending order ready notification:', error);
+                        if (error.response?.status === 400) {
+                            alert('No email address found for this order.');
+                        } else {
+                            alert('Failed to send order ready notification. Please try again.');
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error sending order ready notification:', error);
+            alert('Failed to send order ready notification. Please try again.');
         }
     };
 
@@ -513,6 +582,9 @@ const OrderList = ({ currentView, setCurrentView }) => {
             {view === 'pending' && (
                 <>
                     <h1>Pending Orders ({pendingOrders.length})</h1>
+                    
+                    <ItemSummary orders={orders} />
+                    
                     <ul className="orders-list">
                         {pendingOrders.length === 0 && <li className="empty-orders">No pending orders to prepare! 🎉</li>}
                         {pendingOrders
@@ -524,11 +596,14 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                 });
 
                                 const orderAge = getOrderAge(order.createdAt);
-                                const allItemsGiven = areAllItemsGiven(order._id, itemCounts);
+                                const allItemsGiven = areAllItemsGiven(order, itemCounts);
                                 const isBeingEdited = editingOrder?._id === order._id;
+                                
+                                // Determine payment method based on paymentId
+                                const isCounterPayment = order.paid && !order.paymentId;
 
                                 return (
-                                    <li key={order._id} className={`order-item ${allItemsGiven ? 'all-items-given' : ''} ${order.paid ? 'order-paid' : ''}`}>
+                                    <li key={order._id} className={`order-item ${allItemsGiven ? 'all-items-given' : ''} ${order.paid ? 'order-paid' : ''} ${isCounterPayment ? 'counter-payment' : ''}`}>
                                         <div className="order-info">
                                             <div className="order-header">
                                                 <div className="order-header-main">
@@ -544,7 +619,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                     <div className="order-items">
                                                         <div className="order-items-header">
                                                             <div className="items-header-content">
-                                                                <span>Items to Prepare ({Object.keys(isBeingEdited ? editOrderItems : itemCounts).filter(itemName => givenItems[order._id]?.[itemName]).length}/{Object.keys(isBeingEdited ? editOrderItems : itemCounts).length} Given)</span>
+                                                                <span>Items to Prepare</span>
                                                                 {!isBeingEdited && (
                                                                     <button 
                                                                         className="edit-order-btn"
@@ -632,7 +707,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                         ) : (
                                                             // Normal view mode
                                                             Object.entries(itemCounts).map(([name, qty]) => {
-                                                                const isGiven = givenItems[order._id]?.[name];
+                                                                const isGiven = order.givenItems?.[name];
                                                                 return (
                                                                     <div 
                                                                         key={name} 
@@ -659,7 +734,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                 
                                                 <div className="info-card">
                                                     <div className="admin-order-total">
-                                                        Total: ${order.total}
+                                                        Total: ${order.total.toFixed(2)}
                                                         {/*Total: ${isBeingEdited ? calculateEditOrderTotal().toFixed(2) : order.total}*/}
                                                     </div>
                                                 </div>
@@ -693,30 +768,44 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                         </button>
                                                     </>
                                                 ) : (
-                                                    // Paid state: Complete (top), Undo and Cancel (bottom split)
+                                                    // Paid state: Send Ready Email (top), Complete and Undo/Cancel (bottom split)
                                                     <>
+                                                    <div className="bottom-controls">
                                                         <button
-                                                            onClick={() => completeOrder(order._id)}
-                                                            className={`control-button complete-button main-action-btn ${allItemsGiven ? 'ready-to-complete' : ''}`}
-                                                            title="Mark order as completed"
+                                                            onClick={() => sendOrderReadyNotification(order._id)}
+                                                            className={`control-button ready-button half-width-btn ${
+                                                                !order.customerEmail ? 'disabled-btn' : 
+                                                                emailButtonClicked[order._id] ? 'email-clicked-green' : ''
+                                                            }`}
+                                                            title={order.customerEmail ? "Send 'Order Ready' email notification" : "No email address available"}
+                                                            disabled={!order.customerEmail || emailSending[order._id]}
                                                         >
-                                                            Complete Order
+                                                            {emailSending[order._id] ? 'Sending...' : order.customerEmail ? 'Send Ready Email' : 'No Email Available'}
                                                         </button>
-                                                        <div className="bottom-controls">
+                                                        
                                                             <button
-                                                                onClick={() => markAsPaid(order._id)}
-                                                                className="control-button undo-payment-button half-width-btn"
-                                                                title="Undo payment - mark as unpaid"
+                                                                onClick={() => completeOrder(order._id)}
+                                                                className={`control-button complete-button half-width-btn ${allItemsGiven ? 'ready-to-complete' : ''}`}
+                                                                title="Mark order as completed"
                                                             >
-                                                                Undo Payment
+                                                                Complete Order
                                                             </button>
-                                                            <button
-                                                                onClick={() => deleteOrder(order._id)}
-                                                                className="control-button delete-button half-width-btn"
-                                                                title="Cancel/Delete order"
-                                                            >
-                                                                Cancel Order
-                                                            </button>
+                                                            <div className="bottom-sub-controls">
+                                                                <button
+                                                                    onClick={() => markAsPaid(order._id)}
+                                                                    className="control-button undo-payment-button quarter-width-btn"
+                                                                    title="Undo payment - mark as unpaid"
+                                                                >
+                                                                    Undo Payment
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => deleteOrder(order._id)}
+                                                                    className="control-button delete-button quarter-width-btn"
+                                                                    title="Cancel/Delete order"
+                                                                >
+                                                                    Cancel Order
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </>
                                                 )}
@@ -735,8 +824,8 @@ const OrderList = ({ currentView, setCurrentView }) => {
                     <ul className="orders-list">
                         {completedOrders.length === 0 && 
                             <li className="empty-orders">No completed orders yet! 📝</li>}
-                        {completedOrders
-                            .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+                        {paginateOrders(completedOrders
+                            .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)))
                             .map(order => {
                                 const itemCounts = {};
                                 order.items.forEach(item => {
@@ -751,7 +840,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                             <div className="order-header">
                                                 <div className="order-header-with-revert">
                                                     <div className="order-header-main">
-                                                        Order #{order.orderNumber || order._id.slice(-4)} - {order.customerName}
+                                                        Order #{order.orderNumber ||order._id.slice(-4)} - {order.customerName}
                                                         <span className="order-timestamp">
                                                             Completed {completedTime}
                                                         </span>
@@ -783,7 +872,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                 
                                                 <div className="info-card">
                                                     <div className="admin-order-total">
-                                                        Total: ${order.total}
+                                                        Total: ${order.total.toFixed(2)}
                                                     </div>
                                                 </div>
                                             </div>
@@ -798,6 +887,29 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                 );
                             })}
                     </ul>
+                    
+                    {/* Add pagination for completed orders */}
+                    {completedOrders.length > ordersPerPage && (
+                        <div className="pagination-container">
+                            <button
+                                className="pagination-btn"
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                            >
+                                Previous
+                            </button>
+                            <span className="pagination-info">
+                                Page {currentPage} of {totalPages(completedOrders)}
+                            </span>
+                            <button
+                                className="pagination-btn"
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages(completedOrders)}
+                            >
+                                Next
+                            </button>
+                        </div>
+                    )}
                 </>
             )}
 
@@ -807,8 +919,8 @@ const OrderList = ({ currentView, setCurrentView }) => {
                     <ul className="orders-list">
                         {cancelledOrders.length === 0 && 
                             <li className="empty-orders">No cancelled orders! 🎉</li>}
-                        {cancelledOrders
-                            .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+                        {paginateOrders(cancelledOrders
+                            .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)))
                             .map(order => {
                                 const itemCounts = {};
                                 order.items.forEach(item => {
@@ -818,7 +930,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                 const cancelledTime = getOrderAge(order.updatedAt || order.createdAt);
 
                                 return (
-                                    <li key={order._id} className={`order-item ${order.paid ? 'order-paid' : ''}`}>
+                                    <li key={order._id} className={`order-item ${order.paid ? 'order-paid cancelled-order' : 'cancelled-order'}`}>
                                         <div className="order-info">
                                             <div className="order-header">
                                                 <div className="order-header-with-revert">
@@ -855,7 +967,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                 
                                                 <div className="info-card">
                                                     <div className="admin-order-total">
-                                                        Total: ${order.total}
+                                                        Total: ${order.total.toFixed(2)}
                                                     </div>
                                                 </div>
                                             </div>
@@ -870,6 +982,29 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                 );
                             })}
                     </ul>
+                    
+                    {/* Add pagination for cancelled orders */}
+                    {cancelledOrders.length > ordersPerPage && (
+                        <div className="pagination-container">
+                            <button
+                                className="pagination-btn"
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                            >
+                                Previous
+                            </button>
+                            <span className="pagination-info">
+                                Page {currentPage} of {totalPages(cancelledOrders)}
+                            </span>
+                            <button
+                                className="pagination-btn"
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages(cancelledOrders)}
+                            >
+                                Next
+                            </button>
+                        </div>
+                    )}
                 </>
             )}
 

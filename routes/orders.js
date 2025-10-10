@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
+const Menu = require('../models/Menu');
 const { getNextOrderNumber } = require('../utils/orderCounter');
-const { sendOrderConfirmationEmail } = require('../utils/emailService');
+const { sendOrderConfirmationEmail, sendOrderReadyEmail } = require('../utils/emailService');
 
 // GET all orders
 router.get('/all', async (req, res) => {
@@ -20,7 +21,7 @@ router.post('/', async (req, res) => {
     console.log('Received order data:', req.body); // Debug log
     
     try {
-        const { customerName, customerEmail, items, total, notes } = req.body;
+        const { customerName, customerEmail, items, total, notes, paymentId, paid } = req.body;
 
         // Validate required fields
         if (!customerName || !items || !total) {
@@ -33,6 +34,9 @@ router.post('/', async (req, res) => {
         const orderNumber = await getNextOrderNumber();
         console.log('Generated order number:', orderNumber); // Debug log
 
+        // Determine paid status: if paymentId exists, order is paid
+        const isPaid = paymentId ? true : (paid || false);
+
         const newOrder = new Order({
             orderNumber,
             customerName,
@@ -40,11 +44,17 @@ router.post('/', async (req, res) => {
             items,
             total,
             notes: notes || '',
-            status: 'Pending'
+            status: 'Pending',
+            paymentId: paymentId || null,  // Explicitly set paymentId
+            paid: isPaid // Explicitly set paid status
         });
 
         const savedOrder = await newOrder.save();
         console.log('Order saved successfully:', savedOrder._id); // Debug log
+        console.log('Order payment details:', { 
+            paymentId: savedOrder.paymentId, 
+            paid: savedOrder.paid 
+        }); // Debug payment status
         
         // Send confirmation email if email is provided (non-blocking)
         if (customerEmail) {
@@ -82,11 +92,7 @@ router.post('/', async (req, res) => {
                 };
                 
                 // Read menu items to calculate prices
-                const fs = require('fs').promises;
-                const path = require('path');
-                const menuPath = path.join(__dirname, '..', 'data', 'menu.json');
-                const menuData = await fs.readFile(menuPath, 'utf8');
-                const menuItems = JSON.parse(menuData);
+                const menuItems = await Menu.find();
                 
                 // Group items by name and options, then calculate quantities
                 const itemCounts = {};
@@ -274,6 +280,71 @@ router.put('/:id', async (req, res) => {
     } catch (error) {
         console.error('Error updating order:', error);
         res.status(500).json({ message: 'Failed to update order' });
+    }
+});
+
+// PATCH - Toggle item given status
+router.patch('/:id/item-given', async (req, res) => {
+    try {
+        const { itemKey, isGiven } = req.body;
+        
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        // Update the givenItems map
+        if (!order.givenItems) {
+            order.givenItems = new Map();
+        }
+        order.givenItems.set(itemKey, isGiven);
+        
+        await order.save();
+
+        req.io.emit('ordersUpdated');
+        res.json(order);
+    } catch (error) {
+        console.error('Error updating item given status:', error);
+        res.status(500).json({ message: 'Failed to update item status' });
+    }
+});
+
+// POST - Send order ready notification email
+router.post('/:id/notify-ready', async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        if (!order.customerEmail) {
+            return res.status(400).json({ message: 'No email address found for this order' });
+        }
+
+        const emailData = {
+            customerName: order.customerName,
+            orderNumber: order.orderNumber
+        };
+
+        const emailResult = await sendOrderReadyEmail(order.customerEmail, emailData);
+        
+        if (emailResult.success) {
+            console.log('✅ Order ready email sent successfully');
+            res.json({ 
+                message: 'Order ready notification sent successfully',
+                messageId: emailResult.messageId 
+            });
+        } else {
+            console.log('⚠️ Order ready email failed:', emailResult.error);
+            res.status(500).json({ 
+                message: 'Failed to send order ready notification',
+                error: emailResult.error 
+            });
+        }
+    } catch (error) {
+        console.error('❌ Error sending order ready notification:', error);
+        res.status(500).json({ message: 'Failed to send order ready notification' });
     }
 });
 

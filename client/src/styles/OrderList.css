@@ -152,6 +152,32 @@
     box-shadow: 0 8px 30px rgba(39, 174, 96, 0.2);
 }
 
+/* Update the cancelled orders display to show red background */
+.order-item.order-paid {
+    border-left-color: #27ae60 !important;
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%);
+    box-shadow: 0 5px 25px rgba(39, 174, 96, 0.15);
+}
+
+.order-item.order-paid:hover {
+    background: linear-gradient(135deg, #d4f4d4 0%, #c8e6c9 100%);
+    border-left-color: #229954 !important;
+    box-shadow: 0 8px 30px rgba(39, 174, 96, 0.2);
+}
+
+/* Override paid styling for cancelled orders specifically */
+.order-item.order-paid.cancelled-order {
+    border-left-color: #e74c3c !important;
+    background: linear-gradient(135deg, #fce4e4 0%, #f5b7b1 100%);
+    box-shadow: 0 5px 25px rgba(231, 76, 60, 0.15);
+}
+
+.order-item.order-paid.cancelled-order:hover {
+    background: linear-gradient(135deg, #f8d7da 0%, #f3a4a7 100%);
+    border-left-color: #c0392b !important;
+    box-shadow: 0 8px 30px rgba(231, 76, 60, 0.2);
+}
+
 /* Unpaid Order Visual Indicators - Slightly lighter red backgrounds */
 .order-item:not(.order-paid) {
     border-left-color: #e74c3c !important;
@@ -401,28 +427,38 @@
 /* Main action button (Complete Order) takes half the height */
 .main-action-btn {
     flex: 1; /* Takes up remaining space after gap */
-    min-height: 50%; /* Ensure it takes at least half the height */
 }
 
 /* Bottom controls container for the two smaller buttons */
 .bottom-controls {
     display: flex;
-    flex-direction: column; /* Stack vertically instead of horizontally */
-    gap: 8px;
-    flex: 1; /* Takes up remaining space to match main button */
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+/* New sub-controls for the smaller buttons */
+.bottom-sub-controls {
+    display: flex;
+    gap: 6px;
 }
 
 /* Half-width buttons in the bottom row - now full width since stacked */
 .half-width-btn {
-    width: 100%; /* Full width since they're stacked */
-    height: auto; /* Let height be determined by content and padding */
-    flex: 1; /* Equal height distribution */
+    width: 100%;
+    height: auto;
+    flex: 1;
+    font-size: 0.85rem;
+    padding: 10px 12px;
 }
 
-/* Full-width button (Cancel Order when unpaid) */
-.full-width-btn {
+/* Quarter width buttons for the bottom row */
+.quarter-width-btn {
     width: 100%;
+    height: auto;
     flex: 1;
+    font-size: 0.8rem;
+    padding: 8px 10px;
 }
 
 .control-button {
@@ -558,6 +594,7 @@
     align-items: center;
     justify-content: center;
     border: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 16px;
 }
 
 .scroll-to-top-btn:hover {
@@ -1031,81 +1068,11 @@
     }
 }
 
-/* Paid Order Visual Indicators - Darker green background */
-.order-item.order-paid {
-    border-left-color: #27ae60 !important;
-    background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%); /* Changed from f0fff4/e8f5e8 to e8f5e8/d4f4d4 */
-    box-shadow: 0 5px 25px rgba(39, 174, 96, 0.15);
-}
+/* Replace the existing paid indicator styles with these updated ones */
 
-.order-item.order-paid:hover {
-    background: linear-gradient(135deg, #d4f4d4 0%, #c8e6c9 100%); /* Changed from e8f5e8/d4f4d4 to d4f4d4/c8e6c9 */
-    border-left-color: #229954 !important;
-    box-shadow: 0 8px 30px rgba(39, 174, 96, 0.2);
-}
-
-/* Update the existing all-items-given styles to work with paid orders */
-.order-item.all-items-given.order-paid {
-    border-left-color: #00d4aa !important;
-    background: linear-gradient(135deg, #d4f4d4 0%, #c8e6c9 100%); /* Changed from f0fff4/e8f5e8 to d4f4d4/c8e6c9 */
-}
-
-.order-item.all-items-given.order-paid:hover {
-    border-left-color: #00b894 !important;
-    background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%); /* Changed from d4f4d4/c8e6c9 to c8e6c9/a5d6a7 */
-}
-
-/* Enhanced paid button styling */
-.paid-button {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-    position: relative;
-    overflow: hidden;
-}
-
-.paid-button::after {
-    content: '💳';
-    margin-left: 8px;
-}
-
-.paid-button:hover {
-    box-shadow: 0 5px 20px rgba(52, 152, 219, 0.4);
-    background: linear-gradient(135deg, #2980b9 0%, #1f5e8c 100%);
-}
-
-/* Add a subtle animation for paid orders */
-.order-item.order-paid::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent 0%, rgba(39, 174, 96, 0.05) 50%, transparent 100%);
-    animation: paidShimmer 3s infinite;
-    pointer-events: none;
-    z-index: 1;
-}
-
-@keyframes paidShimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
-/* Ensure content stays above the shimmer effect */
-.order-item.order-paid .order-info,
-.order-item.order-paid .order-controls {
-    position: relative;
-    z-index: 2;
-}
-
-/* Remove the absolute positioning from the paid indicator */
-.order-item.order-paid .order-header::after {
-    display: none; /* Hide the old positioned indicator */
-}
-
-/* Add the paid indicator inside order-header-main */
+/* Add the paid indicator inside order-header-main for paid orders */
 .order-item.order-paid .order-header-main::after {
-    content: 'PAID ✓';
+    content: 'PAID ONLINE ✓';
     background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
     color: white;
     font-size: 0.7rem;
@@ -1118,6 +1085,20 @@
     flex-shrink: 0; /* Prevent shrinking */
 }
 
+/* Counter payment indicator - different styling */
+.order-item.order-paid.counter-payment .order-header-main::after {
+    content: 'PAID AT COUNTER ✓';
+    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
 
 /* Add the unpaid indicator inside order-header-main for unpaid orders */
 .order-item:not(.order-paid) .order-header-main::after {
@@ -1134,9 +1115,10 @@
     flex-shrink: 0; /* Prevent shrinking */
 }
 
-/* Mobile responsive adjustments for paid orders */
+/* Mobile responsive adjustments */
 @media (max-width: 880px) {
-    .order-item.order-paid .order-header-main::after {
+    .order-item.order-paid .order-header-main::after,
+    .order-item.order-paid.counter-payment .order-header-main::after {
         font-size: 0.65rem;
         padding: 3px 12px;
     }
@@ -1154,14 +1136,19 @@
 }
 
 @media (max-width: 480px) {
-    .order-item.order-paid .order-header-main::after {
+    .order-item.order-paid .order-header-main::after,
+    .order-item.order-paid.counter-payment .order-header-main::after {
         font-size: 0.6rem;
-        padding: 2px 12px;
+        padding: 2px 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
     
     .order-item:not(.order-paid) .order-header-main::after {
         font-size: 0.6rem;
-        padding: 2px 12px;
+        padding: 2px 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
 }
 
@@ -1373,6 +1360,8 @@
 
 .add-item-section {
     margin-bottom: 15px;
+    position: relative;
+    overflow: visible;
 }
 
 .add-item-select {
@@ -1629,7 +1618,7 @@
 }
 
 .option-container {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .option-label {
@@ -1703,11 +1692,17 @@
     gap: 8px;
     max-height: 125px;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 12px;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border-radius: 12px;
     border: 2px solid #dee2e6;
     justify-content: center;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    position: relative;
+    z-index: 1;
 }
 
 .add-item-pill {
@@ -1763,17 +1758,189 @@
 /* Mobile responsive for pills */
 @media (max-width: 768px) {
     .add-item-pills {
-        max-height: 100px;
+        max-height: 180px !important;
         gap: 6px;
         padding: 10px;
+        overflow-y: scroll !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
+        overscroll-behavior: contain;
     }
     
     .add-item-pill {
         padding: 6px 12px;
         font-size: 0.8rem;
+        pointer-events: auto;
     }
     
     .add-item-pill-price {
         font-size: 0.75rem;
     }
+    
+    .add-item-section {
+        overflow: visible;
+        touch-action: auto;
+    }
+}
+
+/* Simple Pagination Styles */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+    gap: 10px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.pagination-info {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin: 0 15px;
+}
+
+.pagination-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    min-width: 80px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.pagination-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.pagination-btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+@media (max-width: 768px) {
+    .pagination-container {
+        gap: 8px;
+        margin: 15px 0;
+    }
+    
+    .pagination-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        min-width: 70px;
+    }
+    
+    .pagination-info {
+        font-size: 0.8rem;
+        margin: 0 10px;
+    }
+}
+
+/* Add these styles after the existing control button styles */
+
+/* Ready button styling */
+.ready-button {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+}
+
+.ready-button::after {
+    content: '📧';
+    margin-left: 8px;
+}
+
+.ready-button:hover:not(.disabled-btn) {
+    box-shadow: 0 5px 20px rgba(243, 156, 18, 0.3);
+    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+}
+
+.ready-button.disabled-btn {
+    background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.ready-button.disabled-btn::after {
+    content: '📧❌';
+}
+
+/* Update bottom controls to accommodate new layout */
+.bottom-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+/* New sub-controls for the smaller buttons */
+.bottom-sub-controls {
+    display: flex;
+    gap: 6px;
+}
+
+/* Half-width buttons in the bottom row - now full width since stacked */
+.half-width-btn {
+    width: 100%;
+    height: auto;
+    flex: 1;
+    font-size: 0.85rem;
+    padding: 10px 12px;
+}
+
+/* Quarter width buttons for the bottom row */
+.quarter-width-btn {
+    width: 100%;
+    height: auto;
+    flex: 1;
+    font-size: 0.8rem;
+    padding: 8px 10px;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 880px) {
+    .bottom-sub-controls {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .quarter-width-btn {
+        font-size: 0.75rem;
+        padding: 6px 8px;
+    }
+    
+    .ready-button.disabled-btn {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .order-controls {
+        min-width: 100px;
+    }
+    
+    .quarter-width-btn {
+        font-size: 0.7rem;
+        padding: 5px 6px;
+    }
+    
+    .half-width-btn {
+        font-size: 1rem;
+        padding: 8px 10px;
+    }
+}
+
+/* Green button styling when clicked */
+.email-clicked-green {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%) !important;
+    border-color: #27ae60 !important;
 }
