@@ -1109,7 +1109,6 @@ input[type="checkbox"], input[type="radio"] {
     margin-left: auto;
     margin-right: auto;
     text-align: left;
-    box-shadow: 0 8px 32px rgba(226, 74, 14, 0.243);
     border: 1px solid rgba(158, 59, 20, 0.941);
     animation: slideInUp 0.5s ease 0.2s both;
 }
@@ -1148,7 +1147,6 @@ input[type="checkbox"], input[type="radio"] {
     list-style: none;
     padding: 0;
     margin: 0;
-    text-align: left;
 }
 
 .confirmation-item {
@@ -1328,38 +1326,45 @@ input[type="checkbox"], input[type="radio"] {
     margin: 0px 32px;
 }
 
+/* Counter Payment Section - Updated to match success styling */
 .confirmation-payment-counter {
     background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
     border-radius: 16px;
-    padding: 24px;
+    padding: 12px;
     margin-bottom: 32px;
     margin-top: 32px;
     max-width: 500px;
     margin-left: auto;
     margin-right: auto;
     border: 1px solid #f39c12;
-    border-radius: 12px;
     text-align: center;
     animation: slideInUp 0.5s ease 0.2s both;
 }
 
 @media (max-width: 480px) {
     .confirmation-payment-counter {
-        margin: 0px 32px
+        margin: 10px 32px; /* Updated to match success responsive margins */
     }
 }
 
 .confirmation-counter-heading p {
     color: #f39c12;
     font-family: 'Poppins', sans-serif;
-    font-size: 10px;
+    font-size: 20px; /* Updated to match success heading font size */
     margin-bottom: 12px;
 }
 
 .confirmation-payment-counter p {
     color: #2c3e50;
-    margin: 8px 0;
-    font-weight: 500;
+    margin: 2px 0; /* Updated to match success paragraph margins */
+    font-weight: 600; /* Updated to match success font weight */
+}
+
+.counter-payment-disclaimer {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    margin-top: 12px;
+    font-style: italic;
 }
 
 /* Spice Slider Styles */

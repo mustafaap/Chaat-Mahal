@@ -693,10 +693,12 @@ const KioskForm = ({ initialStep = 1 }) => {
                         </div>
                     ) : (
                         <div className="confirmation-payment-counter">
-                            <p>💵 Pay at Counter</p>
+                            <div className="confirmation-counter-heading">
+                                <p>💵 Pay at Counter</p>
+                            </div>
                             <p>Please pay at the counter to enter the preparation queue.</p>
                             <p className="counter-payment-disclaimer">
-                                <em>Note: Final price after tax may vary slightly due to rounding and local tax regulations.</em>
+                                <em>Note: Final price after tax may vary slightly due to convenience fees.</em>
                             </p>
                         </div>
                     )}
