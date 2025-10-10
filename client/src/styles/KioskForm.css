@@ -1218,6 +1218,37 @@ input[type="checkbox"], input[type="radio"] {
     border-radius: 6px;
 }
 
+.confirmation-pricing-breakdown {
+    font-family: 'Inter', sans-serif;
+    margin: 16px 0;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+    border-top: 2px solid rgba(184, 92, 56, 0.1);
+}
+
+.pricing-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 1rem;
+    color: #666;
+}
+
+.pricing-row:not(:last-child) {
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+}
+
+.pricing-row span:first-child {
+    font-weight: 500;
+}
+
+.pricing-row span:last-child {
+    font-weight: 600;
+    color: #333;
+}
+
 .confirmation-total {
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
@@ -1229,6 +1260,7 @@ input[type="checkbox"], input[type="radio"] {
     border-radius: 12px;
     animation: pulse 2s infinite;
     margin-bottom: 16px;
+    margin-top: 8px;
 }
 
 .confirmation-notes {

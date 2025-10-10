@@ -11,8 +11,8 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState('');
 
-  const taxAmount = useMemo(() => orderTotal * 0.08, [orderTotal]); // 8% tax
-  const totalWithTax = useMemo(() => orderTotal + taxAmount, [orderTotal, taxAmount]);
+  const taxAmount = useMemo(() => orderTotal * 0.0825, [orderTotal]); // 8.25% tax
+  const totalWithTax = useMemo(() => orderTotal + taxAmount + 0.35, [orderTotal, taxAmount]);
 
   const handlePayment = async () => {
     if (!stripe || !elements) return;
@@ -80,8 +80,12 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
           <span>${orderTotal.toFixed(2)}</span>
         </div>
         <div className="payment-summary-row">
-          <span>Tax (8%):</span>
+          <span>Tax (8.25%):</span>
           <span>${taxAmount.toFixed(2)}</span>
+        </div>
+        <div className="payment-summary-row">
+          <span>Convenience Fee:</span>
+          <span>$0.35</span>
         </div>
         <div className="payment-summary-row total-row">
           <span>Total:</span>

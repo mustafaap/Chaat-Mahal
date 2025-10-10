@@ -7,7 +7,7 @@ const KioskForm = ({ initialStep = 1 }) => {
     const [menuItems, setMenuItems] = useState([]);
     const [isLoadingMenu, setIsLoadingMenu] = useState(true);
     const [customerName, setCustomerName] = useState('');
-    const [customerEmail, setCustomerEmail] = useState(''); // New state for customer email
+    const [customerEmail, setCustomerEmail] = useState('');
     const [selectedItems, setSelectedItems] = useState({});
     const [step, setStep] = useState(initialStep);
     const [orderNumber, setOrderNumber] = useState(null);
@@ -259,11 +259,12 @@ const KioskForm = ({ initialStep = 1 }) => {
     const handleNameSubmit = async (e) => {
         e.preventDefault();
         
-        if (customerName && customerEmail && Object.keys(selectedItems).length > 0) {
-            // Move to payment step instead of directly submitting order
+        // Only require name and at least one item - email is optional
+        if (customerName && Object.keys(selectedItems).length > 0) {
+            // Move to payment step
             setStep(3); // Payment step
         } else {
-            alert('Please enter your name, email and select at least one item.');
+            alert('Please enter your name and select at least one item.');
         }
     };
 
@@ -533,24 +534,23 @@ const KioskForm = ({ initialStep = 1 }) => {
                     <h2>Enter Your Name</h2>
                     <input
                         type="text"
-                        placeholder="Enter your name"
+                        placeholder="Enter your name *"
                         value={customerName}
                         onChange={(e) => setCustomerName(e.target.value)}
                         required
                         className="name-input"
                     />
-                    <h2>Email (For Order Complete Notification)</h2>
+                    <h2>Email</h2>
                     <input
                         type="email"
-                        placeholder="Enter your email"
+                        placeholder="Enter your email (optional)"
                         value={customerEmail}
                         onChange={(e) => setCustomerEmail(e.target.value)}
-                        required
                         className="name-input"
                     />
-                    <h2>Notes (Optional)</h2>
+                    <h2>Notes</h2>
                     <textarea
-                        placeholder="Enter any allergies, ToGo requests or notes here..."
+                        placeholder="Enter any allergies, ToGo requests or notes here... (optional)"
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         className="notes-textarea"
@@ -571,7 +571,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                                                         {options.length > 0 && (
                                                             <span className="kiosk-order-item-options">
                                                                 Options: {options.map(option => {
-                                                                    const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy']; // Updated array
+                                                                    const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy'];
                                                                     if (spiceLevels.includes(option)) {
                                                                         return `${option}`;
                                                                     }
@@ -591,7 +591,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                             </ul>
                         </div>
                         <div className="confirmation-total">
-                            Total: $
+                            Subtotal: $
                             {Object.entries(selectedItems)
                                 .reduce((sum, [key, { name, quantity, options }]) => {
                                     return sum + (calculateItemPrice(name, options) * quantity);
@@ -603,7 +603,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                                 <strong>Notes:</strong> {notes}
                             </div>
                         )}
-                        <div className="tax-notice">*Taxes applied to card and tap payments only</div>
+                        <div className="tax-notice">*Note: Tax (8.25%) and convenience fee ($0.35) will be added at checkout</div>
                     </div>
                     <div className="sticky-place-order">
                         <button
@@ -679,12 +679,40 @@ const KioskForm = ({ initialStep = 1 }) => {
                                     ))}
                             </ul>
                         </div>
+                        
+                        {/* Price Breakdown */}
+                        <div className="confirmation-pricing-breakdown">
+                            <div className="pricing-row">
+                                <span>Subtotal:</span>
+                                <span>${Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+                                    const itemPrice = calculateItemPrice(name, options);
+                                    return sum + (itemPrice * quantity);
+                                }, 0).toFixed(2)}</span>
+                            </div>
+                            <div className="pricing-row">
+                                <span>Tax (8.25%):</span>
+                                <span>${(Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+                                    const itemPrice = calculateItemPrice(name, options);
+                                    return sum + (itemPrice * quantity);
+                                }, 0) * 0.0825).toFixed(2)}</span>
+                            </div>
+                            <div className="pricing-row">
+                                <span>Convenience Fee:</span>
+                                <span>$0.35</span>
+                            </div>
+                        </div>
+
                         <div className="confirmation-total">
-                            Total: $
-                            {Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
-                                const itemPrice = calculateItemPrice(name, options);
-                                return sum + (itemPrice * quantity);
-                            }, 0).toFixed(2)}
+                            Total Paid: $
+                            {(() => {
+                                const subtotal = Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+                                    const itemPrice = calculateItemPrice(name, options);
+                                    return sum + (itemPrice * quantity);
+                                }, 0);
+                                const tax = subtotal * 0.0825;
+                                const convenienceFee = 0.35;
+                                return (subtotal + tax + convenienceFee).toFixed(2);
+                            })()}
                         </div>
                         {notes && (
                             <div className="confirmation-notes">
