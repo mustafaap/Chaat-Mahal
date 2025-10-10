@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
+import { Elements, useStripe, useElements, CardElement, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
 import '../styles/PaymentForm.css';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || '');
@@ -10,11 +10,98 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState('');
+  const [paymentRequest, setPaymentRequest] = useState(null);
+  const [canMakePayment, setCanMakePayment] = useState(false);
+  const [walletUnavailableReason, setWalletUnavailableReason] = useState('');
 
   const taxAmount = useMemo(() => orderTotal * 0.0825, [orderTotal]); // 8.25% tax
   const totalWithTax = useMemo(() => orderTotal + taxAmount + 0.35, [orderTotal, taxAmount]);
 
-  const handlePayment = async () => {
+  // Initialize Apple Pay / Google Pay
+  useEffect(() => {
+    if (!stripe) return;
+
+    const pr = stripe.paymentRequest({
+      country: 'US',
+      currency: 'usd',
+      total: {
+        label: 'Chaat Mahal Order',
+        amount: Math.round(totalWithTax * 100),
+      },
+      requestPayerName: true,
+      requestPayerEmail: true,
+    });
+
+    pr.canMakePayment().then(result => {
+      console.log('PaymentRequest canMakePayment result:', result); // Debug
+      if (result) {
+        setPaymentRequest(pr);
+        setCanMakePayment(true);
+        setWalletUnavailableReason('');
+      } else {
+        setPaymentRequest(null);
+        setCanMakePayment(false);
+        setWalletUnavailableReason(
+          'Digital wallet not available. Use Safari with Apple Pay set up or Chrome with a saved card and payments enabled.'
+        );
+      }
+    });
+
+    // Handle payment submission
+    pr.on('paymentmethod', async (ev) => {
+      setIsProcessing(true);
+      setPaymentError('');
+
+      try {
+        // 1) Create PaymentIntent on server
+        const createRes = await fetch('/api/payments/create-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: Math.round(totalWithTax * 100),
+            currency: 'USD',
+            customerName,
+            orderItems
+          })
+        });
+        const { success, clientSecret, error } = await createRes.json();
+        
+        if (!success) {
+          ev.complete('fail');
+          setPaymentError(error || 'Failed to start payment');
+          setIsProcessing(false);
+          return;
+        }
+
+        // 2) Confirm payment with the payment method from Apple Pay / Google Pay
+        const { paymentIntent, error: confirmError } = await stripe.confirmCardPayment(
+          clientSecret,
+          { payment_method: ev.paymentMethod.id },
+          { handleActions: false }
+        );
+
+        if (confirmError) {
+          ev.complete('fail');
+          setPaymentError(confirmError.message || 'Payment failed');
+          setIsProcessing(false);
+          return;
+        }
+
+        ev.complete('success');
+        
+        if (paymentIntent && (paymentIntent.status === 'succeeded' || paymentIntent.status === 'requires_capture')) {
+          onPaymentSuccess(paymentIntent.id);
+        }
+      } catch (e) {
+        console.error('Digital wallet payment error:', e);
+        ev.complete('fail');
+        setPaymentError('Payment processing failed. Please try again.');
+        setIsProcessing(false);
+      }
+    });
+  }, [stripe, totalWithTax, customerName, orderItems, onPaymentSuccess]);
+
+  const handleCardPayment = async () => {
     if (!stripe || !elements) return;
 
     setIsProcessing(true);
@@ -93,6 +180,31 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
         </div>
       </div>
 
+      {/* Apple Pay / Google Pay Button */}
+      {canMakePayment && paymentRequest ? (
+        <div className="digital-wallet-section">
+          <PaymentRequestButtonElement 
+            options={{ 
+              paymentRequest,
+              style: {
+                paymentRequestButton: {
+                  type: 'default',
+                  theme: 'dark',
+                  height: '48px',
+                }
+              }
+            }} 
+          />
+          <div className="payment-divider">
+            <span>or pay with card</span>
+          </div>
+        </div>
+      ) : walletUnavailableReason ? (
+        <div className="unavailable-button" title="Digital wallet not available">
+          {walletUnavailableReason}
+        </div>
+      ) : null}
+
       <div className="payment-form">
         <label className="payment-label">Card Information</label>
         <div className="payment-card-container">
@@ -122,7 +234,7 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
           <button
             type="button"
             className="payment-submit-btn"
-            onClick={handlePayment}
+            onClick={handleCardPayment}
             disabled={!stripe || !elements || isProcessing}
           >
             {isProcessing ? 'Processing...' : `Pay $${totalWithTax.toFixed(2)}`}
@@ -134,6 +246,7 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
         <div className="security-badges">
           <span className="security-badge">🔒 Secure Payment</span>
           <span className="security-badge">💳 Stripe</span>
+          {canMakePayment && <span className="security-badge">📱 Apple Pay</span>}
         </div>
         <p className="security-text">
           Your payment information is encrypted and secure. We never store your card details.
