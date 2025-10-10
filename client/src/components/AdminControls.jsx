@@ -10,6 +10,10 @@ const AdminControls = () => {
         return savedView || 'dashboard';
     });
 
+    const [settings, setSettings] = useState({
+        onlinePaymentEnabled: true
+    });
+
     const [modalState, setModalState] = useState({
         isOpen: false,
         type: 'default',
@@ -19,6 +23,53 @@ const AdminControls = () => {
         cancelText: 'Cancel',
         onConfirm: null
     });
+
+    // Fetch settings on component mount
+    useEffect(() => {
+        fetchSettings();
+    }, []);
+
+    const fetchSettings = async () => {
+        try {
+            const response = await axios.get('/api/settings');
+            setSettings(response.data);
+        } catch (error) {
+            console.error('Error fetching settings:', error);
+        }
+    };
+
+    const updateSettings = async (newSettings) => {
+        try {
+            const response = await axios.patch('/api/settings', newSettings);
+            setSettings(response.data.settings);
+            return true;
+        } catch (error) {
+            console.error('Error updating settings:', error);
+            return false;
+        }
+    };
+
+    const toggleOnlinePayment = () => {
+        const newStatus = !settings.onlinePaymentEnabled;
+        
+        openModal({
+            type: newStatus ? 'default' : 'danger', 
+            title: newStatus ? 'Enable Online Payments' : 'Disable Online Payments',
+            message: newStatus 
+                ? 'Are you sure you want to enable online payments? Customers will be able to pay with cards and digital wallets.'
+                : 'Are you sure you want to disable online payments? Customers will only be able to pay at the counter. This should only be used when payment systems are down.',
+            confirmText: newStatus ? 'Enable Online Payments' : 'Disable Online Payments',
+            cancelText: 'Cancel',
+            onConfirm: async () => {
+                const success = await updateSettings({ onlinePaymentEnabled: newStatus });
+                if (success) {
+                    alert(`Online payments ${newStatus ? 'enabled' : 'disabled'} successfully!`);
+                } else {
+                    alert('Failed to update payment settings. Please try again.');
+                }
+            }
+        });
+    };
 
     // Save to localStorage whenever currentView changes
     useEffect(() => {
@@ -125,6 +176,23 @@ const AdminControls = () => {
                     <p>View sales reports and order statistics</p>
                     <button className="admin-control-button disabled-btn" disabled>
                         Coming Soon
+                    </button>
+                </div>
+
+                <div className="control-card">
+                    <div className="control-icon">💳</div>
+                    <h3>Payment Settings</h3>
+                    <p>Enable or disable online payments (use when payment system is down)</p>
+                    <div className="payment-status">
+                        <span className={`status-indicator ${settings.onlinePaymentEnabled ? 'enabled' : 'disabled'}`}>
+                            {settings.onlinePaymentEnabled ? '🟢 Online Payments Enabled' : '🔴 Online Payments Disabled'}
+                        </span>
+                    </div>
+                    <button 
+                        className={`admin-control-button ${settings.onlinePaymentEnabled ? 'disable-btn' : 'enable-btn'}`}
+                        onClick={toggleOnlinePayment}
+                    >
+                        {settings.onlinePaymentEnabled ? 'Disable Online Payments' : 'Enable Online Payments'}
                     </button>
                 </div>
 

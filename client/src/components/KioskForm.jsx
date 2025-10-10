@@ -18,9 +18,26 @@ const KioskForm = ({ initialStep = 1 }) => {
     const [showCartSummary, setShowCartSummary] = useState(false);
     const [cartTotal, setCartTotal] = useState(0);
     const [paymentId, setPaymentId] = useState(null);
+    const [settings, setSettings] = useState({ onlinePaymentEnabled: true }); // Add this line
     
     // State for floating index
     const [activeSection, setActiveSection] = useState('Chaat');
+
+    // Fetch settings on component mount
+    useEffect(() => {
+        fetchSettings();
+    }, []);
+
+    const fetchSettings = async () => {
+        try {
+            const response = await axios.get('/api/settings');
+            setSettings(response.data);
+        } catch (error) {
+            console.error('Error fetching settings:', error);
+            // Fallback to default settings if fetch fails
+            setSettings({ onlinePaymentEnabled: true });
+        }
+    };
 
     // Fetch menu items from API
     useEffect(() => {
@@ -261,8 +278,14 @@ const KioskForm = ({ initialStep = 1 }) => {
         
         // Only require name and at least one item - email is optional
         if (customerName && Object.keys(selectedItems).length > 0) {
-            // Move to payment step
-            setStep(3); // Payment step
+            // Check if online payments are enabled
+            if (settings.onlinePaymentEnabled) {
+                // Move to payment step
+                setStep(3); 
+            } else {
+                // Skip payment step and go directly to counter payment
+                handlePayAtCounter();
+            }
         } else {
             alert('Please enter your name and select at least one item.');
         }
@@ -658,7 +681,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                     </div>
                 </form>
             )}
-            {step === 3 && (
+            {step === 3 && settings.onlinePaymentEnabled && (
                 <PaymentForm
                     orderTotal={Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
                         const itemPrice = calculateItemPrice(name, options);
@@ -689,16 +712,15 @@ const KioskForm = ({ initialStep = 1 }) => {
                                 <p>✅ Payment Successful!</p>
                             </div>
                             <p>Your order is now in queue.</p>
-                            {/* <p>Payment ID: {paymentId}</p> */}
                         </div>
                     ) : (
                         <div className="confirmation-payment-counter">
                             <div className="confirmation-counter-heading">
                                 <p>💵 Pay at Counter</p>
                             </div>
-                            <p>Please pay at the counter to enter the preparation queue.</p>
+                            <p>Please pay at the counter to enter preparation queue.</p>
                             <p className="counter-payment-disclaimer">
-                                <em>Note: Final price after tax may vary slightly due to convenience fees.</em>
+                                <em>Note: Price may vary slightly due to convenience fees.</em>
                             </p>
                         </div>
                     )}
@@ -757,7 +779,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                         </div>
 
                         <div className="confirmation-total">
-                            Total Paid: $
+                            Total: $
                             {(() => {
                                 const subtotal = Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
                                     const itemPrice = calculateItemPrice(name, options);

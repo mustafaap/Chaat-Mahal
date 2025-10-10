@@ -125,10 +125,12 @@ app.use(express.static(path.join(__dirname, 'client', 'build')));
 const orderRoutes = require('./routes/orders');
 const menuRoutes = require('./routes/menu');
 const paymentRoutes = require('./routes/payments');
+const settingsRoutes = require('./routes/settings'); // Add this line
 
 app.use('/api/orders', orderRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/settings', settingsRoutes); // Add this line
 
 // Serve React app
 app.get('*', (req, res) => {

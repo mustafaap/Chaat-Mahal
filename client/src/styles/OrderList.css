@@ -152,6 +152,32 @@
     box-shadow: 0 8px 30px rgba(39, 174, 96, 0.2);
 }
 
+/* Update the cancelled orders display to show red background */
+.order-item.order-paid {
+    border-left-color: #27ae60 !important;
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%);
+    box-shadow: 0 5px 25px rgba(39, 174, 96, 0.15);
+}
+
+.order-item.order-paid:hover {
+    background: linear-gradient(135deg, #d4f4d4 0%, #c8e6c9 100%);
+    border-left-color: #229954 !important;
+    box-shadow: 0 8px 30px rgba(39, 174, 96, 0.2);
+}
+
+/* Override paid styling for cancelled orders specifically */
+.order-item.order-paid.cancelled-order {
+    border-left-color: #e74c3c !important;
+    background: linear-gradient(135deg, #fce4e4 0%, #f5b7b1 100%);
+    box-shadow: 0 5px 25px rgba(231, 76, 60, 0.15);
+}
+
+.order-item.order-paid.cancelled-order:hover {
+    background: linear-gradient(135deg, #f8d7da 0%, #f3a4a7 100%);
+    border-left-color: #c0392b !important;
+    box-shadow: 0 8px 30px rgba(231, 76, 60, 0.2);
+}
+
 /* Unpaid Order Visual Indicators - Slightly lighter red backgrounds */
 .order-item:not(.order-paid) {
     border-left-color: #e74c3c !important;
@@ -1042,81 +1068,11 @@
     }
 }
 
-/* Paid Order Visual Indicators - Darker green background */
-.order-item.order-paid {
-    border-left-color: #27ae60 !important;
-    background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%); /* Changed from f0fff4/e8f5e8 to e8f5e8/d4f4d4 */
-    box-shadow: 0 5px 25px rgba(39, 174, 96, 0.15);
-}
+/* Replace the existing paid indicator styles with these updated ones */
 
-.order-item.order-paid:hover {
-    background: linear-gradient(135deg, #d4f4d4 0%, #c8e6c9 100%); /* Changed from e8f5e8/d4f4d4 to d4f4d4/c8e6c9 */
-    border-left-color: #229954 !important;
-    box-shadow: 0 8px 30px rgba(39, 174, 96, 0.2);
-}
-
-/* Update the existing all-items-given styles to work with paid orders */
-.order-item.all-items-given.order-paid {
-    border-left-color: #00d4aa !important;
-    background: linear-gradient(135deg, #d4f4d4 0%, #c8e6c9 100%); /* Changed from f0fff4/e8f5e8 to d4f4d4/c8e6c9 */
-}
-
-.order-item.all-items-given.order-paid:hover {
-    border-left-color: #00b894 !important;
-    background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%); /* Changed from d4f4d4/c8e6c9 to c8e6c9/a5d6a7 */
-}
-
-/* Enhanced paid button styling */
-.paid-button {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-    position: relative;
-    overflow: hidden;
-}
-
-.paid-button::after {
-    content: '💳';
-    margin-left: 8px;
-}
-
-.paid-button:hover {
-    box-shadow: 0 5px 20px rgba(52, 152, 219, 0.4);
-    background: linear-gradient(135deg, #2980b9 0%, #1f5e8c 100%);
-}
-
-/* Add a subtle animation for paid orders */
-.order-item.order-paid::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent 0%, rgba(39, 174, 96, 0.05) 50%, transparent 100%);
-    animation: paidShimmer 3s infinite;
-    pointer-events: none;
-    z-index: 1;
-}
-
-@keyframes paidShimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
-/* Ensure content stays above the shimmer effect */
-.order-item.order-paid .order-info,
-.order-item.order-paid .order-controls {
-    position: relative;
-    z-index: 2;
-}
-
-/* Remove the absolute positioning from the paid indicator */
-.order-item.order-paid .order-header::after {
-    display: none; /* Hide the old positioned indicator */
-}
-
-/* Add the paid indicator inside order-header-main */
+/* Add the paid indicator inside order-header-main for paid orders */
 .order-item.order-paid .order-header-main::after {
-    content: 'PAID ✓';
+    content: 'PAID ONLINE ✓';
     background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
     color: white;
     font-size: 0.7rem;
@@ -1129,6 +1085,20 @@
     flex-shrink: 0; /* Prevent shrinking */
 }
 
+/* Counter payment indicator - different styling */
+.order-item.order-paid.counter-payment .order-header-main::after {
+    content: 'PAID AT COUNTER ✓';
+    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
 
 /* Add the unpaid indicator inside order-header-main for unpaid orders */
 .order-item:not(.order-paid) .order-header-main::after {
@@ -1145,9 +1115,10 @@
     flex-shrink: 0; /* Prevent shrinking */
 }
 
-/* Mobile responsive adjustments for paid orders */
+/* Mobile responsive adjustments */
 @media (max-width: 880px) {
-    .order-item.order-paid .order-header-main::after {
+    .order-item.order-paid .order-header-main::after,
+    .order-item.order-paid.counter-payment .order-header-main::after {
         font-size: 0.65rem;
         padding: 3px 12px;
     }
@@ -1165,14 +1136,19 @@
 }
 
 @media (max-width: 480px) {
-    .order-item.order-paid .order-header-main::after {
+    .order-item.order-paid .order-header-main::after,
+    .order-item.order-paid.counter-payment .order-header-main::after {
         font-size: 0.6rem;
-        padding: 2px 12px;
+        padding: 2px 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
     
     .order-item:not(.order-paid) .order-header-main::after {
         font-size: 0.6rem;
-        padding: 2px 12px;
+        padding: 2px 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
 }
 
@@ -1949,9 +1925,4 @@
 .email-clicked-green {
     background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%) !important;
     border-color: #27ae60 !important;
-}
-
-.email-clicked-green:hover {
-    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%) !important;
-    box-shadow: 0 5px 20px rgba(39, 174, 96, 0.3);
 }

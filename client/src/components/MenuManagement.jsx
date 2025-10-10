@@ -35,10 +35,11 @@ const MenuManagement = () => {
         description: '',
         otherOptions: [],
         extraOptions: {},
-        noModal: false // Add this new field
+        noModal: false,
+        active: true // Add this new field
     });
 
-    const categories = ['All', 'Chaat', 'Wraps', 'Drinks'];
+    const categories = ['All', 'Available Only', 'Unavailable Only', 'Chaat', 'Wraps', 'Drinks'];
 
     useEffect(() => {
         fetchMenuItems();
@@ -46,7 +47,8 @@ const MenuManagement = () => {
 
     const fetchMenuItems = async () => {
         try {
-            const response = await axios.get('/api/menu');
+            // Include inactive items for admin management
+            const response = await axios.get('/api/menu?includeInactive=true');
             setMenuItems(response.data);
         } catch (error) {
             console.error('Error fetching menu items:', error);
@@ -222,7 +224,8 @@ const MenuManagement = () => {
             description: '',
             otherOptions: [],
             extraOptions: {},
-            noModal: false // Add this line
+            noModal: false,
+            active: true // Keep the field name as 'active' for backend compatibility
         });
         setEditingItem(null);
         setShowAddForm(false);
@@ -247,7 +250,8 @@ const MenuManagement = () => {
             description: item.description,
             otherOptions: otherOptions,
             extraOptions: item.extraOptions || {},
-            noModal: item.noModal || false // Add this line
+            noModal: item.noModal || false,
+            active: item.active !== undefined ? item.active : true // Add this line with fallback
         });
         
         // Set preview for existing image
@@ -337,9 +341,44 @@ const MenuManagement = () => {
         });
     };
 
-    const filteredItems = selectedCategory === 'All' 
-        ? menuItems 
-        : menuItems.filter(item => item.category === selectedCategory);
+    // Replace the toggleItemStatus function in MenuManagement.jsx
+    const toggleItemStatus = async (item) => {
+        const newStatus = !item.active;
+        
+        try {
+            const response = await axios.put(`/api/menu/${item.id}`, {
+                ...item,
+                active: newStatus
+            });
+            
+            setMenuItems(prev => prev.map(menuItem => 
+                menuItem.id === item.id ? { ...menuItem, active: newStatus } : menuItem
+            ));
+            
+            // Updated success message
+            console.log(`Menu item is now ${newStatus ? 'available' : 'unavailable'} for customers!`);
+        } catch (error) {
+            console.error('Error updating item availability:', error);
+            alert('Failed to update item availability. Please try again.');
+        }
+    };
+
+    // Update the filteredItems logic
+    const filteredItems = (() => {
+        let items = menuItems;
+        
+        // Filter by availability first
+        if (selectedCategory === 'Available Only') {
+            items = items.filter(item => item.active !== false);
+        } else if (selectedCategory === 'Unavailable Only') {
+            items = items.filter(item => item.active === false);
+        } else if (selectedCategory !== 'All') {
+            // Filter by category
+            items = items.filter(item => item.category === selectedCategory);
+        }
+        
+        return items;
+    })();
 
     if (isLoading) {
         return (
@@ -507,6 +546,28 @@ const MenuManagement = () => {
                                 </div>
                             </div>
 
+                            {/* Add the Active Status toggle after the No Modal section */}
+                            <div className="form-group full-width">
+                                <div className="active-status-section">
+                                    <label className="active-status-label">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.active}
+                                            onChange={(e) => setFormData(prev => ({
+                                                ...prev,
+                                                active: e.target.checked
+                                            }))}
+                                            className="active-status-checkbox"
+                                        />
+                                        <span className="active-status-text">
+                                            <strong>✅ Available for Customers</strong>
+                                            <br />
+                                            <small>Uncheck to make this item unavailable in the customer menu (item will be hidden but not deleted)</small>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
                             {/* Add the No Modal option here */}
                             <div className="form-group full-width">
                                 <div className="no-modal-section">
@@ -663,8 +724,9 @@ const MenuManagement = () => {
                     </div>
                 ) : (
                     filteredItems.map(item => (
-                        <div key={item.id} className="menu-item-card">
+                        <div key={item.id} className={`menu-item-card ${!item.active ? 'inactive' : ''}`}>
                             <div className="item-image">
+                                {!item.active && <div className="inactive-overlay"></div>}
                                 {item.image && item.image !== '/images/default-food.jpg' ? (
                                     <img src={item.image} alt={item.name} />
                                 ) : (
@@ -689,7 +751,16 @@ const MenuManagement = () => {
                             </div>
                             
                             <div className="menu-item-details">
-                                <h3 className="item-name">{item.name}</h3>
+                                <h3 className="item-name">
+                                    {item.name} 
+                                    <span style={{ 
+                                        color: item.active ? '#28a745' : '#dc3545', 
+                                        fontSize: '0.8rem',
+                                        marginLeft: '8px'
+                                    }}>
+                                        {item.active ? '(Available)' : '(Unavailable)'}
+                                    </span>
+                                </h3>
                                 <p className="item-description">{item.description}</p>
                                 <div className="item-price">${item.price}</div>
                                 
@@ -708,6 +779,15 @@ const MenuManagement = () => {
                                         }
                                     </div>
                                 )}
+
+                                {/* Quick Availability Toggle */}
+                                <button
+                                    className={`status-toggle-btn ${item.active ? 'deactivate' : 'activate'}`}
+                                    onClick={() => toggleItemStatus(item)}
+                                    title={item.active ? 'Click to make unavailable' : 'Click to make available'}
+                                >
+                                    {item.active ? '🔴 Make Unavailable' : '🟢 Make Available'}
+                                </button>
                             </div>
                             
                             <div className="item-actions">

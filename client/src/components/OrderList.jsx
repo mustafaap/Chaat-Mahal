@@ -598,9 +598,12 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                 const orderAge = getOrderAge(order.createdAt);
                                 const allItemsGiven = areAllItemsGiven(order, itemCounts);
                                 const isBeingEdited = editingOrder?._id === order._id;
+                                
+                                // Determine payment method based on paymentId
+                                const isCounterPayment = order.paid && !order.paymentId;
 
                                 return (
-                                    <li key={order._id} className={`order-item ${allItemsGiven ? 'all-items-given' : ''} ${order.paid ? 'order-paid' : ''}`}>
+                                    <li key={order._id} className={`order-item ${allItemsGiven ? 'all-items-given' : ''} ${order.paid ? 'order-paid' : ''} ${isCounterPayment ? 'counter-payment' : ''}`}>
                                         <div className="order-info">
                                             <div className="order-header">
                                                 <div className="order-header-main">
@@ -927,7 +930,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                 const cancelledTime = getOrderAge(order.updatedAt || order.createdAt);
 
                                 return (
-                                    <li key={order._id} className={`order-item ${order.paid ? 'order-paid' : ''}`}>
+                                    <li key={order._id} className={`order-item ${order.paid ? 'order-paid cancelled-order' : 'cancelled-order'}`}>
                                         <div className="order-info">
                                             <div className="order-header">
                                                 <div className="order-header-with-revert">

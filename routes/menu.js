@@ -25,7 +25,11 @@ const deleteImageFile = (imagePath) => {
 // Get all menu items
 router.get('/', async (req, res) => {
     try {
-        const menuItems = await Menu.find().sort({ id: 1 });
+        const includeInactive = req.query.includeInactive === 'true';
+        
+        const filter = includeInactive ? {} : { active: { $ne: false } };
+        const menuItems = await Menu.find(filter).sort({ id: 1 });
+        
         res.json(menuItems);
     } catch (error) {
         console.error('Error fetching menu items:', error);
