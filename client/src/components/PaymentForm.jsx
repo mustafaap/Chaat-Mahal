@@ -13,6 +13,7 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
   const [paymentRequest, setPaymentRequest] = useState(null);
   const [canMakePayment, setCanMakePayment] = useState(false);
   const [walletUnavailableReason, setWalletUnavailableReason] = useState('');
+  const [isCounterPaymentProcessing, setIsCounterPaymentProcessing] = useState(false); // Add this state
 
   const taxAmount = useMemo(() => orderTotal * 0.0825, [orderTotal]); // 8.25% tax
   const totalWithTax = useMemo(() => orderTotal + taxAmount + 0.35, [orderTotal, taxAmount]);
@@ -154,6 +155,20 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
     }
   };
 
+  // Add this new function to handle counter payment with duplicate prevention
+  const handlePayAtCounter = async () => {
+    if (isCounterPaymentProcessing) return; // Prevent multiple clicks
+    
+    setIsCounterPaymentProcessing(true);
+    try {
+      await onPayAtCounter();
+    } catch (error) {
+      console.error('Counter payment error:', error);
+      setIsCounterPaymentProcessing(false); // Reset on error
+    }
+    // Note: Don't reset isCounterPaymentProcessing on success since the component will unmount
+  };
+
   return (
     <div className="payment-container">
       <div className="payment-header">
@@ -247,10 +262,10 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
         <button
           type="button"
           className="pay-at-counter-btn"
-          onClick={onPayAtCounter}
-          disabled={isProcessing}
+          onClick={handlePayAtCounter}
+          disabled={isProcessing || isCounterPaymentProcessing} // Disable if either is processing
         >
-          💵 Pay at Counter
+          {isCounterPaymentProcessing ? 'Processing...' : '💵 Pay at Counter'}
         </button>
         <p className="pay-at-counter-note">
           Skip online payment and pay at the counter.<br />

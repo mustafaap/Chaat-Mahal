@@ -332,6 +332,8 @@ const KioskForm = ({ initialStep = 1 }) => {
     };
 
     const handlePayAtCounter = async () => {
+        if (isSubmitting) return; // Prevent multiple submissions
+        
         setIsSubmitting(true);
         
         const subtotal = Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
@@ -359,9 +361,9 @@ const KioskForm = ({ initialStep = 1 }) => {
         } catch (error) {
             console.error('Error submitting order:', error);
             alert('There was an error submitting your order. Please try again.');
-        } finally {
-            setIsSubmitting(false);
+            setIsSubmitting(false); // Reset on error
         }
+        // Note: Don't reset isSubmitting on success since the component will move to step 4
     };
 
     const handlePaymentSuccess = async (paymentId) => {
