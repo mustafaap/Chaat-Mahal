@@ -1360,6 +1360,8 @@
 
 .add-item-section {
     margin-bottom: 15px;
+    position: relative;
+    overflow: visible;
 }
 
 .add-item-select {
@@ -1690,11 +1692,17 @@
     gap: 8px;
     max-height: 125px;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 12px;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border-radius: 12px;
     border: 2px solid #dee2e6;
     justify-content: center;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    position: relative;
+    z-index: 1;
 }
 
 .add-item-pill {
@@ -1750,18 +1758,28 @@
 /* Mobile responsive for pills */
 @media (max-width: 768px) {
     .add-item-pills {
-        max-height: 100px;
+        max-height: 180px !important;
         gap: 6px;
         padding: 10px;
+        overflow-y: scroll !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
+        overscroll-behavior: contain;
     }
     
     .add-item-pill {
         padding: 6px 12px;
         font-size: 0.8rem;
+        pointer-events: auto;
     }
     
     .add-item-pill-price {
         font-size: 0.75rem;
+    }
+    
+    .add-item-section {
+        overflow: visible;
+        touch-action: auto;
     }
 }
 
