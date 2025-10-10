@@ -19,7 +19,7 @@
     "nodemailer": "^6.9.13",
     "path-extra": "^4.3.0",
     "socket.io": "^4.6.1",
-    "square": "^43.1.0"
+    "stripe": "^16.0.0"
   },
   "devDependencies": {
     "concurrently": "^8.0.1",
