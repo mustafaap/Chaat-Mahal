@@ -636,7 +636,7 @@ const KioskForm = ({ initialStep = 1 }) => {
             
             {step === 4 && (
                 <div className="confirmation-container">
-                    <h1>Order Confirmation</h1>
+                    <h2>Order Confirmation</h2>
                     <p className="confirmation-details">Order Number: {orderNumber}</p>
                     <p className="confirmation-name">Name: {customerName}</p>
                     
@@ -646,7 +646,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                                 <p>✅ Payment Successful!</p>
                             </div>
                             <p>Your order is now in queue.</p>
-                            <p>Payment ID: {paymentId}</p>
+                            {/* <p>Payment ID: {paymentId}</p> */}
                         </div>
                     )}
 

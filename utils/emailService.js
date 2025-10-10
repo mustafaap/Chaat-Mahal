@@ -158,15 +158,15 @@ const generateOrderReadyEmailHTML = (orderData) => {
                 <div class="order-details">
                     <h3>🎉 Great News!</h3>
                     <p style="font-size: 1.1rem; text-align: center; margin: 20px 0;">
-                        Your order is ready for pickup at our food truck!
+                        Your order is ready for pickup!
                     </p>
                     
-                    <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
-                        <h4 style="color: #27ae60; margin: 0 0 10px 0;">📍 Pickup Location</h4>
-                        <p style="margin: 5px 0; font-weight: 600;">Chaat Mahal Food Truck</p>
-                        <p style="margin: 5px 0;">Parking lot, 9311 JW Clay Blvd</p>
-                        <p style="margin: 5px 0;">Charlotte, NC 28262</p>
-                    </div>
+                    // <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                    //     <h4 style="color: #27ae60; margin: 0 0 10px 0;">📍 Pickup Location</h4>
+                    //     <p style="margin: 5px 0; font-weight: 600;">Chaat Mahal Food Truck</p>
+                    //     <p style="margin: 5px 0;">Parking lot, 9311 JW Clay Blvd</p>
+                    //     <p style="margin: 5px 0;">Charlotte, NC 28262</p>
+                    // </div>
                 </div>
                 
                 <div class="total" style="background: #27ae60;">

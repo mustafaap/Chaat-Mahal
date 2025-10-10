@@ -795,19 +795,19 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .back-button {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-    border: 2px solid #b85c38;
-    color: #b85c38;
-    font-size: 1.2rem;
-    font-weight: 600;
-    cursor: pointer;
-    padding: 6px 16px;
-    border-radius: 50px;
-    box-shadow: 0 4px 15px rgba(184, 92, 56, 0.2);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
+    font-family: 'Poppins', sans-serif !important;
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%) !important;
+    border: 2px solid #b85c38 !important;
+    color: #b85c38 !important;
+    font-size: 1.2rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    padding: 6px 16px !important;
+    border-radius: 50px !important;
+    box-shadow: 0 4px 15px rgba(184, 92, 56, 0.2) !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
 }
 
 .back-button::before {
@@ -1070,14 +1070,14 @@ input[type="checkbox"], input[type="radio"] {
 .confirmation-container {
     font-family: 'Inter', sans-serif;
     text-align: center;
-    margin-top: 50px;
+    margin-top: 20px;
     animation: fadeIn 0.6s ease;
 }
 
-.confirmation-container h1 {
-    font-size: 2.5rem;
+.confirmation-container h2 {
+    font-size: 1.5rem;
     color: #b85c38;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
     position: relative;
 }
 
@@ -1102,15 +1102,15 @@ input[type="checkbox"], input[type="radio"] {
 .confirmation-order-card {
     background: linear-gradient(135deg, #f3e9e3 0%, #f0e4d9 100%);
     border-radius: 16px;
-    padding: 24px;
+    padding: 12px;
     margin-bottom: 32px;
     margin-top: 32px;
     max-width: 500px;
     margin-left: auto;
     margin-right: auto;
     text-align: left;
-    box-shadow: 0 8px 32px rgba(184, 92, 56, 0.15);
-    border: 1px solid rgba(184, 92, 56, 0.1);
+    box-shadow: 0 8px 32px rgba(226, 74, 14, 0.243);
+    border: 1px solid rgba(158, 59, 20, 0.941);
     animation: slideInUp 0.5s ease 0.2s both;
 }
 
@@ -1119,7 +1119,7 @@ input[type="checkbox"], input[type="radio"] {
     margin-top: 0;
     margin-bottom: 20px;
     color: #b85c38;
-    font-size: 2rem;
+    font-size: 20px;
     font-weight: 700;
     text-align: center;
     position: relative;
@@ -1153,13 +1153,13 @@ input[type="checkbox"], input[type="radio"] {
 
 .confirmation-item {
     font-family: 'Inter', sans-serif;
-    font-size: 1.1rem;
+    font-size: 1rem;
     margin-bottom: 12px;
-    padding: 12px;
+    padding: 5px 12px;
     text-align: left;
     background: rgba(255, 255, 255, 0.6);
     border-radius: 8px;
-    border-left: 4px solid #28a745;
+    border-left: 5px solid #28a745;
     transition: all 0.3s ease;
 }
 
@@ -1192,7 +1192,7 @@ input[type="checkbox"], input[type="radio"] {
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
     color: #333;
-    margin-bottom: 4px;
+    margin-bottom: 1px;
 }
 
 .confirmation-item-options {
@@ -1220,8 +1220,8 @@ input[type="checkbox"], input[type="radio"] {
 
 .confirmation-pricing-breakdown {
     font-family: 'Inter', sans-serif;
-    margin: 16px 0;
-    padding: 16px;
+    margin: 10px 0;
+    padding: 2px 12px;
     background: rgba(0, 0, 0, 0.02);
     border-radius: 8px;
     border-top: 2px solid rgba(184, 92, 56, 0.1);
@@ -1241,7 +1241,7 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .pricing-row span:first-child {
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .pricing-row span:last-child {
@@ -1252,15 +1252,14 @@ input[type="checkbox"], input[type="radio"] {
 .confirmation-total {
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     color: #28a745;
     text-align: center;
     background: rgba(40, 167, 69, 0.1);
-    padding: 16px;
+    padding: 4px 12px;
     border-radius: 12px;
     animation: pulse 2s infinite;
-    margin-bottom: 16px;
-    margin-top: 8px;
+    margin: 5px;
 }
 
 .confirmation-notes {
@@ -1286,25 +1285,25 @@ input[type="checkbox"], input[type="radio"] {
 
 .confirmation-details {
     font-family: 'Poppins', sans-serif;
-    font-size: 1.3rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #333;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    padding: 12px 24px;
-    border-radius: 25px;
+    padding: 6px 24px;
+    border-radius: 20px;
     display: inline-block;
-    margin: 8px;
+    margin: 10px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .confirmation-name {
     font-family: 'Poppins', sans-serif;
-    font-size: 1.3rem;
-    font-weight: 500;
+    font-size: 1rem;
+    font-weight: 600;
     color: #333;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    padding: 12px 24px;
-    border-radius: 25px;
+    padding: 6px 24px;
+    border-radius: 20px;
     display: inline-block;
     margin: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -1313,7 +1312,7 @@ input[type="checkbox"], input[type="radio"] {
 .confirmation-payment-notice {
     font-family: 'Poppins', sans-serif;
     margin: 32px auto;
-    font-size: 1.3rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #b85c38;
     background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
@@ -1339,7 +1338,7 @@ input[type="checkbox"], input[type="radio"] {
     font-family: 'Poppins', sans-serif;
     font-size: 1.2rem;
     font-weight: 700;
-    padding: 16px 0;
+    padding: 10px 0px;
     color: #fff;
     border: none;
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
@@ -1379,8 +1378,8 @@ input[type="checkbox"], input[type="radio"] {
 
 @media (max-width: 600px) {
     .another-order-button {
-        font-size: 1rem;
-        padding: 14px 0;
+        font-size: 1.1rem;
+        padding: 12px 0;
         border-radius: 10px;
     }
 }
@@ -1388,7 +1387,7 @@ input[type="checkbox"], input[type="radio"] {
 /* Spice Slider Styles */
 .spice-slider-container {
     margin-bottom: 20px;
-    padding: 20px;
+    padding:20px;
     background: #f8f9fa;
     border-radius: 12px;
     border: 1px solid #e0e0e0;
