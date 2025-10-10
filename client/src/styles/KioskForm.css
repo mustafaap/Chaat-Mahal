@@ -9,7 +9,7 @@ body {
     padding: 0;
 }
 
-h1, h2 {
+h1, h2, h3{
     font-family: 'Poppins', sans-serif;
     color: #b85c38;
     text-align: center;
@@ -58,7 +58,7 @@ form {
 .menu-header {
     text-align: center;
     margin: 10px 0px 10px 0px; /* Add bottom margin for better spacing */
-    padding: 20px 0;
+    padding: 20px 0 0 0;
     position: relative;
     z-index: 1;
 }
@@ -67,7 +67,7 @@ form {
     font-family: 'Poppins', sans-serif;
     color: #b85c38;
     text-align: center;
-    font-size: 3rem;
+    font-size: 2rem;
     font-weight: 700;
     margin-bottom: 20px;
     position: relative;
@@ -91,7 +91,7 @@ form {
     font-family: 'Inter', sans-serif;
     font-size: 1.2rem;
     color: #666;
-    margin-top: 30px; /* Add space for the decorative line */
+    margin-top: 25px; /* Add space for the decorative line */
     font-style: italic;
     position: relative;
     z-index: 1;
@@ -429,7 +429,7 @@ form {
 
 .category-title {
     font-family: 'Poppins', sans-serif;
-    font-size: 2rem;
+    font-size: 1.8rem;
     color: #b85c38;
     text-align: center;
     margin-bottom: 50px;
@@ -636,10 +636,10 @@ form {
 .modal-content {
     font-family: 'Inter', sans-serif;
     background: white;
-    padding: 30px 30px 30px 30px; /* Increased top padding for close button */
+    padding: 25px 25px 25px 25px; /* Reduced padding to save space */
     border-radius: 16px;
     width: 90%;
-    max-width: 450px;
+    max-width: 500px; /* Increased to accommodate 2 columns */
     text-align: center;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     animation: modalSlide 0.3s ease;
@@ -663,37 +663,39 @@ form {
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
     color: #b85c38;
-    margin-bottom: 25px;
+    margin-bottom: 8px; /* Reduced spacing */
     margin-top: 5px; /* Reduced since image is above */
+    font-size: 18px; /* Smaller font */
 }
 
 .modal-buttons {
     display: flex;
-    gap: 15px;
-    margin-top: 25px;
+    gap: 12px; /* Slightly reduced */
+    margin-top: 20px; /* Reduced spacing */
 }
 
 .modal-buttons.single-button {
     justify-content: center;
-    margin-top: 25px;
+    margin-top: 20px; /* Reduced spacing */
 }
 
 .modal-buttons.single-button .modal-add-button {
     width: 100%;
-    max-width: 250px;
-    padding: 15px 25px;
-    font-size: 1.1rem;
+    max-width: 220px; /* Slightly reduced */
+    padding: 12px 20px; /* Reduced padding */
+    font-size: 1rem; /* Slightly smaller */
 }
 
 .modal-cancel-button, .modal-add-button {
     font-family: 'Poppins', sans-serif;
     flex: 1;
-    padding: 12px 20px;
+    padding: 10px 18px; /* Reduced padding */
     border: none;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
+    font-size: 0.95rem; /* Slightly smaller */
 }
 
 .modal-cancel-button {
@@ -718,13 +720,13 @@ form {
 
 /* Modal Item Image Styles */
 .modal-item-image-container {
-    margin-bottom: 20px;
+    margin-bottom: 0px;
     text-align: center;
 }
 
 .modal-item-image {
-    width: 120px;
-    height: 120px;
+    width: 100px; /* Reduced size */
+    height: 100px; /* Reduced size */
     object-fit: cover;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -791,7 +793,7 @@ input[type="checkbox"], input[type="radio"] {
 .back-button-container {
     display: flex;
     align-items: flex-start;
-    margin-bottom: 24px;
+    margin-bottom: 0px;
 }
 
 .back-button {
@@ -799,7 +801,7 @@ input[type="checkbox"], input[type="radio"] {
     background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%) !important;
     border: 2px solid #b85c38 !important;
     color: #b85c38 !important;
-    font-size: 1.2rem !important;
+    font-size: 1rem !important;
     font-weight: 600 !important;
     cursor: pointer !important;
     padding: 6px 16px !important;
@@ -853,7 +855,7 @@ input[type="checkbox"], input[type="radio"] {
     margin-top: 0;
     margin-bottom: 20px;
     color: #b85c38;
-    font-size: 2.2rem;
+    font-size: 20px;
     font-weight: 700;
     text-align: center;
     position: relative;
@@ -875,7 +877,7 @@ input[type="checkbox"], input[type="radio"] {
     max-width: 100%;
     margin: 0 auto;
     width: 100%;
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
 }
 
 .order-items-list {
@@ -984,8 +986,8 @@ input[type="checkbox"], input[type="radio"] {
 .name-input {
     font-family: 'Inter', sans-serif;
     width: 100% !important;
-    padding: 16px !important;
-    margin-bottom: 28px !important;
+    padding: 10px !important;
+    margin-bottom: 0px !important;
     border: 2px solid #e0e0e0;
     border-radius: 12px !important;
     font-size: 1.1rem !important;
@@ -1011,7 +1013,6 @@ input[type="checkbox"], input[type="radio"] {
     border-radius: 12px;
     font-size: 1rem;
     font-weight: 400;
-    min-height: 100px;
     resize: vertical;
     box-sizing: border-box;
     transition: all 0.3s ease;
@@ -1103,7 +1104,7 @@ input[type="checkbox"], input[type="radio"] {
     background: linear-gradient(135deg, #f3e9e3 0%, #f0e4d9 100%);
     border-radius: 16px;
     padding: 12px;
-    margin-bottom: 32px;
+    margin-bottom: 0px;
     margin-top: 32px;
     max-width: 500px;
     margin-left: auto;
@@ -1367,10 +1368,57 @@ input[type="checkbox"], input[type="radio"] {
     font-style: italic;
 }
 
+.another-order-container{
+    font-family: 'Poppins', sans-serif;
+    padding: 0px;
+    position: relative;
+    overflow: hidden;
+    margin: 0px 32px !important; /* Changed from 0px to match confirmation-divider */
+}
+
+.another-order-button{
+    font-size: 1.3rem;
+    font-weight: 700;
+    padding: 12px;
+    color: #fff;
+    border: 1px solid #28a745;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.15);
+    margin: 32px 0px !important; /* Changed from 20px to match confirmation-divider */
+    max-width: 526px;
+}
+
+.another-order-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+}
+
+.another-order-button:hover::before {
+    left: 100%;
+}
+
+.another-order-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
 /* Spice Slider Styles */
 .spice-slider-container {
-    margin-bottom: 20px;
-    padding:20px;
+    margin-bottom: 8px; /* Reduced spacing */
+    padding: 8px; /* Reduced padding */
     background: #f8f9fa;
     border-radius: 12px;
     border: 1px solid #e0e0e0;
@@ -1378,14 +1426,14 @@ input[type="checkbox"], input[type="radio"] {
 
 .spice-slider-label {
     font-family: 'Poppins', sans-serif;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #b85c38;
+    font-size: 1rem; /* Slightly smaller */
+    font-weight: 450;
+    color: #000000;
 }
 
 .spice-slider {
     width: 80%;
-    margin-top: 15px;
+    margin-top: 12px; /* Reduced spacing */
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -1417,17 +1465,25 @@ input[type="checkbox"], input[type="radio"] {
     display: flex;
     justify-content: space-between; /* This will automatically space the 3 items evenly */
     color: #b85c38;
-    font-size: 0.9rem;
+    font-size: 0.85rem; /* Smaller text */
     font-weight: 500;
-    margin-top: 10px;
+    margin-top: 8px; /* Reduced spacing */
     max-width: 90%;
     margin-left: auto;
     margin-right: auto;
 }
 
+/* Options Grid Container - for 2-column layout */
+.modal-options-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+}
+
 .option-container {
-    margin-bottom: 15px;
-    padding: 12px;
+    margin-bottom: 0; /* Reset since grid handles spacing */
+    padding: 8px; /* Reduced padding */
     background: #f8f9fa;
     border-radius: 8px;
     border: 1px solid #e0e0e0;
@@ -1443,19 +1499,20 @@ input[type="checkbox"], input[type="radio"] {
 .option-label {
     font-family: 'Inter', sans-serif;
     color: #333;
-    font-size: 1.1rem;
+    font-size: 0.95rem; /* Slightly smaller */
     font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px; /* Reduced gap */
     cursor: pointer;
 }
 
 .option-checkbox, .option-radio {
-    width: 20px;
-    height: 20px;
+    width: 18px; /* Slightly smaller */
+    height: 18px; /* Slightly smaller */
     accent-color: #b85c38;
-    transform: scale(1.2);
+    transform: scale(1.1); /* Reduced scale */
+    flex-shrink: 0; /* Prevent shrinking */
 }
 
 /* Floating Index Styles */
@@ -1670,7 +1727,6 @@ input[type="checkbox"], input[type="radio"] {
     transition: all 0.3s ease;
     box-shadow: none;
     font-weight: bold;
-    z-index: 2;
 }
 
 .modal-close-btn:hover {
@@ -1723,14 +1779,19 @@ input[type="checkbox"], input[type="radio"] {
         max-height: 75vh !important;
         max-width: 80% !important;
     }
+
+    /* Single column layout on mobile */
+    .modal-options-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Change this in KioskForm.css */
 .kiosk-order-item {
     font-family: 'Inter', sans-serif;
-    font-size: 1.1rem;
+    font-size: 1rem;
     margin-bottom: 12px;
-    padding: 12px;
+    padding: 5px 12px;
     background: rgba(255, 255, 255, 0.6);
     border-radius: 8px;
     border-left: 4px solid #b85c38;
@@ -1766,7 +1827,7 @@ input[type="checkbox"], input[type="radio"] {
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
     color: #333;
-    margin-bottom: 4px;
+    margin-bottom: 0px;
 }
 
 .kiosk-order-item-options {
@@ -1825,3 +1886,115 @@ input[type="checkbox"], input[type="radio"] {
 .order-button:active {
     transform: scale(0.98);
 }
+
+/* Modal Section Styles */
+.modal-section {
+    margin-bottom: 24px;
+}
+
+.modal-section-label {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 12px;
+    display: block;
+}
+
+/* Option Pills Container */
+.option-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+/* Option Pill Button */
+.option-pill {
+    font-family: 'Inter', sans-serif;
+    background: white;
+    border: 2px solid #e0e0e0;
+    color: #666;
+    padding: 10px 18px;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.option-pill:hover {
+    /* border-color: #b85c38; */
+    background: #fef9f5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(184, 92, 56, 0.15);
+}
+
+.option-pill.selected {
+    background: linear-gradient(135deg, #b85c38 0%, #a14d2c 100%);
+    border-color: #b85c38;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(184, 92, 56, 0.3);
+}
+
+.option-pill.selected:hover {
+    background: linear-gradient(135deg, #a14d2c 0%, #8b3e20 100%);
+    border-color: #a14d2c;
+    transform: translateY(-2px);
+}
+
+/* Premium Option Pills */
+.option-pill.premium {
+    border-color: #27ae60;
+}
+
+/* .option-pill.premium:hover {
+    border-color: #27ae60;
+    background: #f0fff4;
+} */
+
+.option-pill.premium.selected {
+    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    border-color: #27ae60;
+}
+
+/* .option-pill.premium.selected:hover {
+    background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
+    border-color: #229954;
+} */
+
+.option-pill-price {
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-left: 4px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    .option-pills {
+        gap: 8px;
+    }
+    
+    .option-pill {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+    }
+    
+    .modal-section-label {
+        font-size: 1rem;
+    }
+}
+
+/* Remove old checkbox/radio styles from modal - using pills instead */
+.modal-content .option-container,
+.modal-content .option-label,
+.modal-content .option-checkbox,
+.modal-content .option-radio {
+    display: none;
+}
+

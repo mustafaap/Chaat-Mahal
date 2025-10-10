@@ -202,37 +202,77 @@ const KioskForm = ({ initialStep = 1 }) => {
     const openModal = (item) => {
         setModalItem(item);
         
-        // Set default options when opening modal
-        let defaultOptions = [];
+        // Initialize with default Regular spice for items with spice option
+        const hasSpice = item.options && item.options.some(opt => 
+            ['No Spice', 'Regular', 'Extra Spicy'].includes(opt)
+        );
         
-        // Set default spice level for items that have spice options
-        if (item.options?.some(opt => ['No Spice', 'Regular', 'Extra Spicy'].includes(opt))) {
-            defaultOptions.push('Regular'); // Default to Regular
-        }
-        
-        // Set default "Cold" option for Water
-        if (item.name === 'Water') {
-            defaultOptions.push('Cold'); // Default to Cold
-        }
-        
-        // Reset the options for this item to defaults only
-        setItemOptions(prev => ({
-            ...prev,
-            [item.name]: defaultOptions
-        }));
+        setItemOptions({
+            spiceLevel: hasSpice ? 'Regular' : null,
+            otherOptions: [],
+            extraOptions: []
+        });
     };
 
     const closeModal = () => {
         setModalItem(null);
+        setItemOptions({
+            spiceLevel: null,
+            otherOptions: [],
+            extraOptions: []
+        });
+    };
+
+    const handleSpiceChange = (level) => {
+        setItemOptions(prev => ({
+            ...prev,
+            spiceLevel: level
+        }));
+    };
+
+    const handleOtherOptionToggle = (option) => {
+        setItemOptions(prev => {
+            const isSelected = prev.otherOptions.includes(option);
+            return {
+                ...prev,
+                otherOptions: isSelected 
+                    ? prev.otherOptions.filter(o => o !== option)
+                    : [...prev.otherOptions, option]
+            };
+        });
+    };
+
+    const handleExtraOptionToggle = (optionName) => {
+        setItemOptions(prev => {
+            const isSelected = prev.extraOptions.includes(optionName);
+            return {
+                ...prev,
+                extraOptions: isSelected
+                    ? prev.extraOptions.filter(o => o !== optionName)
+                    : [...prev.extraOptions, optionName]
+            };
+        });
     };
 
     const handleOptionSubmit = () => {
-        const options = itemOptions[modalItem.name] || [];
-        // Filter out empty options and ensure consistency
-        const cleanOptions = options.filter(opt => opt && opt.trim() !== '');
+        if (!modalItem) return;
         
-        console.log('Submitting options:', cleanOptions);
-        addToCart(modalItem.name, 1, cleanOptions);
+        // Combine all selected options
+        const allOptions = [];
+        
+        // Add spice level if selected
+        if (itemOptions.spiceLevel) {
+            allOptions.push(itemOptions.spiceLevel);
+        }
+        
+        // Add other options
+        allOptions.push(...itemOptions.otherOptions);
+        
+        // Add extra options
+        allOptions.push(...itemOptions.extraOptions);
+        
+        // Add to cart with all options
+        addToCart(modalItem.name, 1, allOptions);
         closeModal();
     };
 
@@ -596,7 +636,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                             Back
                         </button>
                     </div>
-                    <h2>Enter Your Name</h2>
+                    <h3>Enter Your Name</h3>
                     <input
                         type="text"
                         placeholder="Enter your name *"
@@ -605,7 +645,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                         required
                         className="name-input"
                     />
-                    <h2>Email</h2>
+                    <h3>Email</h3>
                     <input
                         type="email"
                         placeholder="Enter your email (optional)"
@@ -613,7 +653,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                         onChange={(e) => setCustomerEmail(e.target.value)}
                         className="name-input"
                     />
-                    <h2>Notes</h2>
+                    <h3>Notes</h3>
                     <textarea
                         placeholder="Enter any allergies, ToGo requests or notes here... (optional)"
                         value={notes}
@@ -818,32 +858,29 @@ const KioskForm = ({ initialStep = 1 }) => {
 
             {/* Modal - Enhanced with X close button instead of Cancel button */}
             {modalItem && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        {/* Close button at top right */}
+                <div className="modal-overlay" onClick={closeModal}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <button 
+                            type="button"
                             className="modal-close-btn"
                             onClick={closeModal}
-                            title="Close"
+                            aria-label="Close"
                         >
                             ×
                         </button>
-                        
-                        {/* Added item image to modal */}
-                        <div className="modal-item-image-container">
-                            <img 
-                                src={modalItem.image || '/images/default-food.jpg'} 
-                                alt={modalItem.name}
-                                className="modal-item-image"
-                                onError={(e) => {
-                                    // Fallback if image fails to load
-                                    e.target.src = '/images/default-food.jpg';
-                                }}
-                            />
-                        </div>
-                        
-                        <h2>{modalItem.name} Options</h2>
 
+                        {modalItem.image && (
+                            <div className="modal-item-image-container">
+                                <img 
+                                    src={modalItem.image} 
+                                    alt={modalItem.name} 
+                                    className="modal-item-image"
+                                />
+                            </div>
+                        )}
+
+                        <h2>{modalItem.name} Options</h2>
+                        
                         {/* Slider for Spice Level */}
                         {modalItem.options?.some(opt => ['No Spice', 'Regular', 'Extra Spicy'].includes(opt)) && (
                             <div className="spice-slider-container">
@@ -852,22 +889,15 @@ const KioskForm = ({ initialStep = 1 }) => {
                                     type="range"
                                     id="spice-slider"
                                     min={0}
-                                    max={2}  // Changed from 3 to 2 (3 levels: 0, 1, 2)
+                                    max={2}
                                     step={1}
                                     value={(() => {
-                                        const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy']; // Updated array
-                                        const selected = itemOptions[modalItem.name]?.find(opt => spiceLevels.includes(opt));
-                                        return selected ? spiceLevels.indexOf(selected) : 1; // Default to Regular (index 1)
+                                        const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy'];
+                                        return itemOptions.spiceLevel ? spiceLevels.indexOf(itemOptions.spiceLevel) : 1;
                                     })()}
                                     onChange={(e) => {
-                                        const newLevel = ['No Spice', 'Regular', 'Extra Spicy'][parseInt(e.target.value)]; // Updated array
-                                        setItemOptions(prev => ({
-                                            ...prev,
-                                            [modalItem.name]: [
-                                                ...(prev[modalItem.name]?.filter(opt => !['No Spice', 'Regular', 'Extra Spicy'].includes(opt)) || []),
-                                                newLevel
-                                            ]
-                                        }));
+                                        const newLevel = ['No Spice', 'Regular', 'Extra Spicy'][parseInt(e.target.value)];
+                                        handleSpiceChange(newLevel);
                                     }}
                                     className="spice-slider"
                                 />
@@ -879,42 +909,58 @@ const KioskForm = ({ initialStep = 1 }) => {
                             </div>
                         )}
 
-                        {/* Other Options */}
-                        {modalItem.options?.filter(opt => !['No Spice', 'Regular', 'Extra Spicy'].includes(opt)).map(option => (
-                            <div key={option} className="option-container">
-                                <label className="option-label">
-                                    <input
-                                        type={modalItem.name === 'Water' ? 'radio' : 'checkbox'}
-                                        name={modalItem.name === 'Water' ? 'water-options' : option}
-                                        checked={itemOptions[modalItem.name]?.includes(option) || false}
-                                        onChange={(e) => {
-                                            const checked = e.target.checked;
-                                            setItemOptions(prev => {
-                                                const currentOptions = prev[modalItem.name] || [];
-                                                
-                                                if (modalItem.name === 'Water') {
-                                                    return { ...prev, [modalItem.name]: checked ? [option] : [] };
-                                                } else {
-                                                    if (checked) {
-                                                        return { ...prev, [modalItem.name]: [...currentOptions, option] };
-                                                    } else {
-                                                        return {
-                                                            ...prev,
-                                                            [modalItem.name]: currentOptions.filter(opt => opt !== option)
-                                                        };
-                                                    }
-                                                }
-                                            });
-                                        }}
-                                        className="option-checkbox"
-                                    />
-                                    {option}
-                                </label>
+                        {/* Other Options (No Onions, No Cilantro, etc.) - Pill Style */}
+                        {(() => {
+                            const otherOptions = modalItem.options?.filter(opt => 
+                                !['No Spice', 'Regular', 'Extra Spicy'].includes(opt) &&
+                                !opt.includes('(+$')
+                            ) || [];
+                            
+                            return otherOptions.length > 0 && (
+                                <div className="modal-section">
+                                    <label className="modal-section-label">Customizations:</label>
+                                    <div className="option-pills">
+                                        {otherOptions.map((option) => (
+                                            <button
+                                                key={option}
+                                                type="button"
+                                                className={`option-pill ${itemOptions.otherOptions.includes(option) ? 'selected' : ''}`}
+                                                onClick={() => handleOtherOptionToggle(option)}
+                                            >
+                                                {option}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })()}
+
+                        {/* Extra Options (Premium add-ons) */}
+                        {modalItem.extraOptions && Object.keys(modalItem.extraOptions).length > 0 && (
+                            <div className="modal-section">
+                                <label className="modal-section-label">Add Extra:</label>
+                                <div className="option-pills">
+                                    {Object.entries(modalItem.extraOptions).map(([optionName, price]) => (
+                                        <button
+                                            key={optionName}
+                                            type="button"
+                                            className={`option-pill premium ${itemOptions.extraOptions.includes(optionName) ? 'selected' : ''}`}
+                                            onClick={() => handleExtraOptionToggle(optionName)}
+                                        >
+                                            {optionName}
+                                            <span className="option-pill-price">+${price}</span>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                        ))}
+                        )}
 
                         <div className="modal-buttons single-button">
-                            <button onClick={handleOptionSubmit} className="modal-add-button">
+                            <button 
+                                type="button"
+                                onClick={handleOptionSubmit}
+                                className="modal-add-button"
+                            >
                                 Add to Order
                             </button>
                         </div>
