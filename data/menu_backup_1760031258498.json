@@ -1,0 +1,188 @@
+[
+  {
+    "id": 1,
+    "name": "Panipuri",
+    "price": 3,
+    "image": "/images/panipuri.JPG",
+    "options": [
+      "No Spice",
+      "Regular",
+      "Extra Spicy",
+      "No Onions",
+      "No Cilantro"
+    ],
+    "extraOptions": {},
+    "category": "Chaat",
+    "description": "Crispy shells filled with spiced water and chutneys",
+    "noModal": false
+  },
+  {
+    "id": 2,
+    "name": "Masala Puri",
+    "price": 4,
+    "image": "/images/masala-puri.JPG",
+    "options": [
+      "No Spice",
+      "Regular",
+      "Extra Spicy",
+      "No Onions",
+      "No Cilantro"
+    ],
+    "extraOptions": {},
+    "category": "Chaat",
+    "description": "Crispy puris topped with spiced potatoes and chutneys",
+    "noModal": false
+  },
+  {
+    "id": 3,
+    "name": "Dahipuri",
+    "price": 6,
+    "image": "/images/dahipuri.JPG",
+    "options": [
+      "No Spice",
+      "Regular",
+      "Extra Spicy",
+      "No Onions",
+      "No Cilantro"
+    ],
+    "extraOptions": {},
+    "category": "Chaat",
+    "description": "Puris filled with yogurt, chutneys and spices, topped with sev",
+    "noModal": false
+  },
+  {
+    "id": 4,
+    "name": "Sevpuri",
+    "price": 6,
+    "image": "/images/sevpuri.JPG",
+    "options": [
+      "No Spice",
+      "Mild",
+      "Spicy",
+      "Extra Spicy",
+      "No Onions",
+      "No Cilantro"
+    ],
+    "extraOptions": {},
+    "category": "Chaat",
+    "description": "Crispy puris topped with sev, vegetables and chutneys"
+  },
+  {
+    "id": 5,
+    "name": "Bhelpuri",
+    "price": 7,
+    "image": "/images/bhelpuri.JPG",
+    "options": [
+      "No Spice",
+      "Mild",
+      "Spicy",
+      "Extra Spicy",
+      "No Onions",
+      "No Cilantro"
+    ],
+    "extraOptions": {},
+    "category": "Chaat",
+    "description": "Popular street snack with puffed rice and chutneys"
+  },
+  {
+    "id": 6,
+    "name": "Paneer Wrap",
+    "price": 8,
+    "image": "/images/paneer-wrap.JPG",
+    "options": [
+      "No Spice",
+      "Mild",
+      "Spicy",
+      "Extra Spicy",
+      "No Onions",
+      "No Cilantro",
+      "Extra Paneer (+$2)"
+    ],
+    "extraOptions": {
+      "Extra Paneer": 2
+    },
+    "category": "Wraps",
+    "description": "Grilled paneer with fresh vegetables wrapped in naan"
+  },
+  {
+    "id": 7,
+    "name": "Chicken Wrap",
+    "price": 9,
+    "image": "/images/chicken-wrap.JPG",
+    "options": [
+      "No Spice",
+      "Mild",
+      "Spicy",
+      "Extra Spicy",
+      "No Onions",
+      "No Cilantro",
+      "A",
+      "B",
+      "C",
+      "Extra Meat (+$2)"
+    ],
+    "extraOptions": {
+      "Extra Meat": 2
+    },
+    "category": "Wraps",
+    "description": "Tender spiced chicken with vegetables wrapped in naan",
+    "noModal": false
+  },
+  {
+    "id": 8,
+    "name": "Mango Lassi",
+    "price": 3,
+    "image": "/images/mango-lassi.jpg",
+    "options": [],
+    "extraOptions": {},
+    "category": "Drinks",
+    "description": "Refreshing yogurt-based mango drink",
+    "noModal": true
+  },
+  {
+    "id": 9,
+    "name": "Water",
+    "price": 1,
+    "image": "/images/water.jpg",
+    "options": [
+      "Cold",
+      "Room Temperature"
+    ],
+    "extraOptions": {},
+    "category": "Drinks",
+    "description": "Refreshing hydration",
+    "noModal": false
+  },
+  {
+    "id": 10,
+    "name": "dgwsg",
+    "price": 8,
+    "image": "/images/default-food.jpg",
+    "category": "Chaat",
+    "description": "afsf",
+    "extraOptions": {},
+    "noModal": true,
+    "options": [
+      "No Spice",
+      "Regular",
+      "Extra Spicy"
+    ]
+  },
+  {
+    "id": 11,
+    "name": "spdp",
+    "price": 7,
+    "image": "/images/default-food.jpg",
+    "category": "Chaat",
+    "description": "drgfgd",
+    "extraOptions": {},
+    "noModal": false,
+    "options": [
+      "No Spice",
+      "Regular",
+      "Extra Spicy",
+      "f",
+      "s"
+    ]
+  }
+]
