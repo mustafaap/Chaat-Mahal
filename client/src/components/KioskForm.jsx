@@ -268,29 +268,71 @@ const KioskForm = ({ initialStep = 1 }) => {
         }
     };
 
-    const handlePaymentSuccess = async (paymentId) => {
-        setPaymentId(paymentId);
+    const handlePayAtCounter = async () => {
         setIsSubmitting(true);
         
+        const subtotal = Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+            const itemPrice = calculateItemPrice(name, options);
+            return sum + (itemPrice * quantity);
+        }, 0);
+
+        // For counter payments, only send subtotal (no tax or convenience fee)
         const orderData = {
             customerName,
             customerEmail,
             items: Object.values(selectedItems).flatMap(item => 
                 Array(item.quantity).fill(item.options.length > 0 ? `${item.name} (${item.options.join(', ')})` : item.name)
             ),
-            total: Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
-                const itemPrice = calculateItemPrice(name, options);
-                return sum + (itemPrice * quantity);
-            }, 0),
+            total: subtotal, // Send only subtotal for counter payments
             notes: notes || '',
-            paymentId: paymentId,
-            paid: true // Mark as paid since payment was successful
+            paymentId: null,
+            paid: false
         };
 
         try {
             const response = await axios.post('/api/orders', orderData);
             setOrderNumber(response.data.orderNumber);
-            setStep(4); // Confirmation step
+            setStep(4);
+        } catch (error) {
+            console.error('Error submitting order:', error);
+            alert('There was an error submitting your order. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handlePaymentSuccess = async (paymentId) => {
+        setPaymentId(paymentId);
+        setIsSubmitting(true);
+        
+        const subtotal = Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+            const itemPrice = calculateItemPrice(name, options);
+            return sum + (itemPrice * quantity);
+        }, 0);
+
+        const taxAmount = subtotal * 0.0825;
+        const totalWithTax = +(subtotal + taxAmount + 0.35).toFixed(2);
+
+        // For online payments, send total with tax
+        const orderData = {
+            customerName,
+            customerEmail,
+            items: Object.values(selectedItems).flatMap(item => 
+                Array(item.quantity).fill(item.options.length > 0 ? `${item.name} (${item.options.join(', ')})` : item.name)
+            ),
+            total: totalWithTax, // Send total with tax for online payments
+            notes: notes || '',
+            paymentId: paymentId,
+            paid: true
+        };
+
+        console.log('Submitting order with payment data:', orderData);
+
+        try {
+            const response = await axios.post('/api/orders', orderData);
+            console.log('Order creation response:', response.data);
+            setOrderNumber(response.data.orderNumber);
+            setStep(4);
         } catch (error) {
             console.error('Error submitting order:', error);
             alert('Payment successful, but there was an error submitting your order. Please contact us with payment ID: ' + paymentId);
@@ -624,6 +666,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                     }, 0)}
                     onPaymentSuccess={handlePaymentSuccess}
                     onPaymentCancel={handlePaymentCancel}
+                    onPayAtCounter={handlePayAtCounter}
                     customerName={customerName}
                     orderItems={Object.entries(selectedItems).map(([key, { name, quantity, options }]) => ({
                         name,
@@ -640,13 +683,21 @@ const KioskForm = ({ initialStep = 1 }) => {
                     <p className="confirmation-details">Order Number: {orderNumber}</p>
                     <p className="confirmation-name">Name: {customerName}</p>
                     
-                    {paymentId && (
+                    {paymentId ? (
                         <div className="confirmation-payment-success">
                             <div className="confirmation-success-heading">
                                 <p>✅ Payment Successful!</p>
                             </div>
                             <p>Your order is now in queue.</p>
                             {/* <p>Payment ID: {paymentId}</p> */}
+                        </div>
+                    ) : (
+                        <div className="confirmation-payment-counter">
+                            <p>💵 Pay at Counter</p>
+                            <p>Please pay at the counter to enter the preparation queue.</p>
+                            <p className="counter-payment-disclaimer">
+                                <em>Note: Final price after tax may vary slightly due to rounding and local tax regulations.</em>
+                            </p>
                         </div>
                     )}
 

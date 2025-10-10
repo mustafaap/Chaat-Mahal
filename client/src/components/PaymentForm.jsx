@@ -5,7 +5,7 @@ import '../styles/PaymentForm.css';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || '');
 
-const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerName, orderItems }) => {
+const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerName, orderItems, onPayAtCounter }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -33,7 +33,7 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
     });
 
     pr.canMakePayment().then(result => {
-      console.log('PaymentRequest canMakePayment result:', result); // Debug
+      console.log('PaymentRequest canMakePayment result:', result);
       if (result) {
         setPaymentRequest(pr);
         setCanMakePayment(true);
@@ -181,7 +181,7 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
       </div>
 
       {/* Apple Pay / Google Pay Button */}
-      {canMakePayment && paymentRequest ? (
+      {canMakePayment && paymentRequest && (
         <div className="digital-wallet-section">
           <PaymentRequestButtonElement 
             options={{ 
@@ -199,11 +199,7 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
             <span>or pay with card</span>
           </div>
         </div>
-      ) : walletUnavailableReason ? (
-        <div className="unavailable-button" title="Digital wallet not available">
-          {walletUnavailableReason}
-        </div>
-      ) : null}
+      )}
 
       <div className="payment-form">
         <label className="payment-label">Card Information</label>
@@ -240,6 +236,26 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
             {isProcessing ? 'Processing...' : `Pay $${totalWithTax.toFixed(2)}`}
           </button>
         </div>
+      </div>
+
+      {/* Pay at Counter Option - Moved to bottom */}
+      <div className="payment-option-section counter-payment-section">
+        <div className="payment-divider">
+          <span>or</span>
+        </div>
+        
+        <button
+          type="button"
+          className="pay-at-counter-btn"
+          onClick={onPayAtCounter}
+          disabled={isProcessing}
+        >
+          💵 Pay at Counter
+        </button>
+        <p className="pay-at-counter-note">
+          Skip online payment and pay at the counter.<br />
+          <span className="tax-disclaimer">Note: Final price after tax may vary slightly due to fees and tax regulations.</span>
+        </p>
       </div>
 
       <div className="payment-security">

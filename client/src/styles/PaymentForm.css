@@ -502,6 +502,59 @@
     cursor: not-allowed;
 }
 
+/* Pay at Counter Section */
+.payment-option-section {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.pay-at-counter-btn {
+  width: 100%;
+  padding: 16px 24px;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.pay-at-counter-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.pay-at-counter-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pay-at-counter-note {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  margin: 0 0 16px 0;
+  font-style: italic;
+}
+
+/* Unavailable wallet notice */
+.unavailable-wallet-notice {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.unavailable-wallet-notice p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
 /* Digital Wallet Section */
 .digital-wallet-section {
   margin-bottom: 24px;

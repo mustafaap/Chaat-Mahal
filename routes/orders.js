@@ -21,7 +21,7 @@ router.post('/', async (req, res) => {
     console.log('Received order data:', req.body); // Debug log
     
     try {
-        const { customerName, customerEmail, items, total, notes } = req.body;
+        const { customerName, customerEmail, items, total, notes, paymentId, paid } = req.body;
 
         // Validate required fields
         if (!customerName || !items || !total) {
@@ -34,6 +34,9 @@ router.post('/', async (req, res) => {
         const orderNumber = await getNextOrderNumber();
         console.log('Generated order number:', orderNumber); // Debug log
 
+        // Determine paid status: if paymentId exists, order is paid
+        const isPaid = paymentId ? true : (paid || false);
+
         const newOrder = new Order({
             orderNumber,
             customerName,
@@ -41,11 +44,17 @@ router.post('/', async (req, res) => {
             items,
             total,
             notes: notes || '',
-            status: 'Pending'
+            status: 'Pending',
+            paymentId: paymentId || null,  // Explicitly set paymentId
+            paid: isPaid // Explicitly set paid status
         });
 
         const savedOrder = await newOrder.save();
         console.log('Order saved successfully:', savedOrder._id); // Debug log
+        console.log('Order payment details:', { 
+            paymentId: savedOrder.paymentId, 
+            paid: savedOrder.paid 
+        }); // Debug payment status
         
         // Send confirmation email if email is provided (non-blocking)
         if (customerEmail) {
