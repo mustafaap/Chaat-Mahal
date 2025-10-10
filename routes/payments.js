@@ -21,13 +21,29 @@ router.post('/create-intent', async (req, res) => {
       return res.status(500).json({ success: false, error: 'Payment system not configured' });
     }
 
+    // Create a short summary for metadata (Stripe has 500 char limit per value)
+    let itemsSummary = '';
+    if (Array.isArray(orderItems) && orderItems.length > 0) {
+      // Create a shortened summary: "Item1 x2, Item2 x1, ..."
+      itemsSummary = orderItems.map(item => {
+        const qty = item.quantity > 1 ? `x${item.quantity}` : '';
+        return `${item.name}${qty}`;
+      }).join(', ');
+      
+      // Truncate if still too long
+      if (itemsSummary.length > 450) {
+        itemsSummary = itemsSummary.substring(0, 450) + '...';
+      }
+    }
+
     const intent = await stripe.paymentIntents.create({
       amount: Number(amount), // cents
       currency: currency.toLowerCase(),
       automatic_payment_methods: { enabled: true },
       metadata: {
         customerName: customerName || '',
-        orderItems: Array.isArray(orderItems) ? JSON.stringify(orderItems) : '',
+        itemsSummary: itemsSummary,
+        itemCount: Array.isArray(orderItems) ? orderItems.length.toString() : '0'
       },
       receipt_email: customerEmail || undefined
     });

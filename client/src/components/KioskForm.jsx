@@ -642,10 +642,11 @@ const KioskForm = ({ initialStep = 1 }) => {
                     
                     {paymentId && (
                         <div className="confirmation-payment-success">
-                            <div className="payment-success-icon">✅</div>
-                            <h3>Payment Successful!</h3>
+                            <div className="confirmation-success-heading">
+                                <p>✅ Payment Successful!</p>
+                            </div>
+                            <p>Your order is now in queue.</p>
                             <p>Payment ID: {paymentId}</p>
-                            <p>Your order has been paid and is now in the preparation queue.</p>
                         </div>
                     )}
 

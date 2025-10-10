@@ -209,22 +209,29 @@
 
 .confirmation-payment-success {
     background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%);
-    border: 2px solid #27ae60;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 24px;
+    margin-bottom: 32px;
+    margin-top: 32px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid #27ae60;
+    border-radius: 12px;
     text-align: center;
-    margin: 24px 0;
+    animation: slideInUp 0.5s ease 0.2s both;
 }
 
-.payment-success-icon {
-    font-size: 3rem;
-    margin-bottom: 16px;
+@media (max-width: 480px) {
+    .confirmation-payment-success {
+        margin: 0px 32px
+    }
 }
 
-.confirmation-payment-success h3 {
+.confirmation-payment-heading p {
     color: #27ae60;
     font-family: 'Poppins', sans-serif;
-    font-size: 1.5rem;
+    font-size: 10px;
     margin-bottom: 12px;
 }
 

@@ -15,6 +15,12 @@ const createTransporter = () => {
 const generateOrderEmailHTML = (orderData) => {
     const { customerName, orderNumber, items, total } = orderData;
     
+    // Calculate breakdown
+    const subtotal = total;
+    const taxAmount = subtotal * 0.0825; // 8.25% tax
+    const convenienceFee = 0.35;
+    const totalWithTaxAndFee = subtotal + taxAmount + convenienceFee;
+    
     const cssContent = fs.readFileSync(path.join(__dirname, 'styles', 'emailService.css'), 'utf8');
     
     return `
@@ -65,8 +71,25 @@ const generateOrderEmailHTML = (orderData) => {
                         </table>
                     </div>
                     
+                    <div class="pricing-breakdown" style="margin: 20px 0; padding: 15px; background: rgba(0, 0, 0, 0.02); border-radius: 8px; border-top: 2px solid rgba(184, 92, 56, 0.2);">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr style="border-bottom: 1px dashed rgba(0, 0, 0, 0.1);">
+                                <td style="padding: 8px 0; color: #666; font-weight: 500;">Subtotal:</td>
+                                <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #333;">$${subtotal.toFixed(2)}</td>
+                            </tr>
+                            <tr style="border-bottom: 1px dashed rgba(0, 0, 0, 0.1);">
+                                <td style="padding: 8px 0; color: #666; font-weight: 500;">Tax (8.25%):</td>
+                                <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #333;">$${taxAmount.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #666; font-weight: 500;">Convenience Fee:</td>
+                                <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #333;">$${convenienceFee.toFixed(2)}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
                     <div class="total">
-                        Total: $${total.toFixed(2)}
+                        Total Paid: $${totalWithTaxAndFee.toFixed(2)}
                     </div>
                 </div>
                 
