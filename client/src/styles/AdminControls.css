@@ -159,12 +159,12 @@
 }
 
 .reset-btn {
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important; /* Match disable button */
 }
 
 .reset-btn:hover {
-    background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
-    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);
+    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%) !important; /* Match disable button hover */
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3) !important; /* Match disable button shadow */
 }
 
 .disabled-btn {
@@ -219,22 +219,22 @@
 }
 
 .logout-btn {
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important; /* Match disable button */
     color: white;
 }
 
 .logout-btn:hover {
-    background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
-    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);
+    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%) !important; /* Match disable button hover */
+    box-shadow: 0 5px 20px rgba(220, 53, 69, 0.3) !important; /* Match disable button shadow */
 }
 
 .logout-card {
-    border: 2px solid rgba(231, 76, 60, 0.2);
+    border: 2px solid rgba(220, 53, 69, 0.2); /* Match disable button color */
 }
 
 .logout-card:hover {
-    border-color: rgba(231, 76, 60, 0.4);
-    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.15);
+    border-color: rgba(220, 53, 69, 0.4); /* Match disable button color */
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.15); /* Match disable button color */
 }
 
 /* Payment Settings Styles */

@@ -833,9 +833,12 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                 });
 
                                 const completedTime = getOrderAge(order.updatedAt || order.createdAt);
+                                
+                                // Determine payment method based on paymentId - ADD THIS LINE
+                                const isCounterPayment = order.paid && !order.paymentId;
 
                                 return (
-                                    <li key={order._id} className={`order-item ${order.paid ? 'order-paid' : ''}`}>
+                                    <li key={order._id} className={`order-item ${order.paid ? 'order-paid' : ''} ${isCounterPayment ? 'counter-payment' : ''}`}>
                                         <div className="order-info">
                                             <div className="order-header">
                                                 <div className="order-header-with-revert">
@@ -928,9 +931,12 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                 });
 
                                 const cancelledTime = getOrderAge(order.updatedAt || order.createdAt);
+                                
+                                // Determine payment method based on paymentId - ADD THIS LINE
+                                const isCounterPayment = order.paid && !order.paymentId;
 
                                 return (
-                                    <li key={order._id} className={`order-item ${order.paid ? 'order-paid cancelled-order' : 'cancelled-order'}`}>
+                                    <li key={order._id} className={`order-item ${order.paid ? 'order-paid cancelled-order' : 'cancelled-order'} ${isCounterPayment ? 'counter-payment' : ''}`}>
                                         <div className="order-info">
                                             <div className="order-header">
                                                 <div className="order-header-with-revert">

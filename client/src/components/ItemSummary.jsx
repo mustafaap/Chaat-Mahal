@@ -7,9 +7,13 @@ const ItemSummary = ({ orders }) => {
     // Calculate item totals and track which are pending only
     const calculateItemSummary = () => {
         const itemSummary = {};
+        const itemFirstOrderTime = {}; // Track when each item was first ordered
+        const variantFirstOrderTime = {}; // Track when each variant was first ordered
 
         orders.forEach(order => {
             if (order.status === 'Pending') {
+                const orderTime = new Date(order.createdAt);
+                
                 order.items.forEach(itemString => {
                     const parts = itemString.split(' (');
                     const itemName = parts[0];
@@ -24,6 +28,13 @@ const ItemSummary = ({ orders }) => {
                             pending: 0,
                             variants: {}
                         };
+                        itemFirstOrderTime[itemName] = orderTime; // Set first order time
+                        variantFirstOrderTime[itemName] = {}; // Initialize variant tracking for this item
+                    } else {
+                        // Update to earliest order time if this order is older
+                        if (orderTime < itemFirstOrderTime[itemName]) {
+                            itemFirstOrderTime[itemName] = orderTime;
+                        }
                     }
 
                     // Track variants (different option combinations)
@@ -32,6 +43,12 @@ const ItemSummary = ({ orders }) => {
                         itemSummary[itemName].variants[variantKey] = {
                             pending: 0
                         };
+                        variantFirstOrderTime[itemName][variantKey] = orderTime; // Set first order time for this variant
+                    } else {
+                        // Update to earliest order time for this variant if this order is older
+                        if (orderTime < variantFirstOrderTime[itemName][variantKey]) {
+                            variantFirstOrderTime[itemName][variantKey] = orderTime;
+                        }
                     }
 
                     // Update pending counts only
@@ -39,6 +56,16 @@ const ItemSummary = ({ orders }) => {
                     itemSummary[itemName].variants[variantKey].pending++;
                 });
             }
+        });
+
+        // Add first order time to the summary for sorting
+        Object.keys(itemSummary).forEach(itemName => {
+            itemSummary[itemName].firstOrderTime = itemFirstOrderTime[itemName];
+            
+            // Add first order time for each variant
+            Object.keys(itemSummary[itemName].variants).forEach(variantKey => {
+                itemSummary[itemName].variants[variantKey].firstOrderTime = variantFirstOrderTime[itemName][variantKey];
+            });
         });
 
         return itemSummary;
@@ -56,7 +83,7 @@ const ItemSummary = ({ orders }) => {
             <div className="summary-grid">
                 {Object.entries(itemSummary)
                     .filter(([, data]) => data.pending > 0) // Only show items with pending count
-                    .sort(([, a], [, b]) => b.pending - a.pending) // Sort by pending count
+                    .sort(([, a], [, b]) => new Date(a.firstOrderTime) - new Date(b.firstOrderTime)) // Sort by oldest first
                     .map(([itemName, data]) => (
                         <div key={itemName} className="summary-card">
                             <div 
@@ -77,6 +104,7 @@ const ItemSummary = ({ orders }) => {
                                     <h4>Options:</h4>
                                     {Object.entries(data.variants)
                                         .filter(([, counts]) => counts.pending > 0)
+                                        .sort(([, a], [, b]) => new Date(a.firstOrderTime) - new Date(b.firstOrderTime)) // Sort variants by oldest first
                                         .map(([variant, counts]) => (
                                         <div key={variant} className="variant-row">
                                             <div className="variant-info">
