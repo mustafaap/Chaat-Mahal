@@ -12,14 +12,15 @@ const createTransporter = () => {
     });
 };
 
-const generateOrderEmailHTML = (orderData) => {
-    const { customerName, orderNumber, items, total } = orderData;
+const generateOrderConfirmationEmailHTML = (orderData) => {
+    const { customerName, orderNumber, items, total, tip = 0, paymentId } = orderData; // Add tip = 0
     
     // Calculate breakdown
-    const subtotal = total;
-    const taxAmount = subtotal * 0.0825; // 8.25% tax
+    const subtotalWithTip = total - 0.35; // Remove convenience fee
+    const taxAmount = subtotalWithTip / 1.0825 * 0.0825; // Calculate tax
+    const subtotal = subtotalWithTip - taxAmount - tip; // Add - tip here
     const convenienceFee = 0.35;
-    const totalWithTaxAndFee = subtotal + taxAmount + convenienceFee;
+    const totalWithTaxAndFee = total;
     
     const cssContent = fs.readFileSync(path.join(__dirname, 'styles', 'emailService.css'), 'utf8');
     
@@ -81,10 +82,16 @@ const generateOrderEmailHTML = (orderData) => {
                                 <td style="padding: 8px 0; color: #666; font-weight: 500;">Tax (8.25%):</td>
                                 <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #333;">$${taxAmount.toFixed(2)}</td>
                             </tr>
-                            <tr>
+                            <tr style="border-bottom: 1px dashed rgba(0, 0, 0, 0.1);">
                                 <td style="padding: 8px 0; color: #666; font-weight: 500;">Convenience Fee:</td>
                                 <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #333;">$${convenienceFee.toFixed(2)}</td>
                             </tr>
+                            ${tip > 0 ? `
+                            <tr style="border-bottom: 1px dashed rgba(0, 0, 0, 0.1);">
+                                <td style="padding: 8px 0; color: #b85c38; font-weight: 600;">Tip:</td>
+                                <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #b85c38;">$${tip.toFixed(2)}</td>
+                            </tr>
+                            ` : ''}
                         </table>
                     </div>
                     
@@ -200,7 +207,7 @@ const sendOrderConfirmationEmail = async (customerEmail, orderData) => {
 
     try {
         const transporter = createTransporter();
-        const htmlContent = generateOrderEmailHTML(orderData);
+        const htmlContent = generateOrderConfirmationEmailHTML(orderData);
         
         const mailOptions = {
             from: `"Chaat Mahal Food Truck" <${process.env.EMAIL_USER}>`,

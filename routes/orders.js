@@ -21,7 +21,7 @@ router.post('/', async (req, res) => {
     console.log('Received order data:', req.body); // Debug log
     
     try {
-        const { customerName, customerEmail, items, total, notes, paymentId, paid } = req.body;
+        const { customerName, customerEmail, items, total, tip, notes, paymentId, paid } = req.body;
 
         // Validate required fields
         if (!customerName || !items || !total) {
@@ -43,6 +43,7 @@ router.post('/', async (req, res) => {
             customerEmail: customerEmail || '',
             items,
             total,
+            tip: tip || 0, // Add tip field
             notes: notes || '',
             status: 'Pending',
             paymentId: paymentId || null,  // Explicitly set paymentId
@@ -119,6 +120,7 @@ router.post('/', async (req, res) => {
                         };
                     }),
                     total,
+                    tip: tip || 0, // Add tip to email data
                     notes: notes || ''
                 };
                 

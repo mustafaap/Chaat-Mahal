@@ -21,6 +21,10 @@ const orderSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    tip: {
+        type: Number,
+        default: 0
+    },
     notes: {
         type: String,
         default: ''

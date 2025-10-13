@@ -246,7 +246,7 @@ form {
 .cart-items-container {
     max-height: 300px;
     overflow-y: auto;
-    margin-bottom: 15px;
+    margin-bottom: 3px;
 }
 
 .cart-item {
@@ -379,10 +379,10 @@ form {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 15px;
+    margin-top: 3px;
     padding-top: 15px;
     border-top: 2px solid #f3e9e3;
-    gap:15px;
+    gap: 8px;
 }
 
 .cart-total-amount {
@@ -396,6 +396,9 @@ form {
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
     padding: 8px 14px;
+    white-space: nowrap;
+    flex: 1; /* Change from flex-shrink: 0 to flex: 1 */
+    min-width: 0; /* Allow shrinking if needed */
 }
 
 .cart-checkout-btn {
@@ -410,12 +413,45 @@ form {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(184, 92, 56, 0.2);
+    white-space: nowrap;
+    flex: 1; /* Change from flex-shrink: 1 to flex: 1 */
+    min-width: 0;
 }
 
 .cart-checkout-btn:hover {
     background: #a14d2c;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(184, 92, 56, 0.3);
+}
+
+/* Add mobile-specific styles */
+@media (max-width: 480px) {
+    .cart-total-line {
+        gap: 6px; /* Even smaller gap on mobile */
+    }
+    
+    .cart-total-amount {
+        font-size: 0.95rem; /* Slightly smaller font */
+        padding: 6px 10px; /* Reduced padding */
+    }
+    
+    .cart-checkout-btn {
+        font-size: 0.85rem; /* Slightly smaller font */
+        padding: 8px 12px; /* Reduced padding */
+    }
+}
+
+@media (max-width: 360px) {
+    /* For very small screens */
+    .cart-total-amount {
+        font-size: 0.85rem;
+        padding: 5px 8px;
+    }
+    
+    .cart-checkout-btn {
+        font-size: 0.75rem;
+        padding: 6px 10px;
+    }
 }
 
 /* Category Sections */
@@ -806,10 +842,10 @@ input[type="checkbox"], input[type="radio"] {
     cursor: pointer !important;
     padding: 6px 16px !important;
     border-radius: 50px !important;
-    box-shadow: 0 4px 15px rgba(184, 92, 56, 0.2) !important;
     transition: all 0.3s ease !important;
     position: relative !important;
     overflow: hidden !important;
+    margin-top: 0px !important;
 }
 
 .back-button::before {
@@ -820,10 +856,10 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .back-button:hover {
-    background: #b85c38;
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(184, 92, 56, 0.3);
+    background: #b85c38 !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(184, 92, 56, 0.3) !important;
 }
 
 .order-card {
@@ -1246,6 +1282,15 @@ input[type="checkbox"], input[type="radio"] {
 .pricing-row span:last-child {
     font-weight: 600;
     color: #333;
+}
+
+.pricing-row.tip-row {
+    color: #b85c38;
+    font-weight: 600;
+    background: rgba(184, 92, 56, 0.05);
+    padding: 8px;
+    margin: 4px -8px;
+    border-radius: 6px;
 }
 
 .confirmation-total {

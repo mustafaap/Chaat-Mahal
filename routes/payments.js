@@ -11,7 +11,7 @@ const stripe = new Stripe(stripeSecret, { apiVersion: '2024-06-20' });
 // Create a PaymentIntent and return clientSecret
 router.post('/create-intent', async (req, res) => {
   try {
-    const { amount, currency = 'USD', customerName, customerEmail, orderItems } = req.body;
+    const { amount, currency = 'USD', customerName, customerEmail, orderItems, tip } = req.body;
 
     if (!amount || isNaN(Number(amount))) {
       return res.status(400).json({ success: false, error: 'Invalid amount' });
@@ -21,29 +21,28 @@ router.post('/create-intent', async (req, res) => {
       return res.status(500).json({ success: false, error: 'Payment system not configured' });
     }
 
-    // Create a short summary for metadata (Stripe has 500 char limit per value)
+    // Create a short summary for metadata
     let itemsSummary = '';
     if (Array.isArray(orderItems) && orderItems.length > 0) {
-      // Create a shortened summary: "Item1 x2, Item2 x1, ..."
       itemsSummary = orderItems.map(item => {
         const qty = item.quantity > 1 ? `x${item.quantity}` : '';
         return `${item.name}${qty}`;
       }).join(', ');
-      
-      // Truncate if still too long
+
       if (itemsSummary.length > 450) {
         itemsSummary = itemsSummary.substring(0, 450) + '...';
       }
     }
 
     const intent = await stripe.paymentIntents.create({
-      amount: Number(amount), // cents
+      amount: Number(amount),
       currency: currency.toLowerCase(),
       automatic_payment_methods: { enabled: true },
       metadata: {
         customerName: customerName || '',
         itemsSummary: itemsSummary,
-        itemCount: Array.isArray(orderItems) ? orderItems.length.toString() : '0'
+        itemCount: Array.isArray(orderItems) ? orderItems.length.toString() : '0',
+        tip: tip ? tip.toFixed(2) : '0.00'
       },
       receipt_email: customerEmail || undefined
     });
@@ -54,10 +53,10 @@ router.post('/create-intent', async (req, res) => {
       paymentIntentId: intent.id
     });
   } catch (error) {
-    console.error('Stripe create-intent error:', error);
+    console.error('Stripe error:', error);
     res.status(500).json({
       success: false,
-      error: error.message || 'Failed to create payment intent'
+      error: error.message || 'Payment processing failed'
     });
   }
 });

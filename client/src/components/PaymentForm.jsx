@@ -14,9 +14,12 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
   const [canMakePayment, setCanMakePayment] = useState(false);
   const [walletUnavailableReason, setWalletUnavailableReason] = useState('');
   const [isCounterPaymentProcessing, setIsCounterPaymentProcessing] = useState(false); // Add this state
+  const [tipAmount, setTipAmount] = useState(0);
+  const [customTip, setCustomTip] = useState('');
+  const [selectedTipType, setSelectedTipType] = useState(null); // 'percentage' or 'custom'
 
   const taxAmount = useMemo(() => orderTotal * 0.0825, [orderTotal]); // 8.25% tax
-  const totalWithTax = useMemo(() => orderTotal + taxAmount + 0.35, [orderTotal, taxAmount]);
+  const totalWithTax = useMemo(() => orderTotal + taxAmount + 0.35 + tipAmount, [orderTotal, taxAmount, tipAmount]);
 
   // Initialize Apple Pay / Google Pay
   useEffect(() => {
@@ -62,19 +65,19 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
             amount: Math.round(totalWithTax * 100),
             currency: 'USD',
             customerName,
-            orderItems
+            orderItems,
+            tip: tipAmount // Add tip amount
           })
         });
         const { success, clientSecret, error } = await createRes.json();
-        
         if (!success) {
           ev.complete('fail');
-          setPaymentError(error || 'Failed to start payment');
+          setPaymentError(error || 'Failed to create payment');
           setIsProcessing(false);
           return;
         }
 
-        // 2) Confirm payment with the payment method from Apple Pay / Google Pay
+        // 2) Confirm payment with the payment method from Apple Pay/Google Pay
         const { paymentIntent, error: confirmError } = await stripe.confirmCardPayment(
           clientSecret,
           { payment_method: ev.paymentMethod.id },
@@ -83,24 +86,27 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
 
         if (confirmError) {
           ev.complete('fail');
-          setPaymentError(confirmError.message || 'Payment failed');
+          setPaymentError(confirmError.message);
           setIsProcessing(false);
           return;
         }
 
-        ev.complete('success');
-        
-        if (paymentIntent && (paymentIntent.status === 'succeeded' || paymentIntent.status === 'requires_capture')) {
-          onPaymentSuccess(paymentIntent.id);
+        if (paymentIntent.status === 'succeeded') {
+          ev.complete('success');
+          onPaymentSuccess(paymentIntent.id, tipAmount); // Pass tip amount
+        } else {
+          ev.complete('fail');
+          setPaymentError('Payment not successful');
+          setIsProcessing(false);
         }
-      } catch (e) {
-        console.error('Digital wallet payment error:', e);
+      } catch (error) {
+        console.error('Payment error:', error);
         ev.complete('fail');
-        setPaymentError('Payment processing failed. Please try again.');
+        setPaymentError('An unexpected error occurred');
         setIsProcessing(false);
       }
     });
-  }, [stripe, totalWithTax, customerName, orderItems, onPaymentSuccess]);
+  }, [stripe, totalWithTax, customerName, orderItems, onPaymentSuccess, tipAmount]);
 
   const handleCardPayment = async () => {
     if (!stripe || !elements) return;
@@ -117,7 +123,8 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
           amount: Math.round(totalWithTax * 100),
           currency: 'USD',
           customerName,
-          orderItems
+          orderItems,
+          tip: tipAmount // Add tip amount
         })
       });
       const { success, clientSecret, error } = await createRes.json();
@@ -132,25 +139,24 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
       const { paymentIntent, error: confirmError } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card,
-          billing_details: { name: customerName || 'Guest' }
+          billing_details: {
+            name: customerName
+          }
         }
       });
 
       if (confirmError) {
-        setPaymentError(confirmError.message || 'Payment failed. Please try again.');
+        setPaymentError(confirmError.message);
         setIsProcessing(false);
         return;
       }
 
-      if (paymentIntent && (paymentIntent.status === 'succeeded' || paymentIntent.status === 'requires_capture')) {
-        onPaymentSuccess(paymentIntent.id);
-      } else {
-        setPaymentError(`Payment status: ${paymentIntent?.status || 'unknown'}`);
+      if (paymentIntent.status === 'succeeded') {
+        onPaymentSuccess(paymentIntent.id, tipAmount); // Pass tip amount
       }
-    } catch (e) {
-      console.error('Stripe payment error:', e);
-      setPaymentError('Payment processing failed. Please try again.');
-    } finally {
+    } catch (error) {
+      console.error('Payment error:', error);
+      setPaymentError('An unexpected error occurred.');
       setIsProcessing(false);
     }
   };
@@ -161,12 +167,26 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
     
     setIsCounterPaymentProcessing(true);
     try {
-      await onPayAtCounter();
+      await onPayAtCounter(tipAmount); // Pass tip amount to the handler
     } catch (error) {
       console.error('Counter payment error:', error);
       setIsCounterPaymentProcessing(false); // Reset on error
     }
     // Note: Don't reset isCounterPaymentProcessing on success since the component will unmount
+  };
+
+  const handleTipPercentage = (percentage) => {
+    const tip = orderTotal * (percentage / 100);
+    setTipAmount(tip);
+    setSelectedTipType('percentage');
+    setCustomTip('');
+  };
+
+  const handleCustomTip = (value) => {
+    setCustomTip(value);
+    const tip = parseFloat(value) || 0;
+    setTipAmount(tip);
+    setSelectedTipType(tip > 0 ? 'custom' : null);
   };
 
   return (
@@ -189,9 +209,75 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
           <span>Convenience Fee:</span>
           <span>$0.35</span>
         </div>
+        {tipAmount > 0 && (
+          <div className="payment-summary-row tip-row">
+            <span>Tip:</span>
+            <span>${tipAmount.toFixed(2)}</span>
+          </div>
+        )}
         <div className="payment-summary-row total-row">
           <span>Total:</span>
           <span>${totalWithTax.toFixed(2)}</span>
+        </div>
+      </div>
+
+      {/* Tips Section */}
+      <div className="tips-section">
+        <h3 className="tips-label">Add a Tip? 💛</h3>
+        <p className="tips-subtitle">Support our small business!</p>
+        
+        <div className="tip-buttons">
+          <button
+            type="button"
+            className={`tip-btn ${selectedTipType === 'percentage' && tipAmount === orderTotal * 0.05 ? 'selected' : ''}`}
+            onClick={() => handleTipPercentage(5)}
+          >
+            5%
+            <span className="tip-amount">${(orderTotal * 0.05).toFixed(2)}</span>
+          </button>
+          <button
+            type="button"
+            className={`tip-btn ${selectedTipType === 'percentage' && tipAmount === orderTotal * 0.10 ? 'selected' : ''}`}
+            onClick={() => handleTipPercentage(10)}
+          >
+            10%
+            <span className="tip-amount">${(orderTotal * 0.10).toFixed(2)}</span>
+          </button>
+          <button
+            type="button"
+            className={`tip-btn ${selectedTipType === 'percentage' && tipAmount === orderTotal * 0.15 ? 'selected' : ''}`}
+            onClick={() => handleTipPercentage(15)}
+          >
+            15%
+            <span className="tip-amount">${(orderTotal * 0.15).toFixed(2)}</span>
+          </button>
+          <button
+            type="button"
+            className={`tip-btn ${selectedTipType === 'none' ? 'selected' : ''}`}
+            onClick={() => {
+              setTipAmount(0);
+              setCustomTip('');
+              setSelectedTipType('none');
+            }}
+          >
+            No Tip
+          </button>
+        </div>
+        
+        <div className="custom-tip-container">
+          <label className="custom-tip-label">Custom Amount:</label>
+          <div className="custom-tip-input-wrapper">
+            <span className="currency-symbol">$</span>
+            <input
+              type="number"
+              className="custom-tip-input"
+              placeholder="0.00"
+              value={customTip}
+              onChange={(e) => handleCustomTip(e.target.value)}
+              min="0"
+              step="0.01"
+            />
+          </div>
         </div>
       </div>
 

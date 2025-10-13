@@ -19,6 +19,7 @@ const KioskForm = ({ initialStep = 1 }) => {
     const [cartTotal, setCartTotal] = useState(0);
     const [paymentId, setPaymentId] = useState(null);
     const [settings, setSettings] = useState({ onlinePaymentEnabled: true }); // Add this line
+    const [tipAmount, setTipAmount] = useState(0); // Add tip state
     
     // State for floating index
     const [activeSection, setActiveSection] = useState('Chaat');
@@ -331,24 +332,26 @@ const KioskForm = ({ initialStep = 1 }) => {
         }
     };
 
-    const handlePayAtCounter = async () => {
+    const handlePayAtCounter = async (tip = 0) => {
         if (isSubmitting) return; // Prevent multiple submissions
         
         setIsSubmitting(true);
+        setTipAmount(tip); // Set the tip amount from PaymentForm
         
         const subtotal = Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
             const itemPrice = calculateItemPrice(name, options);
             return sum + (itemPrice * quantity);
         }, 0);
 
-        // For counter payments, only send subtotal (no tax or convenience fee)
+        // For counter payments, send subtotal + tip (no tax or convenience fee)
         const orderData = {
             customerName,
             customerEmail,
             items: Object.values(selectedItems).flatMap(item => 
                 Array(item.quantity).fill(item.options.length > 0 ? `${item.name} (${item.options.join(', ')})` : item.name)
             ),
-            total: subtotal, // Send only subtotal for counter payments
+            total: subtotal + tip, // Add tip to subtotal for counter payments
+            tip: tip, // Include tip in order data
             notes: notes || '',
             paymentId: null,
             paid: false
@@ -366,8 +369,9 @@ const KioskForm = ({ initialStep = 1 }) => {
         // Note: Don't reset isSubmitting on success since the component will move to step 4
     };
 
-    const handlePaymentSuccess = async (paymentId) => {
+    const handlePaymentSuccess = async (paymentId, tip = 0) => {
         setPaymentId(paymentId);
+        setTipAmount(tip);
         setIsSubmitting(true);
         
         const subtotal = Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
@@ -376,16 +380,17 @@ const KioskForm = ({ initialStep = 1 }) => {
         }, 0);
 
         const taxAmount = subtotal * 0.0825;
-        const totalWithTax = +(subtotal + taxAmount + 0.35).toFixed(2);
+        const totalWithTax = +(subtotal + taxAmount + 0.35 + tip).toFixed(2);
 
-        // For online payments, send total with tax
+        // For online payments, send total with tax and tip
         const orderData = {
             customerName,
             customerEmail,
             items: Object.values(selectedItems).flatMap(item => 
                 Array(item.quantity).fill(item.options.length > 0 ? `${item.name} (${item.options.join(', ')})` : item.name)
             ),
-            total: totalWithTax, // Send total with tax for online payments
+            total: totalWithTax,
+            tip: tip, // Add tip to order data
             notes: notes || '',
             paymentId: paymentId,
             paid: true
@@ -543,7 +548,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                                         proceedToCheckout();
                                     }}
                                 >
-                                    Proceed to Checkout →
+                                    Proceed →
                                 </button>
                             </div>
                         </div>
@@ -718,7 +723,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                             type="submit"
                             disabled={isSubmitting}
                         >
-                            {isSubmitting ? 'Placing Order...' : 'Place Order'}
+                            {isSubmitting ? 'Proceeding...' : 'Proceed to Checkout'}
                         </button>
                     </div>
                 </form>
@@ -818,6 +823,12 @@ const KioskForm = ({ initialStep = 1 }) => {
                                 <span>Convenience Fee:</span>
                                 <span>$0.35</span>
                             </div>
+                            {tipAmount > 0 && (
+                                <div className="pricing-row tip-row">
+                                    <span>Tip:</span>
+                                    <span>${tipAmount.toFixed(2)}</span>
+                                </div>
+                            )}
                         </div>
 
                         <div className="confirmation-total">
@@ -829,7 +840,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                                 }, 0);
                                 const tax = subtotal * 0.0825;
                                 const convenienceFee = 0.35;
-                                return (subtotal + tax + convenienceFee).toFixed(2);
+                                return (subtotal + tax + convenienceFee + tipAmount).toFixed(2);
                             })()}
                         </div>
                         {notes && (
@@ -849,6 +860,8 @@ const KioskForm = ({ initialStep = 1 }) => {
                                 setCustomerEmail('');
                                 setNotes('');
                                 setPaymentId(null);
+                                setTipAmount(0); // Reset tip amount
+                                setIsSubmitting(false); // Add this line to reset submitting state
                             }}
                             className="another-order-button"
                         >
