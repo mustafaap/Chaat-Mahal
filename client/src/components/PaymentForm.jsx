@@ -14,9 +14,9 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
   const [canMakePayment, setCanMakePayment] = useState(false);
   const [walletUnavailableReason, setWalletUnavailableReason] = useState('');
   const [isCounterPaymentProcessing, setIsCounterPaymentProcessing] = useState(false); // Add this state
-  const [tipAmount, setTipAmount] = useState(0);
+  const [tipAmount, setTipAmount] = useState(1); // Changed from 0 to 1
   const [customTip, setCustomTip] = useState('');
-  const [selectedTipType, setSelectedTipType] = useState(null); // 'percentage' or 'custom'
+  const [selectedTipType, setSelectedTipType] = useState('fixed'); // Changed from null to 'fixed'
 
   const taxAmount = useMemo(() => orderTotal * 0.0825, [orderTotal]); // 8.25% tax
   const totalWithTax = useMemo(() => orderTotal + taxAmount + 0.35 + tipAmount, [orderTotal, taxAmount, tipAmount]);
@@ -175,10 +175,9 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
     // Note: Don't reset isCounterPaymentProcessing on success since the component will unmount
   };
 
-  const handleTipPercentage = (percentage) => {
-    const tip = orderTotal * (percentage / 100);
-    setTipAmount(tip);
-    setSelectedTipType('percentage');
+  const handleTipAmount = (amount) => {
+    setTipAmount(amount);
+    setSelectedTipType('fixed');
     setCustomTip('');
   };
 
@@ -229,27 +228,24 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
         <div className="tip-buttons">
           <button
             type="button"
-            className={`tip-btn ${selectedTipType === 'percentage' && tipAmount === orderTotal * 0.05 ? 'selected' : ''}`}
-            onClick={() => handleTipPercentage(5)}
+            className={`tip-btn ${selectedTipType === 'fixed' && tipAmount === 1 ? 'selected' : ''}`}
+            onClick={() => handleTipAmount(1)}
           >
-            5%
-            <span className="tip-amount">${(orderTotal * 0.05).toFixed(2)}</span>
+            $1
           </button>
           <button
             type="button"
-            className={`tip-btn ${selectedTipType === 'percentage' && tipAmount === orderTotal * 0.10 ? 'selected' : ''}`}
-            onClick={() => handleTipPercentage(10)}
+            className={`tip-btn ${selectedTipType === 'fixed' && tipAmount === 2 ? 'selected' : ''}`}
+            onClick={() => handleTipAmount(2)}
           >
-            10%
-            <span className="tip-amount">${(orderTotal * 0.10).toFixed(2)}</span>
+            $2
           </button>
           <button
             type="button"
-            className={`tip-btn ${selectedTipType === 'percentage' && tipAmount === orderTotal * 0.15 ? 'selected' : ''}`}
-            onClick={() => handleTipPercentage(15)}
+            className={`tip-btn ${selectedTipType === 'fixed' && tipAmount === 3 ? 'selected' : ''}`}
+            onClick={() => handleTipAmount(3)}
           >
-            15%
-            <span className="tip-amount">${(orderTotal * 0.15).toFixed(2)}</span>
+            $3
           </button>
           <button
             type="button"

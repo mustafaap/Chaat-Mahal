@@ -8,7 +8,22 @@ const { sendOrderConfirmationEmail, sendOrderReadyEmail } = require('../utils/em
 // GET all orders
 router.get('/all', async (req, res) => {
     try {
-        const orders = await Order.find().sort({ createdAt: -1 });
+        const fs = require('fs').promises;
+        const path = require('path');
+        const timestampFilePath = path.join(__dirname, '..', 'data', 'resetTimestamp.json');
+        
+        let resetTimestamp = null;
+        try {
+            const timestampData = await fs.readFile(timestampFilePath, 'utf8');
+            resetTimestamp = JSON.parse(timestampData).timestamp;
+        } catch (error) {
+            // No reset timestamp file exists, show all orders
+        }
+        
+        // Filter orders created after reset timestamp
+        const query = resetTimestamp ? { createdAt: { $gte: new Date(resetTimestamp) } } : {};
+        const orders = await Order.find(query).sort({ createdAt: -1 });
+        
         res.json(orders);
     } catch (error) {
         console.error('Error fetching orders:', error);
@@ -347,6 +362,30 @@ router.post('/:id/notify-ready', async (req, res) => {
     } catch (error) {
         console.error('❌ Error sending order ready notification:', error);
         res.status(500).json({ message: 'Failed to send order ready notification' });
+    }
+});
+
+// POST - Reset order view timestamp (hide old orders, show only new ones)
+router.post('/reset-timestamp', async (req, res) => {
+    try {
+        const fs = require('fs').promises;
+        const path = require('path');
+        const timestampFilePath = path.join(__dirname, '..', 'data', 'resetTimestamp.json');
+        
+        // Create timestamp file with current time
+        const resetData = {
+            timestamp: new Date().toISOString()
+        };
+        
+        // Ensure data directory exists
+        await fs.mkdir(path.dirname(timestampFilePath), { recursive: true });
+        await fs.writeFile(timestampFilePath, JSON.stringify(resetData, null, 2));
+        
+        req.io.emit('ordersUpdated');
+        res.json({ message: 'Order view reset successfully', timestamp: resetData.timestamp });
+    } catch (error) {
+        console.error('Error resetting order view:', error);
+        res.status(500).json({ message: 'Failed to reset order view' });
     }
 });
 

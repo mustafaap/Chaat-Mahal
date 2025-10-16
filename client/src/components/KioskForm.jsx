@@ -821,7 +821,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                             </div>
                             <div className="pricing-row">
                                 <span>Convenience Fee:</span>
-                                <span>$0.35</span>
+                                <span>${paymentId ? '0.35' : '0.15'}</span>
                             </div>
                             {tipAmount > 0 && (
                                 <div className="pricing-row tip-row">
@@ -839,7 +839,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                                     return sum + (itemPrice * quantity);
                                 }, 0);
                                 const tax = subtotal * 0.0825;
-                                const convenienceFee = 0.35;
+                                const convenienceFee = paymentId ? 0.35 : 0.15; // Use conditional for actual calculation
                                 return (subtotal + tax + convenienceFee + tipAmount).toFixed(2);
                             })()}
                         </div>
