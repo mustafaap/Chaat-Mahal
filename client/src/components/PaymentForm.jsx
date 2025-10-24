@@ -13,12 +13,13 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
   const [paymentRequest, setPaymentRequest] = useState(null);
   const [canMakePayment, setCanMakePayment] = useState(false);
   const [walletUnavailableReason, setWalletUnavailableReason] = useState('');
-  const [isCounterPaymentProcessing, setIsCounterPaymentProcessing] = useState(false); // Add this state
-  const [tipAmount, setTipAmount] = useState(1); // Changed from 0 to 1
+  const [isCounterPaymentProcessing, setIsCounterPaymentProcessing] = useState(false);
+  
+  const [tipAmount, setTipAmount] = useState(1);
   const [customTip, setCustomTip] = useState('');
-  const [selectedTipType, setSelectedTipType] = useState('fixed'); // Changed from null to 'fixed'
+  const [selectedTipType, setSelectedTipType] = useState('fixed');
 
-  const taxAmount = useMemo(() => orderTotal * 0.0825, [orderTotal]); // 8.25% tax
+  const taxAmount = useMemo(() => orderTotal * 0.0825, [orderTotal]);
   const totalWithTax = useMemo(() => orderTotal + taxAmount + 0.35 + tipAmount, [orderTotal, taxAmount, tipAmount]);
 
   // Initialize Apple Pay / Google Pay
@@ -37,7 +38,6 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
     });
 
     pr.canMakePayment().then(result => {
-      console.log('PaymentRequest canMakePayment result:', result);
       if (result) {
         setPaymentRequest(pr);
         setCanMakePayment(true);
@@ -57,18 +57,22 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
       setPaymentError('');
 
       try {
+        // Use current totalWithTax at the time of payment
+        const currentTotal = orderTotal + (orderTotal * 0.0825) + 0.35 + tipAmount;
+        
         // 1) Create PaymentIntent on server
         const createRes = await fetch('/api/payments/create-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            amount: Math.round(totalWithTax * 100),
+            amount: Math.round(currentTotal * 100),
             currency: 'USD',
             customerName,
             orderItems,
-            tip: tipAmount // Add tip amount
+            tip: tipAmount
           })
         });
+
         const { success, clientSecret, error } = await createRes.json();
         if (!success) {
           ev.complete('fail');
@@ -93,7 +97,7 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
 
         if (paymentIntent.status === 'succeeded') {
           ev.complete('success');
-          onPaymentSuccess(paymentIntent.id, tipAmount); // Pass tip amount
+          onPaymentSuccess(paymentIntent.id, tipAmount);
         } else {
           ev.complete('fail');
           setPaymentError('Payment not successful');
@@ -106,7 +110,19 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
         setIsProcessing(false);
       }
     });
-  }, [stripe, totalWithTax, customerName, orderItems, onPaymentSuccess, tipAmount]);
+  }, [stripe, customerName, orderItems, onPaymentSuccess]); // Removed totalWithTax and tipAmount from dependencies
+
+  // Update payment request when tip changes
+  useEffect(() => {
+    if (paymentRequest && totalWithTax) {
+      paymentRequest.update({
+        total: {
+          label: 'Chaat Mahal Order',
+          amount: Math.round(totalWithTax * 100),
+        },
+      });
+    }
+  }, [paymentRequest, totalWithTax, tipAmount]);
 
   const handleCardPayment = async () => {
     if (!stripe || !elements) return;
@@ -124,7 +140,7 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
           currency: 'USD',
           customerName,
           orderItems,
-          tip: tipAmount // Add tip amount
+          tip: tipAmount
         })
       });
       const { success, clientSecret, error } = await createRes.json();
@@ -152,7 +168,7 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
       }
 
       if (paymentIntent.status === 'succeeded') {
-        onPaymentSuccess(paymentIntent.id, tipAmount); // Pass tip amount
+        onPaymentSuccess(paymentIntent.id, tipAmount);
       }
     } catch (error) {
       console.error('Payment error:', error);
@@ -161,18 +177,16 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
     }
   };
 
-  // Add this new function to handle counter payment with duplicate prevention
   const handlePayAtCounter = async () => {
-    if (isCounterPaymentProcessing) return; // Prevent multiple clicks
+    if (isCounterPaymentProcessing) return;
     
     setIsCounterPaymentProcessing(true);
     try {
-      await onPayAtCounter(tipAmount); // Pass tip amount to the handler
+      await onPayAtCounter(tipAmount);
     } catch (error) {
       console.error('Counter payment error:', error);
-      setIsCounterPaymentProcessing(false); // Reset on error
+      setIsCounterPaymentProcessing(false);
     }
-    // Note: Don't reset isCounterPaymentProcessing on success since the component will unmount
   };
 
   const handleTipAmount = (amount) => {
