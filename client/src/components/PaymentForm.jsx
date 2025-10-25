@@ -215,7 +215,7 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
           <span>${orderTotal.toFixed(2)}</span>
         </div>
         <div className="payment-summary-row">
-          <span>Tax (8.25%):</span>
+          <span>Tax:</span>
           <span>${taxAmount.toFixed(2)}</span>
         </div>
         <div className="payment-summary-row">

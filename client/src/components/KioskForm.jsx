@@ -715,7 +715,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                                 <strong>Notes:</strong> {notes}
                             </div>
                         )}
-                        <div className="tax-notice">*Note: Tax (8.25%) and convenience fee ($0.35) will be added at checkout</div>
+                        <div className="tax-notice">*Note: Tax and convenience fee will be added at checkout</div>
                     </div>
                     <div className="sticky-place-order">
                         <button
@@ -813,7 +813,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                                 }, 0).toFixed(2)}</span>
                             </div>
                             <div className="pricing-row">
-                                <span>Tax (8.25%):</span>
+                                <span>Tax:</span>
                                 <span>${(Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
                                     const itemPrice = calculateItemPrice(name, options);
                                     return sum + (itemPrice * quantity);

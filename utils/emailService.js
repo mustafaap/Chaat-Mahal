@@ -79,7 +79,7 @@ const generateOrderConfirmationEmailHTML = (orderData) => {
                                 <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #333;">$${subtotal.toFixed(2)}</td>
                             </tr>
                             <tr style="border-bottom: 1px dashed rgba(0, 0, 0, 0.1);">
-                                <td style="padding: 8px 0; color: #666; font-weight: 500;">Tax (8.25%):</td>
+                                <td style="padding: 8px 0; color: #666; font-weight: 500;">Tax:</td>
                                 <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #333;">$${taxAmount.toFixed(2)}</td>
                             </tr>
                             <tr style="border-bottom: 1px dashed rgba(0, 0, 0, 0.1);">

@@ -484,13 +484,71 @@ form {
     border-radius: 2px;
 }
 
-/* Updated Menu Grid - Fix for stretched cards */
+/* Updated Menu Grid - Single definition with mobile responsive */
 .menu-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 30px;
     margin: 30px 0;
     justify-items: center; 
+}
+
+/* Mobile responsive - 2 cards per row */
+@media (max-width: 880px) {
+    .menu-grid {
+        grid-template-columns: repeat(2, 1fr) !important; /* Force 2 columns */
+        gap: 15px !important; /* Reduced gap for mobile */
+        margin: 20px 0 !important;
+    }
+    
+    .menu-item-card {
+        width: 100% !important;
+        max-width: 100% !important; /* Remove max-width restriction */
+    }
+    
+    .menu-item-image {
+        height: 150px !important; /* Slightly smaller image on mobile */
+    }
+    
+    .menu-item-name {
+        font-size: 1.1rem !important; /* Slightly smaller text */
+    }
+    
+    .menu-item-description {
+        font-size: 0.85rem !important; /* Smaller description */
+        line-height: 1.3 !important;
+    }
+    
+    .menu-item-price {
+        font-size: 1.1rem !important; /* Slightly smaller price */
+    }
+
+    .menu-item-content{
+        padding: 15px !important; /* Reduced padding */
+    }
+}
+
+/* For very small screens (narrow phones) */
+@media (max-width: 400px) {
+    .menu-grid {
+        gap: 10px !important; /* Even smaller gap */
+    }
+    
+    .menu-item-image {
+        height: 120px !important; /* Smaller image for tiny screens */
+    }
+    
+    .menu-item-name {
+        font-size: 1rem !important;
+    }
+    
+    .menu-item-description {
+        font-size: 0.8rem !important;
+    }
+    
+    .category-title {
+        font-size: 1.8rem !important; /* Smaller category titles */
+    }
 }
 
 .menu-item-card {
@@ -504,7 +562,9 @@ form {
     position: relative;
     width: 100%;
     max-width: 350px !important;
-    border: 0px !important;  /* Limit maximum width to prevent stretching */
+    border: 0px !important;
+    display: flex; /* Add this */
+    flex-direction: column; /* Add this */
 }
 
 .menu-item-card:hover {
@@ -554,6 +614,9 @@ form {
 
 .menu-item-content {
     padding: 20px;
+    display: flex; /* Add this */
+    flex-direction: column; /* Add this */
+    flex-grow: 1; /* Add this */
 }
 
 .item-header {
@@ -596,7 +659,21 @@ form {
     align-items: center;
     justify-content: center;
     gap: 15px;
-    margin-top: 20px;
+    margin-top: auto; /* Change from 20px to auto - this pushes it to bottom */
+}
+
+@media (max-width: 880px) {
+    .quantity-controls {
+        gap: 12px; /* Slightly reduce gap on mobile */
+    }
+    
+    .quantity-btn {
+        width: 36px; /* Slightly smaller on mobile */
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        font-size: 18px;
+    }
 }
 
 .quantity-btn {
@@ -614,6 +691,7 @@ form {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .quantity-btn:hover {
@@ -660,6 +738,8 @@ form {
     left: 0;
     width: 100%;
     height: 100%;
+    min-height: 100vh; /* Add this */
+    min-height: -webkit-fill-available; /* Add this for iOS Safari */
     background: rgba(0, 0, 0, 0.6);
     display: flex;
     justify-content: center;
