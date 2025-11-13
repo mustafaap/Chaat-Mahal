@@ -520,11 +520,12 @@ form {
     }
     
     .menu-item-price {
-        font-size: 1.1rem !important; /* Slightly smaller price */
+        font-size: 1rem !important; /* Slightly smaller price */
+        padding: 3px 10px !important;
     }
 
     .menu-item-content{
-        padding: 15px !important; /* Reduced padding */
+        padding: 12px !important; /* Reduced padding */
     }
 }
 
@@ -623,8 +624,9 @@ form {
 .item-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start; /* Changed from center to flex-start */
+    align-items: center; /* Changed from center to flex-start */
     min-height: 40px; /* Add minimum height to accommodate 2-line names */
+    gap: 5px;
 }
 
 .menu-item-name {
@@ -649,6 +651,7 @@ form {
     background: #f3e9e3;
     padding: 5px 12px;
     border-radius: 20px;
+    align-items: center;
 }
 
 .menu-item-description {
@@ -1740,6 +1743,7 @@ input[type="checkbox"], input[type="radio"] {
 @media (max-width: 880px) {
     form {
         margin: 0px;
+        padding: 24px !important;
     }
 
     .sticky-place-order {
