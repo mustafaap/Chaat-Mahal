@@ -1,7 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
+import Toast from './Toast';
 import '../styles/Contact.css';
 
 const Contact = () => {
+    const [toast, setToast] = useState({
+        show: false,
+        message: '',
+        type: 'success'
+    });
+
+    const showToast = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => {
+            setToast({ show: false, message: '', type: 'success' });
+        }, 3000);
+    };
+
     return (
         <div className="contact-container">
             <h1>Contact Us</h1>
@@ -55,7 +69,8 @@ const Contact = () => {
                     <h2>Send us a Message</h2>
                     <form onSubmit={(e) => {
                         e.preventDefault();
-                        alert('Thank you for your message! We will get back to you soon.');
+                        showToast('Thank you for your message! We will get back to you soon.', 'success');
+                        e.target.reset();
                     }}>
                         <input 
                             type="text" 
@@ -96,6 +111,13 @@ const Contact = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Toast Notification */}
+            <Toast 
+                show={toast.show}
+                message={toast.message}
+                type={toast.type}
+            />
         </div>
     );
 };

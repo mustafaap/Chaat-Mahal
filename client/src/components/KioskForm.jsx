@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import PaymentForm from './PaymentForm';
+import Toast from './Toast';
 import '../styles/KioskForm.css';
 
 const KioskForm = ({ initialStep = 1 }) => {
@@ -18,11 +19,37 @@ const KioskForm = ({ initialStep = 1 }) => {
     const [showCartSummary, setShowCartSummary] = useState(false);
     const [cartTotal, setCartTotal] = useState(0);
     const [paymentId, setPaymentId] = useState(null);
-    const [settings, setSettings] = useState({ onlinePaymentEnabled: true }); // Add this line
-    const [tipAmount, setTipAmount] = useState(0); // Add tip state
+    const [settings, setSettings] = useState({ onlinePaymentEnabled: true });
+    const [tipAmount, setTipAmount] = useState(0);
+    
+    const [toast, setToast] = useState({
+        show: false,
+        message: '',
+        type: 'success'
+    });
+
+    const showToast = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => {
+            setToast({ show: false, message: '', type: 'success' });
+        }, 3000);
+    };
+    
+    // Get ordered categories from settings, filter to only show categories with active items
+    const getCategoriesWithItems = () => {
+        if (!settings.categories || settings.categories.length === 0) {
+            // Fallback: extract from menu items if settings don't have categories
+            return [...new Set(menuItems.filter(item => item.active !== false).map(item => item.category))];
+        }
+        // Filter settings categories to only include those with active items
+        const itemCategories = new Set(menuItems.filter(item => item.active !== false).map(item => item.category));
+        return settings.categories.filter(cat => itemCategories.has(cat));
+    };
+    
+    const categories = getCategoriesWithItems();
     
     // State for floating index
-    const [activeSection, setActiveSection] = useState('Chaat');
+    const [activeSection, setActiveSection] = useState(categories.length > 0 ? categories[0] : 'Chaat');
 
     // Fetch settings on component mount
     useEffect(() => {
@@ -105,13 +132,12 @@ const KioskForm = ({ initialStep = 1 }) => {
     // Scroll tracking for floating index
     useEffect(() => {
         const handleScroll = () => {
-            const sections = ['Chaat', 'Wraps', 'Drinks'];
             const scrollPosition = window.scrollY + 200; // Offset for navbar
             
-            for (let i = sections.length - 1; i >= 0; i--) {
-                const section = document.getElementById(`section-${sections[i]}`);
+            for (let i = categories.length - 1; i >= 0; i--) {
+                const section = document.getElementById(`section-${categories[i]}`);
                 if (section && section.offsetTop <= scrollPosition) {
-                    setActiveSection(sections[i]);
+                    setActiveSection(categories[i]);
                     break;
                 }
             }
@@ -121,7 +147,7 @@ const KioskForm = ({ initialStep = 1 }) => {
         handleScroll(); // Check initial position
 
         return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [categories]);
 
     // Function to scroll to section
     const scrollToSection = (section) => {
@@ -301,7 +327,7 @@ const KioskForm = ({ initialStep = 1 }) => {
 
     const proceedToCheckout = () => {
         if (Object.keys(selectedItems).length === 0) {
-            alert('Please select at least one item.');
+            showToast('Please select at least one item.', 'warning');
             return;
         }
         setStep(2);
@@ -328,7 +354,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                 handlePayAtCounter();
             }
         } else {
-            alert('Please enter your name and select at least one item.');
+            showToast('Please enter your name and select at least one item.', 'warning');
         }
     };
 
@@ -363,8 +389,8 @@ const KioskForm = ({ initialStep = 1 }) => {
             setStep(4);
         } catch (error) {
             console.error('Error submitting order:', error);
-            alert('There was an error submitting your order. Please try again.');
-            setIsSubmitting(false); // Reset on error
+            showToast('There was an error submitting your order. Please try again.', 'error');
+            setIsSubmitting(false);
         }
         // Note: Don't reset isSubmitting on success since the component will move to step 4
     };
@@ -405,7 +431,7 @@ const KioskForm = ({ initialStep = 1 }) => {
             setStep(4);
         } catch (error) {
             console.error('Error submitting order:', error);
-            alert('Payment successful, but there was an error submitting your order. Please contact us with payment ID: ' + paymentId);
+            showToast('Payment successful, but there was an error submitting your order. Please contact us with payment ID: ' + paymentId, 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -442,21 +468,16 @@ const KioskForm = ({ initialStep = 1 }) => {
 
                     {/* Floating Index */}
                     <div className="floating-index">
-                        {['Chaat', 'Wraps', 'Drinks'].map(section => (
+                        {categories.map(section => (
                             <button
                                 key={section}
                                 type="button"
                                 className={`index-item ${activeSection === section ? 'active' : ''}`}
                                 onClick={() => scrollToSection(section)}
                             >
-                                <span className="index-icon">
-                                    {section === 'Chaat' && '🍛'}
-                                    {section === 'Wraps' && '🌯'}
-                                    {section === 'Drinks' && '🥤'}
-                                </span>
                                 <span className="index-text">{section}</span>
                                 <span className="index-count">
-                                    {menuItems.filter(item => item.category === section).length}
+                                    {menuItems.filter(item => item.category === section && item.active !== false).length}
                                 </span>
                             </button>
                         ))}
@@ -555,11 +576,11 @@ const KioskForm = ({ initialStep = 1 }) => {
                     )}
 
                     <div className="menu-categories">
-                        {['Chaat', 'Wraps', 'Drinks'].map(category => (
+                        {categories.map(category => (
                             <div key={category} className="category-section" id={`section-${category}`}>
                                 <h2 className="category-title">{category}</h2>
                                 <div className="menu-grid">
-                                    {menuItems.filter(item => item.category === category).map(item => {
+                                    {menuItems.filter(item => item.category === category && item.active !== false).map(item => {
                                         const itemQuantity = Object.entries(selectedItems)
                                             .filter(([key]) => key.startsWith(`${item.name}-`))
                                             .reduce((sum, [, itemData]) => sum + itemData.quantity, 0);
@@ -982,6 +1003,13 @@ const KioskForm = ({ initialStep = 1 }) => {
                     </div>
                 </div>
             )}
+
+            {/* Toast Notification */}
+            <Toast 
+                show={toast.show}
+                message={toast.message}
+                type={toast.type}
+            />
         </div>
     );
 };

@@ -888,12 +888,12 @@ form {
     transform: translateY(-1px);
 }
 
-button {
+.kiosk-form button {
     font-family: 'Poppins', sans-serif;
     background: #b85c38;
     color: #fff;
     border: none;
-    padding: 12px 24px;
+    padding: 12px 12px;
     border-radius: 8px;
     font-size: 1rem;
     font-weight: 600;
@@ -901,7 +901,7 @@ button {
     transition: all 0.3s ease;
 }
 
-button:hover {
+.kiosk-form button:hover {
     background: #a14d2c;
     transform: translateY(-1px);
 }
@@ -1737,6 +1737,32 @@ input[type="checkbox"], input[type="radio"] {
     font-weight: 700;
     flex-grow: 1;
     text-align: left;
+    word-break: break-word;
+    line-height: 1.2;
+}
+
+.index-count {
+    font-size: 0.75rem;
+    background: #b85c38;
+    color: white;
+    padding: 3px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+    min-width: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.index-item:hover .index-count {
+    background: rgba(255, 255, 255, 0.9);
+    color: #b85c38;
+}
+
+.index-item.active .index-count {
+    background: rgba(255, 255, 255, 0.9);
+    color: #b85c38;
 }
 
 /* Mobile responsive for floating index - Keep it fixed at top on mobile */
@@ -1753,13 +1779,13 @@ input[type="checkbox"], input[type="radio"] {
     .floating-index {
         position: fixed; /* Change from static back to fixed */
         top: 70px; /* Position it right under the navbar (adjust based on navbar height) */
-        left: 50%;
-        transform: translateX(-50%); /* Center it horizontally */
+        left: 0;
+        transform: none; /* Remove centering transform */
         flex-direction: row;
         justify-content: center;
         gap: 8px;
-        width: calc(100% - 40px);
-        max-width: 350px;
+        width: 100%;
+        max-width: none;
         margin: 0; /* Remove margin since it's fixed */
         padding: 10px 20px; /* Add padding for styling */
        
@@ -1779,11 +1805,11 @@ input[type="checkbox"], input[type="radio"] {
     @keyframes slideInFromTop {
         from {
             opacity: 0;
-            transform: translateX(-50%) translateY(-20px);
+            transform: translateY(-20px);
         }
         to {
             opacity: 1;
-            transform: translateX(-50%) translateY(0);
+            transform: translateY(0);
         }
     }
 
@@ -1821,19 +1847,67 @@ input[type="checkbox"], input[type="radio"] {
 
 @media (max-width: 480px) {
     .floating-index {
-        top: 62px; /* Adjust for smaller navbar on very small screens */
-        width: calc(100% - 30px);
-        padding: 8px 15px;
-        gap: 6px;
+        top: 62px;
+        width: 100%;
+        left: 0;
+        transform: none;
+        padding: 8px 5px;
+        gap: 4px;
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 0;
+        justify-content: center;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        box-sizing: border-box;
     }
 
     .index-item {
-        padding: 6px 4px;
-        max-width: 70px;
+        padding: 8px 4px;
+        max-width: 90px;
+        min-width: 50px;
+        flex: 1 1 60px;
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(184, 92, 56, 0.2);
+        box-shadow: none;
+    }
+
+    .index-item:hover {
+        transform: translateY(-1px);
+    }
+
+    .index-item.active {
+        background: linear-gradient(135deg, #b85c38 0%, #a14d2c 100%);
+        border-color: #b85c38;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(184, 92, 56, 0.25);
     }
 
     .index-text {
         font-size: 0.75rem;
+        font-weight: 600;
+        word-break: break-word;
+        line-height: 1.2;
+    }
+
+    .index-count {
+        font-size: 0.7rem;
+        background: #b85c38;
+        color: white;
+        padding: 2px 5px;
+        border-radius: 8px;
+        margin-top: 2px;
+        min-width: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .index-item.active .index-count {
+        background: rgba(255, 255, 255, 0.9);
+        color: #b85c38;
     }
 
     .index-icon {

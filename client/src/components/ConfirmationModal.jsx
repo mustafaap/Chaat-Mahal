@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import '../styles/ConfirmationModal.css';
 
 const ConfirmationModal = ({ 
@@ -11,6 +11,18 @@ const ConfirmationModal = ({
     cancelText = "Cancel",
     type = "default" // default, danger, warning
 }) => {
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     const getModalClass = () => {
@@ -34,12 +46,14 @@ const ConfirmationModal = ({
                 </div>
                 
                 <div className="modal-footer">
-                    <button 
-                        className="modal-btn modal-cancel-btn" 
-                        onClick={onClose}
-                    >
-                        {cancelText}
-                    </button>
+                    {cancelText && (
+                        <button 
+                            className="modal-btn modal-cancel-btn" 
+                            onClick={onClose}
+                        >
+                            {cancelText}
+                        </button>
+                    )}
                     <button 
                         className={`modal-btn modal-confirm-btn ${type === 'danger' ? 'btn-danger' : type === 'warning' ? 'btn-warning' : 'btn-success'}`}
                         onClick={() => {

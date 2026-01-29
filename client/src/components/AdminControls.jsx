@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ConfirmationModal from './ConfirmationModal';
 import MenuManagement from './MenuManagement';
+import Toast from './Toast';
 import '../styles/AdminControls.css';
 
 const AdminControls = () => {
@@ -23,6 +24,19 @@ const AdminControls = () => {
         cancelText: 'Cancel',
         onConfirm: null
     });
+
+    const [toast, setToast] = useState({
+        show: false,
+        message: '',
+        type: 'success'
+    });
+
+    const showToast = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => {
+            setToast({ show: false, message: '', type: 'success' });
+        }, 3000);
+    };
 
     // Fetch settings on component mount
     useEffect(() => {
@@ -63,9 +77,9 @@ const AdminControls = () => {
             onConfirm: async () => {
                 const success = await updateSettings({ onlinePaymentEnabled: newStatus });
                 if (success) {
-                    alert(`Online payments ${newStatus ? 'enabled' : 'disabled'} successfully!`);
+                    showToast(`Online payments ${newStatus ? 'enabled' : 'disabled'} successfully!`, 'success');
                 } else {
-                    alert('Failed to update payment settings. Please try again.');
+                    showToast('Failed to update payment settings. Please try again.', 'error');
                 }
             }
         });
@@ -111,11 +125,11 @@ const AdminControls = () => {
             onConfirm: async () => {
                 try {
                     await axios.post('/api/orders/reset-timestamp');
-                    alert('Order view has been reset successfully. Only new orders will be displayed.');
-                    window.location.reload();
+                    showToast('Order view has been reset successfully. Only new orders will be displayed.', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
                 } catch (error) {
-                    console.error('Error resetting order view:', error);
-                    alert('Failed to reset order view. Please try again.');
+                    console.error('Error resetting order timestamp:', error);
+                    showToast('Failed to reset order view. Please try again.', 'error');
                 }
             }
         });
@@ -220,6 +234,13 @@ const AdminControls = () => {
                     </button>
                 </div>
             </div>
+
+            {/* Toast Notification */}
+            <Toast 
+                show={toast.show}
+                message={toast.message}
+                type={toast.type}
+            />
 
             {/* Confirmation Modal */}
             <ConfirmationModal

@@ -1,3 +1,11 @@
 {
-  "onlinePaymentEnabled": true
+  "onlinePaymentEnabled": true,
+  "categories": [
+    "Puri Chaat",
+    "Street Chaat",
+    "Burgers",
+    "Wraps",
+    "Rice Bowls",
+    "Drinks"
+  ]
 }

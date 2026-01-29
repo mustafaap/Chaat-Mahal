@@ -3,6 +3,7 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import ConfirmationModal from './ConfirmationModal';
 import ItemSummary from './ItemSummary'; // Import ItemSummary component
+import Toast from './Toast';
 import '../styles/OrderList.css';
 
 const socket = io();
@@ -20,6 +21,20 @@ const OrderList = ({ currentView, setCurrentView }) => {
     // Add pagination states
     const [currentPage, setCurrentPage] = useState(1);
     const [ordersPerPage] = useState(10);
+    
+    // Toast state
+    const [toast, setToast] = useState({
+        show: false,
+        message: '',
+        type: 'success'
+    });
+
+    const showToast = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => {
+            setToast({ show: false, message: '', type: 'success' });
+        }, 3000);
+    };
     
     // Modal states
     const [modalState, setModalState] = useState({
@@ -118,7 +133,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                     // No need to clear givenItems - it's preserved in the database
                 } catch (error) {
                     console.error('Error completing order:', error);
-                    alert('Failed to complete order. Please try again.');
+                    showToast('Failed to complete order. Please try again.', 'error');
                 }
             }
         });
@@ -136,7 +151,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
             ));
         } catch (error) {
             console.error('Error updating paid status:', error);
-            alert('Failed to update paid status. Please try again.');
+            showToast('Failed to update paid status. Please try again.', 'error');
         }
     };
 
@@ -156,7 +171,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                     // Clear given items for this order when cancelled
                 } catch (error) {
                     console.error('Error deleting order:', error);
-                    alert('Failed to delete the order. Please try again.');
+                    showToast('Failed to delete the order. Please try again.', 'error');
                 }
             }
         });
@@ -178,7 +193,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                     ));
                 } catch (error) {
                     console.error('Error reverting order:', error);
-                    alert('Failed to revert order. Please try again.');
+                    showToast('Failed to revert order. Please try again.', 'error');
                 }
             }
         });
@@ -212,7 +227,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
             );
         } catch (error) {
             console.error('Error toggling item given status:', error);
-            alert('Failed to update item status. Please try again.');
+            showToast('Failed to update item status. Please try again.', 'error');
         }
     };
 
@@ -433,7 +448,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
 
     const saveEditedOrder = async () => {
         if (Object.keys(editOrderItems).length === 0) {
-            alert('Order must have at least one item');
+            showToast('Order must have at least one item', 'warning');
             return;
         }
 
@@ -484,7 +499,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
             cancelEditingOrder();
         } catch (error) {
             console.error('Error updating order:', error);
-            alert('Failed to update order. Please try again.');
+            showToast('Failed to update order. Please try again.', 'error');
         }
     };
 
@@ -519,7 +534,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
         try {
             const order = orders.find(o => o._id === orderId);
             if (!order.customerEmail) {
-                alert('No email address found for this order. Cannot send notification.');
+                showToast('No email address found for this order. Cannot send notification.', 'warning');
                 return;
             }
 
@@ -539,16 +554,16 @@ const OrderList = ({ currentView, setCurrentView }) => {
                     } catch (error) {
                         console.error('Error sending order ready notification:', error);
                         if (error.response?.status === 400) {
-                            alert('No email address found for this order.');
+                            showToast('No email address found for this order.', 'warning');
                         } else {
-                            alert('Failed to send order ready notification. Please try again.');
+                            showToast('Failed to send order ready notification. Please try again.', 'error');
                         }
                     }
                 }
             });
         } catch (error) {
             console.error('Error sending order ready notification:', error);
-            alert('Failed to send order ready notification. Please try again.');
+            showToast('Failed to send order ready notification. Please try again.', 'error');
         }
     };
 
@@ -1144,6 +1159,13 @@ const OrderList = ({ currentView, setCurrentView }) => {
                     </div>
                 </div>
             )}
+
+            <Toast 
+                show={toast.show}
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast({ show: false, message: '', type: 'success' })}
+            />
         </div>
     );
 };
