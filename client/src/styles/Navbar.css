@@ -3,7 +3,6 @@
 .navbar {
     background: linear-gradient(135deg, #b85c38 0%, #a14d2c 100%);
     padding: 6px 0; /* Reduced from 12px */
-    box-shadow: 0 4px 20px rgba(184, 92, 56, 0.3);
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -190,14 +189,16 @@
         flex-direction: column;
         background: linear-gradient(135deg, rgba(184, 92, 56, 0.98) 0%, rgba(161, 77, 44, 0.98) 100%);
         width: 100%;
+        max-width: 100vw;
         text-align: center;
         transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        box-shadow: 0 10px 40px rgba(184, 92, 56, 0.4);
         padding: 20px 0; /* Reduced from 30px */
         gap: 16px; /* Reduced from 25px */
         backdrop-filter: blur(15px);
         border: none;
         border-radius: 0 0 16px 16px; /* Reduced from 20px */
+        box-sizing: border-box;
+        overflow-x: hidden;
     }
 
     .nav-menu.active {
@@ -215,6 +216,7 @@
         border: 1px solid rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(10px);
         transition: all 0.3s ease;
+        box-sizing: border-box;
     }
 
     .nav-link:hover {
@@ -337,16 +339,6 @@
     font-weight: 700;
 }
 
-.back-to-menu {
-    background: rgba(231, 76, 60, 0.2) !important;
-    border: 1px solid rgba(231, 76, 60, 0.3) !important;
-}
-
-.back-to-menu:hover {
-    background: rgba(231, 76, 60, 0.3) !important;
-    border-color: rgba(231, 76, 60, 0.5) !important;
-}
-
 /* Admin controls styling */
 .admin-controls {
     display: flex;
@@ -363,5 +355,12 @@
 @media (max-width: 768px) {
     .admin-nav-menu {
         background: linear-gradient(135deg, rgba(44, 62, 80, 0.98) 0%, rgba(52, 73, 94, 0.98) 100%);
+    }
+    
+    .admin-nav-btn {
+        width: calc(100% - 24px) !important;
+        margin: 0 12px !important;
+        padding: 10px 12px !important;
+        box-sizing: border-box !important;
     }
 }

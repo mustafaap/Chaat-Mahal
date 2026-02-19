@@ -4,3 +4,6 @@ package-lock.json
 client/package-lock.json
 .env
 data/orderCounter.json
+data/settings.json
+data/resetTimestamp.json
+data/menu_backup_*.json

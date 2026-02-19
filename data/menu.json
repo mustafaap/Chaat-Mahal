@@ -5,9 +5,9 @@
     "price": 3,
     "image": "/images/panipuri.JPG",
     "options": [
-      "No Spice",
-      "Regular",
-      "Extra Spicy",
+      "Mild",
+      "Medium",
+      "Spicy",
       "No Onions",
       "No Cilantro"
     ],
@@ -22,9 +22,9 @@
     "price": 4,
     "image": "/images/masala-puri.JPG",
     "options": [
-      "No Spice",
-      "Regular",
-      "Extra Spicy",
+      "Mild",
+      "Medium",
+      "Spicy",
       "No Onions",
       "No Cilantro"
     ],
@@ -39,9 +39,9 @@
     "price": 6,
     "image": "/images/dahipuri.JPG",
     "options": [
-      "No Spice",
-      "Regular",
-      "Extra Spicy",
+      "Mild",
+      "Medium",
+      "Spicy",
       "No Onions",
       "No Cilantro"
     ],
@@ -56,10 +56,9 @@
     "price": 6,
     "image": "/images/sevpuri.JPG",
     "options": [
-      "No Spice",
       "Mild",
+      "Medium",
       "Spicy",
-      "Extra Spicy",
       "No Onions",
       "No Cilantro"
     ],
@@ -73,10 +72,9 @@
     "price": 7,
     "image": "/images/bhelpuri.JPG",
     "options": [
-      "No Spice",
       "Mild",
+      "Medium",
       "Spicy",
-      "Extra Spicy",
       "No Onions",
       "No Cilantro"
     ],
@@ -90,10 +88,9 @@
     "price": 8,
     "image": "/images/paneer-wrap.JPG",
     "options": [
-      "No Spice",
       "Mild",
+      "Medium",
       "Spicy",
-      "Extra Spicy",
       "No Onions",
       "No Cilantro",
       "Extra Paneer (+$2)"
@@ -110,10 +107,9 @@
     "price": 9,
     "image": "/images/chicken-wrap.JPG",
     "options": [
-      "No Spice",
       "Mild",
+      "Medium",
       "Spicy",
-      "Extra Spicy",
       "No Onions",
       "No Cilantro",
       "A",
@@ -163,9 +159,9 @@
     "extraOptions": {},
     "noModal": true,
     "options": [
-      "No Spice",
-      "Regular",
-      "Extra Spicy"
+      "Mild",
+      "Medium",
+      "Spicy"
     ]
   },
   {
@@ -178,9 +174,9 @@
     "extraOptions": {},
     "noModal": false,
     "options": [
-      "No Spice",
-      "Regular",
-      "Extra Spicy",
+      "Mild",
+      "Medium",
+      "Spicy",
       "f",
       "s"
     ]

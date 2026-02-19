@@ -501,30 +501,30 @@ form {
         margin: 20px 0 !important;
     }
     
-    .menu-item-card {
+    .kiosk-container .menu-item-card {
         width: 100% !important;
         max-width: 100% !important; /* Remove max-width restriction */
     }
     
-    .menu-item-image {
+    .kiosk-container .menu-item-image {
         height: 150px !important; /* Slightly smaller image on mobile */
     }
     
-    .menu-item-name {
+    .kiosk-container .menu-item-name {
         font-size: 1.1rem !important; /* Slightly smaller text */
     }
     
-    .menu-item-description {
+    .kiosk-container .menu-item-description {
         font-size: 0.85rem !important; /* Smaller description */
         line-height: 1.3 !important;
     }
     
-    .menu-item-price {
+    .kiosk-container .menu-item-price {
         font-size: 1rem !important; /* Slightly smaller price */
         padding: 3px 10px !important;
     }
 
-    .menu-item-content{
+    .kiosk-container .menu-item-content{
         padding: 12px !important; /* Reduced padding */
     }
 }
@@ -535,15 +535,15 @@ form {
         gap: 10px !important; /* Even smaller gap */
     }
     
-    .menu-item-image {
+    .kiosk-container .menu-item-image {
         height: 120px !important; /* Smaller image for tiny screens */
     }
     
-    .menu-item-name {
+    .kiosk-container .menu-item-name {
         font-size: 1rem !important;
     }
     
-    .menu-item-description {
+    .kiosk-container .menu-item-description {
         font-size: 0.8rem !important;
     }
     
@@ -552,7 +552,7 @@ form {
     }
 }
 
-.menu-item-card {
+.kiosk-container .menu-item-card {
     background: #fff;
     border-radius: 16px;
     padding: 0;
@@ -569,30 +569,30 @@ form {
     height: 100%; /* Add this - ensures all cards have consistent height */
 }
 
-.menu-item-card:hover {
+.kiosk-container .menu-item-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 30px rgba(0,0,0,0.15);
 }
 
-.menu-item-card.has-items {
+.kiosk-container .menu-item-card.has-items {
     border: 2px solid #b85c38;
     box-shadow: 0 8px 30px rgba(184, 92, 56, 0.2);
 }
 
-.menu-item-image-container {
+.kiosk-container .menu-item-image-container {
     position: relative;
     overflow: hidden;
     border-radius: 16px 16px 0 0;
 }
 
-.menu-item-image {
+.kiosk-container .menu-item-image {
     width: 100%;
     height: 200px;
     object-fit: cover;
     transition: transform 0.3s ease;
 }
 
-.menu-item-card:hover .menu-item-image {
+.kiosk-container .menu-item-card:hover .menu-item-image {
     transform: scale(1.05);
 }
 
@@ -614,7 +614,7 @@ form {
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-.menu-item-content {
+.kiosk-container .menu-item-content {
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -629,7 +629,7 @@ form {
     gap: 5px;
 }
 
-.menu-item-name {
+.kiosk-container .menu-item-name {
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
     font-size: 1.3rem;
@@ -643,7 +643,7 @@ form {
     align-items: center; /* Add this */
 }
 
-.menu-item-price {
+.kiosk-container .menu-item-price {
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
     font-size: 1.2rem;
@@ -654,7 +654,7 @@ form {
     align-items: center;
 }
 
-.menu-item-description {
+.kiosk-container .menu-item-description {
     font-family: 'Inter', sans-serif;
     color: #666;
     font-size: 0.95rem;
@@ -1847,7 +1847,7 @@ input[type="checkbox"], input[type="radio"] {
 
 @media (max-width: 480px) {
     .floating-index {
-        top: 62px;
+        top: 67px;
         width: 100%;
         left: 0;
         transform: none;

@@ -327,8 +327,8 @@ const OrderList = ({ currentView, setCurrentView }) => {
             let defaultOptions = [];
             
             // Set default spice level for items that have spice options
-            if (menuItem.options?.some(opt => ['No Spice', 'Regular', 'Extra Spicy'].includes(opt))) {
-                defaultOptions.push('Regular'); // Default to Regular
+            if (menuItem.options?.some(opt => ['Mild', 'Medium', 'Spicy'].includes(opt))) {
+                defaultOptions.push('Medium'); // Default to Medium
             }
             
             // Set default "Cold" option for Water
@@ -1070,7 +1070,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                         
                         <div className="edit-options-content">
                             {/* Spice Level Slider */}
-                            {editOptionModal.menuItem.options?.some(opt => ['No Spice', 'Regular', 'Extra Spicy'].includes(opt)) && (
+                            {editOptionModal.menuItem.options?.some(opt => ['Mild', 'Medium', 'Spicy'].includes(opt)) && (
                                 <div className="spice-section">
                                     <label>Spice Level:</label>
                                     <div className="spice-selector">
@@ -1080,12 +1080,12 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                             max="2"  // Changed from 3 to 2
                                             value={(() => {
                                                 const currentOptions = editItemOptions[editOptionModal.itemName] || [];
-                                                const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy']; // Updated array
+                                                const spiceLevels = ['Mild', 'Medium', 'Spicy']; // Updated array
                                                 const currentSpice = currentOptions.find(opt => spiceLevels.includes(opt));
-                                                return spiceLevels.indexOf(currentSpice) !== -1 ? spiceLevels.indexOf(currentSpice) : 1; // Default to Regular
+                                                return spiceLevels.indexOf(currentSpice) !== -1 ? spiceLevels.indexOf(currentSpice) : 1; // Default to Medium
                                             })()}
                                             onChange={(e) => {
-                                                const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy']; // Updated array
+                                                const spiceLevels = ['Mild', 'Medium', 'Spicy']; // Updated array
                                                 const newLevel = spiceLevels[parseInt(e.target.value)];
                                                 setEditItemOptions(prev => ({
                                                     ...prev,
@@ -1098,16 +1098,16 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                             className="spice-slider"
                                         />
                                         <div className="spice-levels">
-                                            <span>No Spice</span>
-                                            <span>Regular</span>
-                                            <span>Extra Spicy</span>
+                                            <span>Mild</span>
+                                            <span>Medium</span>
+                                            <span>Spicy</span>
                                         </div>
                                     </div>
                                 </div>
                             )}
 
                             {/* Other Options */}
-                            {editOptionModal.menuItem.options?.filter(opt => !['No Spice', 'Regular', 'Extra Spicy'].includes(opt)).map(option => (
+                            {editOptionModal.menuItem.options?.filter(opt => !['Mild', 'Medium', 'Spicy'].includes(opt)).map(option => (
                                 <div key={option} className="option-container">
                                     <label className="option-label">
                                         <input

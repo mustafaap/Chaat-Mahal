@@ -234,9 +234,6 @@ const AdminNavbar = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu, curren
           >
             Controls
           </button>
-          <Link to="/" className="nav-link back-to-menu" onClick={closeMobileMenu}>
-            Back to Menu
-          </Link>
         </div>
       </div>
     </nav>

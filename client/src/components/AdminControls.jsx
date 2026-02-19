@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ConfirmationModal from './ConfirmationModal';
 import MenuManagement from './MenuManagement';
+import Analytics from './Analytics';
 import Toast from './Toast';
 import '../styles/AdminControls.css';
 
@@ -150,89 +151,144 @@ const AdminControls = () => {
         });
     };
 
-    if (currentView === 'menu') {
-        return (
-            <div className="admin-controls-wrapper">
-                <div className="admin-controls-nav">
-                    <button 
-                        className="nav-back-btn"
-                        onClick={() => setCurrentView('dashboard')}
-                    >
-                        ← Back to Dashboard
-                    </button>
-                </div>
-                <MenuManagement />
-            </div>
-        );
-    }
+    const renderContent = () => {
+        switch (currentView) {
+            case 'menu':
+                return (
+                    <div className="content-section">
+                        <MenuManagement activeTab="items" />
+                    </div>
+                );
+            
+            case 'categories':
+                return (
+                    <div className="content-section">
+                        <MenuManagement activeTab="categories" />
+                    </div>
+                );
+            
+            case 'analytics':
+                return (
+                    <div className="content-section">
+                        <Analytics />
+                    </div>
+                );
+            
+            case 'settings':
+                return (
+                    <div className="content-section">
+                        <h2>⚙️ Settings</h2>
+                        <div className="settings-content">
+                            <div className="setting-card">
+                                <div className="setting-header">
+                                    <div className="setting-icon">💳</div>
+                                    <div className="setting-info">
+                                        <h3>Payment Settings</h3>
+                                        <p>Enable or disable online payments (use when payment system is down)</p>
+                                    </div>
+                                </div>
+                                <div className="payment-status">
+                                    <span className={`status-indicator ${settings.onlinePaymentEnabled ? 'enabled' : 'disabled'}`}>
+                                        {settings.onlinePaymentEnabled ? '🟢 Online Payments Enabled' : '🔴 Online Payments Disabled'}
+                                    </span>
+                                </div>
+                                <button 
+                                    className={`admin-control-button ${settings.onlinePaymentEnabled ? 'disable-btn' : 'enable-btn'}`}
+                                    onClick={toggleOnlinePayment}
+                                >
+                                    {settings.onlinePaymentEnabled ? 'Disable Online Payments' : 'Enable Online Payments'}
+                                </button>
+                            </div>
+
+                            <div className="setting-card">
+                                <div className="setting-header">
+                                    <div className="setting-icon">🔄</div>
+                                    <div className="setting-info">
+                                        <h3>Reset Order View</h3>
+                                        <p>Clear current orders from display (orders remain in database for records)</p>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={resetAllOrders}
+                                    className="admin-control-button reset-btn"
+                                >
+                                    Reset Order View
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            
+            case 'dashboard':
+            default:
+                return (
+                    <div className="content-section">
+                        <h2>👋 Welcome to Admin Dashboard</h2>
+                        <div className="dashboard-welcome">
+                            <div className="welcome-icon">🎯</div>
+                            <h3>Select an option from the sidebar</h3>
+                            <p>Use the navigation menu to manage your restaurant's menu, view analytics, configure settings, or logout.</p>
+                        </div>
+                    </div>
+                );
+        }
+    };
 
     return (
         <div className="admin-controls-container">
-            <h1>Admin Controls</h1>
-            <p className="controls-subtitle">Manage system settings and data</p>
-            
-            <div className="controls-grid">
-                <div className="control-card">
-                    <div className="control-icon">🍽️</div>
-                    <h3>Menu Management</h3>
-                    <p>Add, edit, or remove menu items, options and prices</p>
+            {/* Vertical Navbar */}
+            <div className="admin-sidebar">
+                <div className="sidebar-header">
+                    <h2>Admin Panel</h2>
+                    <p>Chaat Mahal</p>
+                </div>
+                
+                <nav className="sidebar-nav">
                     <button 
-                        className="admin-control-button menu-btn"
+                        className={`nav-item ${currentView === 'menu' ? 'active' : ''}`}
                         onClick={() => setCurrentView('menu')}
                     >
-                        Manage Menu
+                        <span className="nav-icon">🍽️</span>
+                        <span className="nav-text">Menu Items</span>
                     </button>
-                </div>
-
-                <div className="control-card coming-soon">
-                    <div className="control-icon">📊</div>
-                    <h3>Analytics</h3>
-                    <p>View sales reports and order statistics</p>
-                    <button className="admin-control-button disabled-btn" disabled>
-                        Coming Soon
-                    </button>
-                </div>
-
-                <div className="control-card">
-                    <div className="control-icon">💳</div>
-                    <h3>Payment Settings</h3>
-                    <p>Enable or disable online payments (use when payment system is down)</p>
-                    <div className="payment-status">
-                        <span className={`status-indicator ${settings.onlinePaymentEnabled ? 'enabled' : 'disabled'}`}>
-                            {settings.onlinePaymentEnabled ? '🟢 Online Payments Enabled' : '🔴 Online Payments Disabled'}
-                        </span>
-                    </div>
+                    
                     <button 
-                        className={`admin-control-button ${settings.onlinePaymentEnabled ? 'disable-btn' : 'enable-btn'}`}
-                        onClick={toggleOnlinePayment}
+                        className={`nav-item ${currentView === 'categories' ? 'active' : ''}`}
+                        onClick={() => setCurrentView('categories')}
                     >
-                        {settings.onlinePaymentEnabled ? 'Disable Online Payments' : 'Enable Online Payments'}
+                        <span className="nav-icon">🗂️</span>
+                        <span className="nav-text">Categories</span>
                     </button>
-                </div>
-
-                <div className="control-card">
-                    <div className="control-icon">🔄</div>
-                    <h3>Reset Order View</h3>
-                    <p>Clear Orders (orders remain in database for records)</p>
+                    
                     <button 
-                        onClick={resetAllOrders}
-                        className="admin-control-button reset-btn"
+                        className={`nav-item ${currentView === 'analytics' ? 'active' : ''}`}
+                        onClick={() => setCurrentView('analytics')}
                     >
-                        Reset Order View
+                        <span className="nav-icon">📊</span>
+                        <span className="nav-text">Analytics</span>
                     </button>
-                </div>
-
-                <div className="control-card logout-card">
-                    <div className="control-icon">🚪</div>
-                    <h3>Logout</h3>
-                    <p>Sign out of the admin panel</p>
+                    
                     <button 
-                        className="admin-control-button logout-btn"
+                        className={`nav-item ${currentView === 'settings' ? 'active' : ''}`}
+                        onClick={() => setCurrentView('settings')}
+                    >
+                        <span className="nav-icon">⚙️</span>
+                        <span className="nav-text">Settings</span>
+                    </button>
+                    
+                    <button 
+                        className="nav-item logout-item"
                         onClick={handleLogout}
                     >
-                        Logout
+                        <span className="nav-icon">🚪</span>
+                        <span className="nav-text">Logout</span>
                     </button>
-                </div>
+                </nav>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="admin-content">
+                {renderContent()}
             </div>
 
             {/* Toast Notification */}

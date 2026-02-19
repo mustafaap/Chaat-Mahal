@@ -4,14 +4,14 @@ import ConfirmationModal from './ConfirmationModal';
 import '../styles/MenuManagement.css';
 import '../styles/Toast.css';
 
-const MenuManagement = () => {
+const MenuManagement = ({ activeTab: propActiveTab }) => {
     const [menuItems, setMenuItems] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [editingItem, setEditingItem] = useState(null);
     const [showAddForm, setShowAddForm] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [activeTab, setActiveTab] = useState(() => {
-        return localStorage.getItem('menuManagementTab') || 'items';
+        return propActiveTab || localStorage.getItem('menuManagementTab') || 'items';
     }); // 'items' or 'categories'
     
     // Image upload states
@@ -74,8 +74,16 @@ const MenuManagement = () => {
     }, []);
 
     useEffect(() => {
-        localStorage.setItem('menuManagementTab', activeTab);
-    }, [activeTab]);
+        if (propActiveTab) {
+            setActiveTab(propActiveTab);
+        }
+    }, [propActiveTab]);
+
+    useEffect(() => {
+        if (!propActiveTab) {
+            localStorage.setItem('menuManagementTab', activeTab);
+        }
+    }, [activeTab, propActiveTab]);
 
     // Prevent body scroll when modals are open
     useEffect(() => {
@@ -271,7 +279,7 @@ const MenuManagement = () => {
     };
 
     const handleEdit = (item) => {
-        const standardSpiceLevels = ['No Spice', 'Regular', 'Extra Spicy'];
+        const standardSpiceLevels = ['Mild', 'Medium', 'Spicy'];
         const existingOptions = item.options || [];
         
         const otherOptions = existingOptions.filter(opt => 
@@ -312,7 +320,7 @@ const MenuManagement = () => {
         
         // Only add automatic spice levels for Chaat and Wraps, not Drinks
         if (formData.category === 'Chaat' || formData.category === 'Wraps') {
-            standardOptions = ['No Spice', 'Regular', 'Extra Spicy'];
+            standardOptions = ['Mild', 'Medium', 'Spicy'];
         }
         
         // Create premium options array for the final options list
@@ -589,6 +597,70 @@ const MenuManagement = () => {
         setTargetCategory(item.category);
     };
 
+    const handleMoveItemUp = async (item, categoryItems) => {
+        const currentIndex = categoryItems.findIndex(i => i.id === item.id);
+        if (currentIndex <= 0) return; // Already at top
+        
+        const itemAbove = categoryItems[currentIndex - 1];
+        
+        try {
+            // Swap order values
+            await axios.put(`/api/menu/${item.id}`, {
+                ...item,
+                order: currentIndex - 1
+            });
+            
+            await axios.put(`/api/menu/${itemAbove.id}`, {
+                ...itemAbove,
+                order: currentIndex
+            });
+            
+            // Update local state
+            setMenuItems(prev => prev.map(menuItem => {
+                if (menuItem.id === item.id) return { ...menuItem, order: currentIndex - 1 };
+                if (menuItem.id === itemAbove.id) return { ...menuItem, order: currentIndex };
+                return menuItem;
+            }));
+            
+            showToast('Item order updated', 'success');
+        } catch (error) {
+            console.error('Error updating item order:', error);
+            showToast('Failed to update item order', 'error');
+        }
+    };
+
+    const handleMoveItemDown = async (item, categoryItems) => {
+        const currentIndex = categoryItems.findIndex(i => i.id === item.id);
+        if (currentIndex >= categoryItems.length - 1) return; // Already at bottom
+        
+        const itemBelow = categoryItems[currentIndex + 1];
+        
+        try {
+            // Swap order values
+            await axios.put(`/api/menu/${item.id}`, {
+                ...item,
+                order: currentIndex + 1
+            });
+            
+            await axios.put(`/api/menu/${itemBelow.id}`, {
+                ...itemBelow,
+                order: currentIndex
+            });
+            
+            // Update local state
+            setMenuItems(prev => prev.map(menuItem => {
+                if (menuItem.id === item.id) return { ...menuItem, order: currentIndex + 1 };
+                if (menuItem.id === itemBelow.id) return { ...menuItem, order: currentIndex };
+                return menuItem;
+            }));
+            
+            showToast('Item order updated', 'success');
+        } catch (error) {
+            console.error('Error updating item order:', error);
+            showToast('Failed to update item order', 'error');
+        }
+    };
+
     const confirmMoveItem = async () => {
         if (!movingItem || !targetCategory) return;
         
@@ -650,24 +722,30 @@ const MenuManagement = () => {
     return (
         <div className="menu-management-container">
             <div className="menu-management-header">
-                <h1>Menu Management</h1>
-                <p className="menu-subtitle">Manage your restaurant's menu items and categories</p>
+                <h2>{activeTab === 'items' ? '🍽️ Menu Items' : '🗂️ Category Management'}</h2>
+                <p className="menu-subtitle">
+                    {activeTab === 'items' 
+                        ? 'Add, edit, or remove menu items and manage their availability' 
+                        : 'Add, rename, or delete categories. Organize items between categories.'}
+                </p>
                 
-                {/* Tab Navigation */}
-                <div className="tab-navigation">
-                    <button 
-                        className={`tab-btn ${activeTab === 'items' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('items')}
-                    >
-                        📋 Menu Items
-                    </button>
-                    <button 
-                        className={`tab-btn ${activeTab === 'categories' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('categories')}
-                    >
-                        🗂️ Categories
-                    </button>
-                </div>
+                {/* Tab Navigation - Only show if not controlled by props */}
+                {!propActiveTab && (
+                    <div className="tab-navigation">
+                        <button 
+                            className={`tab-btn ${activeTab === 'items' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('items')}
+                        >
+                            📋 Menu Items
+                        </button>
+                        <button 
+                            className={`tab-btn ${activeTab === 'categories' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('categories')}
+                        >
+                            🗂️ Categories
+                        </button>
+                    </div>
+                )}
 
                 {/* Items Tab Actions */}
                 {activeTab === 'items' && (
@@ -698,11 +776,6 @@ const MenuManagement = () => {
             {/* Categories Tab Content */}
             {activeTab === 'categories' && (
                 <div className="categories-management-section">
-                    <div className="categories-header">
-                        <h2>📦 Category Management</h2>
-                        <p className="section-subtitle">Add, rename, or delete categories. Organize items between categories.</p>
-                    </div>
-
                     {/* Add New Category */}
                     <div className="add-category-section">
                         <div className="add-category-card">
@@ -729,7 +802,9 @@ const MenuManagement = () => {
                     {/* Existing Categories */}
                     <div className="categories-grid">
                         {categories.map(category => {
-                            const categoryItems = menuItems.filter(item => item.category === category);
+                            const categoryItems = menuItems
+                                .filter(item => item.category === category)
+                                .sort((a, b) => (a.order || 0) - (b.order || 0));
                             const availableItems = categoryItems.filter(item => item.active !== false);
                             const unavailableItems = categoryItems.filter(item => item.active === false);
 
@@ -875,6 +950,22 @@ const MenuManagement = () => {
                                                     </div>
                                                     
                                                     <div className="item-mini-actions">
+                                                        <button 
+                                                            className="move-order-btn"
+                                                            onClick={() => handleMoveItemUp(item, categoryItems)}
+                                                            disabled={categoryItems.indexOf(item) === 0}
+                                                            title="Move item up"
+                                                        >
+                                                            ⬆️
+                                                        </button>
+                                                        <button 
+                                                            className="move-order-btn"
+                                                            onClick={() => handleMoveItemDown(item, categoryItems)}
+                                                            disabled={categoryItems.indexOf(item) === categoryItems.length - 1}
+                                                            title="Move item down"
+                                                        >
+                                                            ⬇️
+                                                        </button>
                                                         <button 
                                                             className="move-item-btn"
                                                             onClick={() => handleMoveItem(item)}
@@ -1089,7 +1180,7 @@ const MenuManagement = () => {
                                     <h4>🌶️ Spice Level Options (Automatic)</h4>
                                     <p>
                                         {formData.category === 'Chaat' || formData.category === 'Wraps' 
-                                            ? 'This item will automatically include: No Spice, Regular, Extra Spicy'
+                                            ? 'This item will automatically include: Mild, Medium, Spicy'
                                             : formData.category === 'Drinks'
                                             ? 'No automatic options for drinks. Use the options sections below or enable "No Options Modal" for simple drinks.'
                                             : 'Select a category to see automatic options'

@@ -91,21 +91,21 @@ const KioskForm = ({ initialStep = 1 }) => {
                         name: 'Panipuri', 
                         price: 3, 
                         image: '/images/panipuri.JPG', // Keep existing images where available
-                        options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], 
+                        options: ['Mild', 'Medium', 'Spicy', 'No Onions', 'No Cilantro'], 
                         category: 'Chaat', 
                         description: 'Crispy shells filled with spiced water and chutneys' 
                     },
-                    { id: 3, name: 'Masala Puri', price: 4, image: '/images/masala-puri.JPG', options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with spiced potatoes and chutneys' },
-                    { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.JPG', options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Puris filled with yogurt, chutneys and spices' },
-                    { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.JPG', options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with sev, vegetables and chutneys' },
-                    { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.JPG', options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Popular street snack with puffed rice and chutneys' },
+                    { id: 3, name: 'Masala Puri', price: 4, image: '/images/masala-puri.JPG', options: ['Mild', 'Medium', 'Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with spiced potatoes and chutneys' },
+                    { id: 4, name: 'Dahipuri', price: 6, image: '/images/dahipuri.JPG', options: ['Mild', 'Medium', 'Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Puris filled with yogurt, chutneys and spices' },
+                    { id: 5, name: 'Sevpuri', price: 6, image: '/images/sevpuri.JPG', options: ['Mild', 'Medium', 'Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Crispy puris topped with sev, vegetables and chutneys' },
+                    { id: 6, name: 'Bhelpuri', price: 7, image: '/images/bhelpuri.JPG', options: ['Mild', 'Medium', 'Spicy', 'No Onions', 'No Cilantro'], category: 'Chaat', description: 'Popular street snack with puffed rice and chutneys' },
                     { id: 7, name: 'Water', price: 1, image: '/images/water.JPG', options: ['Cold', 'Room Temperature'], category: 'Drinks', description: 'Refreshing drinking water' },
                     { 
                         id: 8, 
                         name: 'Paneer Wrap', 
                         price: 8, 
                         image: '/images/paneer-wrap.JPG', 
-                        options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Paneer (+$2)'],
+                        options: ['Mild', 'Medium', 'Spicy', 'No Onions', 'No Cilantro', 'Extra Paneer (+$2)'],
                         extraOptions: { 'Extra Paneer': 2 },
                         category: 'Wraps',
                         description: 'Grilled paneer with fresh vegetables wrapped in naan'
@@ -115,7 +115,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                         name: 'Chicken Wrap', 
                         price: 9, 
                         image: '/images/chicken-wrap.JPG', 
-                        options: ['No Spice', 'Regular', 'Extra Spicy', 'No Onions', 'No Cilantro', 'Extra Meat (+$2)'],
+                        options: ['Mild', 'Medium', 'Spicy', 'No Onions', 'No Cilantro', 'Extra Meat (+$2)'],
                         extraOptions: { 'Extra Meat': 2 },
                         category: 'Wraps',
                         description: 'Tender spiced chicken with vegetables wrapped in naan'
@@ -229,13 +229,13 @@ const KioskForm = ({ initialStep = 1 }) => {
     const openModal = (item) => {
         setModalItem(item);
         
-        // Initialize with default Regular spice for items with spice option
+        // Initialize with default Medium spice for items with spice option
         const hasSpice = item.options && item.options.some(opt => 
-            ['No Spice', 'Regular', 'Extra Spicy'].includes(opt)
+            ['Mild', 'Medium', 'Spicy'].includes(opt)
         );
         
         setItemOptions({
-            spiceLevel: hasSpice ? 'Regular' : null,
+            spiceLevel: hasSpice ? 'Medium' : null,
             otherOptions: [],
             extraOptions: []
         });
@@ -580,7 +580,10 @@ const KioskForm = ({ initialStep = 1 }) => {
                             <div key={category} className="category-section" id={`section-${category}`}>
                                 <h2 className="category-title">{category}</h2>
                                 <div className="menu-grid">
-                                    {menuItems.filter(item => item.category === category && item.active !== false).map(item => {
+                                    {menuItems
+                                        .filter(item => item.category === category && item.active !== false)
+                                        .sort((a, b) => (a.order || 0) - (b.order || 0))
+                                        .map(item => {
                                         const itemQuantity = Object.entries(selectedItems)
                                             .filter(([key]) => key.startsWith(`${item.name}-`))
                                             .reduce((sum, [, itemData]) => sum + itemData.quantity, 0);
@@ -704,7 +707,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                                                         {options.length > 0 && (
                                                             <span className="kiosk-order-item-options">
                                                                 Options: {options.map(option => {
-                                                                    const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy'];
+                                                                    const spiceLevels = ['Mild', 'Medium', 'Spicy'];
                                                                     if (spiceLevels.includes(option)) {
                                                                         return `${option}`;
                                                                     }
@@ -918,7 +921,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                         <h2>{modalItem.name} Options</h2>
                         
                         {/* Slider for Spice Level */}
-                        {modalItem.options?.some(opt => ['No Spice', 'Regular', 'Extra Spicy'].includes(opt)) && (
+                        {modalItem.options?.some(opt => ['Mild', 'Medium', 'Spicy'].includes(opt)) && (
                             <div className="spice-slider-container">
                                 <label htmlFor="spice-slider" className="spice-slider-label">Spice Level:</label>
                                 <input
@@ -928,19 +931,19 @@ const KioskForm = ({ initialStep = 1 }) => {
                                     max={2}
                                     step={1}
                                     value={(() => {
-                                        const spiceLevels = ['No Spice', 'Regular', 'Extra Spicy'];
+                                        const spiceLevels = ['Mild', 'Medium', 'Spicy'];
                                         return itemOptions.spiceLevel ? spiceLevels.indexOf(itemOptions.spiceLevel) : 1;
                                     })()}
                                     onChange={(e) => {
-                                        const newLevel = ['No Spice', 'Regular', 'Extra Spicy'][parseInt(e.target.value)];
+                                        const newLevel = ['Mild', 'Medium', 'Spicy'][parseInt(e.target.value)];
                                         handleSpiceChange(newLevel);
                                     }}
                                     className="spice-slider"
                                 />
                                 <div className="spice-levels">
-                                    <span title="No Spice">No Spice</span>
-                                    <span title="Regular">Regular</span>
-                                    <span title="Extra Spicy">Extra Spicy</span>
+                                    <span title="Mild">Mild</span>
+                                    <span title="Medium">Medium</span>
+                                    <span title="Spicy">Spicy</span>
                                 </div>
                             </div>
                         )}
@@ -948,7 +951,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                         {/* Other Options (No Onions, No Cilantro, etc.) - Pill Style */}
                         {(() => {
                             const otherOptions = modalItem.options?.filter(opt => 
-                                !['No Spice', 'Regular', 'Extra Spicy'].includes(opt) &&
+                                !['Mild', 'Medium', 'Spicy'].includes(opt) &&
                                 !opt.includes('(+$')
                             ) || [];
                             
