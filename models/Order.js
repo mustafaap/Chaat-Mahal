@@ -25,6 +25,18 @@ const orderSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    taxAmount: {
+        type: Number,
+        default: 0
+    },
+    convenienceFee: {
+        type: Number,
+        default: 0
+    },
+    stripeTotal: {
+        type: Number,
+        default: null  // null = not a Stripe payment, otherwise = full amount charged on Stripe
+    },
     notes: {
         type: String,
         default: ''

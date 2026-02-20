@@ -744,6 +744,14 @@
     font-size: 0.95rem;
 }
 
+@media (max-width: 600px) {
+    .spice-level-info-box > div {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center;
+    }
+}
+
 /* Image Upload Styles */
 .image-upload-container {
     display: flex;

@@ -267,7 +267,7 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                 total: calculateTotal(),
                 tip: tipAmount,
                 notes: notes.trim(),
-                paid: false,
+                paid: true,
                 paymentId: null,
             });
             resetForm();
@@ -275,6 +275,36 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
             if (onOrderCreated) onOrderCreated();
         } catch (error) {
             console.error('Error creating cash order:', error);
+            showToast('Failed to create order. Please try again.', 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleCreateOrder = async () => {
+        if (!customerName.trim()) { showToast('Please enter customer name', 'error'); return; }
+        if (Object.keys(orderItems).length === 0) { showToast('Please add at least one item', 'error'); return; }
+        setIsSubmitting(true);
+        try {
+            const items = [];
+            Object.entries(orderItems).forEach(([itemKey, quantity]) => {
+                for (let i = 0; i < quantity; i++) items.push(itemKey);
+            });
+            await axios.post('/api/orders', {
+                customerName: customerName.trim(),
+                customerEmail: customerEmail.trim() || '',
+                items,
+                total: calculateTotal(),
+                tip: tipAmount,
+                notes: notes.trim(),
+                paid: false,
+                paymentId: null,
+            });
+            resetForm();
+            showToast('Order created!', 'success');
+            if (onOrderCreated) onOrderCreated();
+        } catch (error) {
+            console.error('Error creating order:', error);
             showToast('Failed to create order. Please try again.', 'error');
         } finally {
             setIsSubmitting(false);
@@ -303,8 +333,11 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                 customerName: customerName.trim(),
                 customerEmail: customerEmail.trim() || '',
                 items,
-                total: grandTotal,
+                total: sub,   // store subtotal only — tax/fee only applies if paid via Stripe
                 tip: tipAmount,
+                taxAmount: +tax.toFixed(2),
+                convenienceFee: +fee.toFixed(2),
+                stripeTotal: grandTotal,
                 notes: notes.trim(),
                 paid: false,
                 paymentId: null,
@@ -351,7 +384,7 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                 <>
                     <div 
                         className="qof-backdrop" 
-                        onClick={closeAll}
+                        onClick={() => setIsExpanded(false)}
                     />
                     <div className="qof-form-wrapper" onClick={(e) => e.stopPropagation()}>
                         <form onSubmit={e => e.preventDefault()} className="qof-form" style={paymentStep !== null ? {display:'none'} : {}}>
@@ -535,11 +568,19 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                         <div className="qof-form-actions">
                             <button
                                 type="button"
+                                className="qof-create-order-btn"
+                                onClick={handleCreateOrder}
+                                disabled={isSubmitting || !customerName.trim() || Object.keys(orderItems).length === 0}
+                            >
+                                {isSubmitting ? 'Creating...' : '📋 Create Order without Payment'}
+                            </button>
+                            <button
+                                type="button"
                                 className="qof-cash-btn"
                                 onClick={handleCashOrder}
                                 disabled={isSubmitting || !customerName.trim() || Object.keys(orderItems).length === 0}
                             >
-                                {isSubmitting ? 'Processing...' : '💵 Cash Order'}
+                                {isSubmitting ? 'Processing...' : '💵 Cash'}
                             </button>
                             <button
                                 type="button"
@@ -547,7 +588,7 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                                 onClick={handleStripeClick}
                                 disabled={isSubmitting || !customerName.trim() || Object.keys(orderItems).length === 0}
                             >
-                                💳 Stripe Payment
+                                💳 Stripe
                             </button>
                             <button
                                 type="button"

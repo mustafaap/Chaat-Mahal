@@ -569,6 +569,208 @@
     background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
 }
 
+/* Cash / Stripe pay method row */
+.pay-method-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    flex: 1;
+}
+
+.cash-pay-button {
+    flex: 1;
+    background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+}
+
+.cash-pay-button:hover {
+    box-shadow: 0 5px 20px rgba(39, 174, 96, 0.3);
+}
+
+.stripe-pay-button {
+    flex: 1;
+    background: linear-gradient(135deg, #635bff 0%, #4f46e5 100%);
+}
+
+.stripe-pay-button:hover {
+    box-shadow: 0 5px 20px rgba(99, 91, 255, 0.3);
+}
+
+/* Stripe payment modal */
+.ol-stripe-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.ol-stripe-modal {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 360px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+    overflow: hidden;
+}
+
+.ol-stripe-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.ol-stripe-modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.ol-stripe-modal-close {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    width: 30px;
+    height: 30px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.ol-stripe-modal-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 18px;
+}
+
+.ol-stripe-amount {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(135deg, #635bff 0%, #4f46e5 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 12px 32px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ol-stripe-amount-label {
+    font-size: 0.8rem;
+    opacity: 0.85;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.ol-stripe-amount-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.ol-stripe-qr-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ol-stripe-qr {
+    width: 180px;
+    height: 180px;
+    border-radius: 6px;
+    display: block;
+}
+
+.ol-stripe-qr-caption {
+    margin: 0;
+    font-size: 0.82rem;
+    color: #888;
+    font-style: italic;
+}
+
+.ol-stripe-share-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #635bff 0%, #4f46e5 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(99,91,255,0.3);
+    transition: all 0.2s ease;
+}
+
+.ol-stripe-share-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(99,91,255,0.4);
+}
+
+.ol-stripe-close-btn {
+    width: 100%;
+    padding: 10px;
+    background: #f0f0f0;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #555;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.ol-stripe-close-btn:hover {
+    background: #e2e2e2;
+}
+
+.ol-stripe-breakdown {
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.ol-stripe-breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 14px;
+    font-size: 0.9rem;
+    color: #444;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.ol-stripe-breakdown-row:last-child {
+    border-bottom: none;
+}
+
+.ol-stripe-breakdown-total {
+    background: #f3f0ff;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #2c1b6e;
+    padding: 12px 14px;
+}
+
 /* Admin controls styling */
 .admin-controls {
     display: flex;
@@ -1198,6 +1400,22 @@
     box-shadow: 0 5px 20px rgba(243, 156, 18, 0.3) !important;
 }
 
+.undo-payment-button.disabled-btn {
+    background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.undo-payment-button.disabled-btn::after {
+    content: '🔒';
+    margin-left: 8px;
+}
+
+.undo-payment-button.disabled-btn:hover {
+    background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%) !important;
+    box-shadow: none !important;
+}
+
 /* Edit Order Styles */
 .items-header-content {
     display: flex;
@@ -1225,6 +1443,18 @@
 .edit-order-btn:hover {
     background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
     transform: translateY(-1px);
+}
+
+.edit-order-btn.disabled-btn {
+    background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+}
+
+.edit-order-btn.disabled-btn:hover {
+    background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
+    transform: none;
 }
 
 .edit-order-container {
@@ -1829,38 +2059,6 @@
     content: '📧❌';
 }
 
-/* Update bottom controls to accommodate new layout */
-.bottom-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-}
-
-/* New sub-controls for the smaller buttons */
-.bottom-sub-controls {
-    display: flex;
-    gap: 6px;
-}
-
-/* Half-width buttons in the bottom row - now full width since stacked */
-.half-width-btn {
-    width: 100%;
-    height: auto;
-    flex: 1;
-    font-size: 0.85rem;
-    padding: 10px 12px;
-}
-
-/* Quarter width buttons for the bottom row */
-.quarter-width-btn {
-    width: 100%;
-    height: auto;
-    flex: 1;
-    font-size: 0.8rem;
-    padding: 8px 10px;
-}
-
 /* Mobile responsive adjustments */
 @media (max-width: 880px) {
     .bottom-sub-controls {
@@ -1883,6 +2081,10 @@
         min-width: 100px;
     }
     
+    .pay-method-row {
+        flex-direction: row;
+    }
+    
     .quarter-width-btn {
         font-size: 0.7rem;
         padding: 5px 6px;
@@ -1898,4 +2100,58 @@
 .email-clicked-green {
     background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%) !important;
     border-color: #27ae60 !important;
+}
+
+/* Paid-order main row: Complete Order + ⋯ toggle */
+.paid-main-controls {
+    display: flex;
+    gap: 6px;
+    align-items: stretch;
+}
+
+.paid-main-controls .complete-button {
+    flex: 1;
+}
+
+.more-options-btn {
+    flex: 0 0 auto;
+    min-width: 42px;
+    padding: 8px 10px;
+    font-size: 1.25rem;
+    line-height: 1;
+    background: linear-gradient(135deg, #636e72 0%, #2d3436 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+}
+
+.more-options-btn.more-options-open {
+    background: linear-gradient(135deg, #636e72 0%, #2d3436 100%);
+}
+
+/* Collapsible more-options dropdown */
+.more-options-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 4px;
+    padding: 8px;
+    background: rgba(0,0,0,0.04);
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.08);
+    animation: slideDown 0.15s ease-out;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.more-menu-item {
+    width: 100%;
+    font-size: 0.82rem;
+    padding: 8px 12px;
+    text-align: left;
 }

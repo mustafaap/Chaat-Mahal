@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Switch, Link, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import KioskForm from './components/KioskForm';
 import OrderList from './components/OrderList';
 import AdminControls from './components/AdminControls';
@@ -265,6 +266,19 @@ const App = () => {
 const AppContent = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) => {
   const location = useLocation();
   const isAdminPage = location.pathname === '/orders';
+
+  // Verify Stripe checkout session on return from payment page
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const paymentStatus = params.get('payment');
+    const sessionId = params.get('session_id');
+    if (paymentStatus === 'success' && sessionId) {
+      axios.post('/api/payments/verify-session', { sessionId })
+        .catch(err => console.error('verify-session error:', err));
+      // Clean the URL so a refresh doesn't re-trigger
+      window.history.replaceState({}, '', '/');
+    }
+  }, []);
 
   return (
     <div>

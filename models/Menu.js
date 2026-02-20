@@ -29,8 +29,7 @@ const menuSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        required: true,
-        enum: ['Chaat', 'Wraps', 'Drinks']
+        required: true
     },
     description: {
         type: String,

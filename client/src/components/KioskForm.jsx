@@ -390,8 +390,8 @@ const KioskForm = ({ initialStep = 1 }) => {
             items: Object.values(selectedItems).flatMap(item => 
                 Array(item.quantity).fill(item.options.length > 0 ? `${item.name} (${item.options.join(', ')})` : item.name)
             ),
-            total: subtotal + tip, // Add tip to subtotal for counter payments
-            tip: tip, // Include tip in order data
+            total: subtotal,  // store subtotal only; tip stored separately
+            tip: tip,
             notes: notes || '',
             paymentId: null,
             paid: false
@@ -423,15 +423,18 @@ const KioskForm = ({ initialStep = 1 }) => {
         const convenienceFee = (subtotal + taxAmount + tip) * 0.029 + 0.30;
         const totalWithTax = +(subtotal + taxAmount + convenienceFee + tip).toFixed(2);
 
-        // For online payments, send total with tax and tip
+        // For online payments, send total without tip (tip stored separately; OrderList adds them for display)
         const orderData = {
             customerName,
             customerEmail,
             items: Object.values(selectedItems).flatMap(item => 
                 Array(item.quantity).fill(item.options.length > 0 ? `${item.name} (${item.options.join(', ')})` : item.name)
             ),
-            total: totalWithTax,
-            tip: tip, // Add tip to order data
+            total: +subtotal.toFixed(2),  // raw subtotal only, consistent with counter orders
+            tip: tip,
+            taxAmount: +taxAmount.toFixed(2),
+            convenienceFee: +convenienceFee.toFixed(2),
+            stripeTotal: totalWithTax,  // full amount actually charged (subtotal + tax + fee + tip)
             notes: notes || '',
             paymentId: paymentId,
             paid: true
@@ -806,9 +809,6 @@ const KioskForm = ({ initialStep = 1 }) => {
                                 <p>💵 Pay at Counter</p>
                             </div>
                             <p>Please pay at the counter to enter preparation queue.</p>
-                            <p className="counter-payment-disclaimer">
-                                <em>Note: Price may vary slightly due to convenience fees.</em>
-                            </p>
                         </div>
                     )}
 
@@ -852,24 +852,28 @@ const KioskForm = ({ initialStep = 1 }) => {
                                     return sum + (itemPrice * quantity);
                                 }, 0).toFixed(2)}</span>
                             </div>
-                            <div className="pricing-row">
-                                <span>Tax:</span>
-                                <span>${(Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
-                                    const itemPrice = calculateItemPrice(name, options);
-                                    return sum + (itemPrice * quantity);
-                                }, 0) * 0.0825).toFixed(2)}</span>
-                            </div>
-                            <div className="pricing-row">
-                                <span>Convenience Fee:</span>
-                                <span>${(() => {
-                                    const sub = Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+                            {paymentId && (
+                                <>
+                                <div className="pricing-row">
+                                    <span>Tax:</span>
+                                    <span>${(Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
                                         const itemPrice = calculateItemPrice(name, options);
                                         return sum + (itemPrice * quantity);
-                                    }, 0);
-                                    const tax = sub * 0.0825;
-                                    return ((sub + tax + tipAmount) * 0.029 + 0.30).toFixed(2);
-                                })()}</span>
-                            </div>
+                                    }, 0) * 0.0825).toFixed(2)}</span>
+                                </div>
+                                <div className="pricing-row">
+                                    <span>Convenience Fee:</span>
+                                    <span>${(() => {
+                                        const sub = Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+                                            const itemPrice = calculateItemPrice(name, options);
+                                            return sum + (itemPrice * quantity);
+                                        }, 0);
+                                        const tax = sub * 0.0825;
+                                        return ((sub + tax + tipAmount) * 0.029 + 0.30).toFixed(2);
+                                    })()}</span>
+                                </div>
+                                </>
+                            )}
                             {tipAmount > 0 && (
                                 <div className="pricing-row tip-row">
                                     <span>Tip:</span>
@@ -885,6 +889,10 @@ const KioskForm = ({ initialStep = 1 }) => {
                                     const itemPrice = calculateItemPrice(name, options);
                                     return sum + (itemPrice * quantity);
                                 }, 0);
+                                if (!paymentId) {
+                                    // Counter payment: just subtotal + tip
+                                    return (subtotal + tipAmount).toFixed(2);
+                                }
                                 const tax = subtotal * 0.0825;
                                 const fee = (subtotal + tax + tipAmount) * 0.029 + 0.30;
                                 return (subtotal + tax + fee + tipAmount).toFixed(2);

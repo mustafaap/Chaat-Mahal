@@ -51,6 +51,8 @@ const OrderList = ({ currentView, setCurrentView }) => {
     const view = currentView || localView;
     const setView = setCurrentView || setLocalView;
 
+    const [stripePayModal, setStripePayModal] = useState(null); // { url, subtotal, tip, tax, fee, stripeTotal, customerName }
+
     const fetchOrders = async () => {
         const response = await axios.get('/api/orders/all');
         setOrders(response.data);
@@ -149,6 +151,41 @@ const OrderList = ({ currentView, setCurrentView }) => {
         } catch (error) {
             console.error('Error updating paid status:', error);
             showToast('Failed to update paid status. Please try again.', 'error');
+        }
+    };
+
+    const handleStripePayForOrder = async (order) => {
+        try {
+            const subtotal = order.total;
+            const tip = order.tip || 0;
+            const tax = subtotal * 0.0825;
+            const fee = (subtotal + tax + tip) * 0.029 + 0.30;
+            const stripeTotal = +(subtotal + tax + fee + tip).toFixed(2);
+
+            // Don't patch DB here — financial fields are stored only when payment
+            // completes via the Stripe webhook, so switching to cash stays clean.
+            const res = await axios.post('/api/payments/create-checkout-session', {
+                amountInCents: Math.round(stripeTotal * 100),
+                customerName: order.customerName,
+                customerEmail: order.customerEmail || '',
+                orderId: order._id,
+                description: order.items.slice(0, 3).join(', '),
+                taxAmount: +tax.toFixed(2),
+                convenienceFee: +fee.toFixed(2),
+                stripeTotal,
+            });
+            setStripePayModal({
+                url: res.data.url,
+                subtotal,
+                tip,
+                tax,
+                fee,
+                stripeTotal,
+                customerName: order.customerName,
+            });
+        } catch (error) {
+            console.error('Error creating stripe session:', error);
+            showToast('Failed to generate payment link. Please try again.', 'error');
         }
     };
 
@@ -523,6 +560,19 @@ const OrderList = ({ currentView, setCurrentView }) => {
     }, [view]);
 
     const [emailSending, setEmailSending] = useState({});
+    const [openMoreMenus, setOpenMoreMenus] = useState({});
+    const toggleMoreMenu = (id) => setOpenMoreMenus(prev => ({ ...prev, [id]: !prev[id] }));
+
+    // Close any open more-options menu when clicking outside
+    useEffect(() => {
+        const handleOutsideClick = (e) => {
+            if (!e.target.closest('.more-options-btn') && !e.target.closest('.more-options-menu')) {
+                setOpenMoreMenus({});
+            }
+        };
+        document.addEventListener('mousedown', handleOutsideClick);
+        return () => document.removeEventListener('mousedown', handleOutsideClick);
+    }, []);
 
     // Add this state for tracking green button status
     const [emailButtonClicked, setEmailButtonClicked] = useState({});
@@ -633,9 +683,10 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                             <span>Items to Prepare</span>
                                                             {!isBeingEdited && (
                                                                 <button 
-                                                                    className="edit-order-btn"
-                                                                    onClick={() => startEditingOrder(order)}
-                                                                    title="Edit order items"
+                                                                    className={`edit-order-btn${order.paid ? ' disabled-btn' : ''}`}
+                                                                    onClick={() => !order.paid && startEditingOrder(order)}
+                                                                    title={order.paid ? "Cannot edit a paid order" : "Edit order items"}
+                                                                    disabled={order.paid}
                                                                 >
                                                                     ✏️ Edit
                                                                 </button>
@@ -743,8 +794,8 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                 </div>
                                                 
                                                 <div className="admin-order-total">
-                                                    Total: ${(order.total + (order.tip || 0)).toFixed(2)}
-                                                    {order.tip > 0 && <span className="tip-indicator"> (includes ${order.tip.toFixed(2)} tip)</span>}
+                                                    Total: ${order.stripeTotal ? order.stripeTotal.toFixed(2) : (order.total + (order.tip || 0)).toFixed(2)}
+                                                    {order.stripeTotal ? <span className="tip-indicator"> (Stripe — incl. tax &amp; fee{order.tip > 0 ? ` & $${order.tip.toFixed(2)} tip` : ''})</span> : order.tip > 0 && <span className="tip-indicator"> (includes ${order.tip.toFixed(2)} tip)</span>}
                                                     {/*Total: ${isBeingEdited ? calculateEditOrderTotal().toFixed(2) : order.total}*/}
                                                 </div>
                                             </div>
@@ -759,63 +810,83 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                         {!isBeingEdited && (
                                             <div className="order-controls">
                                                 {!order.paid ? (
-                                                    // Unpaid state: Mark as Paid (top), Cancel (bottom full width)
+                                                    // Unpaid state: Cash + Stripe + Cancel all in one row
                                                     <>
-                                                        <button
-                                                            onClick={() => markAsPaid(order._id)}
-                                                            className="control-button paid-button main-action-btn"
-                                                            title="Mark as paid to start preparation"
-                                                        >
-                                                            Mark as Paid
-                                                        </button>
-                                                        <button
-                                                            onClick={() => deleteOrder(order._id)}
-                                                            className="control-button delete-button full-width-btn"
-                                                            title="Cancel/Delete order"
-                                                        >
-                                                            Cancel Order
-                                                        </button>
+                                                        <div className="pay-method-row">
+                                                            <button
+                                                                onClick={() => markAsPaid(order._id)}
+                                                                className="control-button cash-pay-button"
+                                                                title="Mark as paid with cash"
+                                                            >
+                                                                💵 Cash
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleStripePayForOrder(order)}
+                                                                className="control-button stripe-pay-button"
+                                                                title="Generate Stripe payment link"
+                                                            >
+                                                                💳 Stripe
+                                                            </button>
+                                                            <button
+                                                                onClick={() => deleteOrder(order._id)}
+                                                                className="control-button delete-button"
+                                                                title="Cancel/Delete order"
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                        </div>
                                                     </>
                                                 ) : (
-                                                    // Paid state: Send Ready Email (top), Complete and Undo/Cancel (bottom split)
+                                                    // Paid state: Complete Order always visible; others in collapsible More menu
                                                     <>
                                                     <div className="bottom-controls">
-                                                        <button
-                                                            onClick={() => sendOrderReadyNotification(order._id)}
-                                                            className={`control-button ready-button half-width-btn ${
-                                                                !order.customerEmail ? 'disabled-btn' : 
-                                                                emailButtonClicked[order._id] ? 'email-clicked-green' : ''
-                                                            }`}
-                                                            title={order.customerEmail ? "Send 'Order Ready' email notification" : "No email address available"}
-                                                            disabled={!order.customerEmail || emailSending[order._id]}
-                                                        >
-                                                            {emailSending[order._id] ? 'Sending...' : order.customerEmail ? 'Send Ready Email' : 'No Email Available'}
-                                                        </button>
-                                                        
+                                                        <div className="paid-main-controls">
                                                             <button
                                                                 onClick={() => completeOrder(order._id)}
-                                                                className={`control-button complete-button half-width-btn ${allItemsGiven ? 'ready-to-complete' : ''}`}
+                                                                className={`control-button complete-button${allItemsGiven ? ' ready-to-complete' : ''}`}
                                                                 title="Mark order as completed"
                                                             >
                                                                 Complete Order
                                                             </button>
-                                                            <div className="bottom-sub-controls">
+                                                            <button
+                                                                onClick={() => toggleMoreMenu(order._id)}
+                                                                className={`more-options-btn${openMoreMenus[order._id] ? ' more-options-open' : ''}`}
+                                                                title="More options"
+                                                            >
+                                                                {openMoreMenus[order._id] ? '✕' : '⋯'}
+                                                            </button>
+                                                        </div>
+                                                        {openMoreMenus[order._id] && (
+                                                            <div className="more-options-menu">
+                                                                <button
+                                                                    onClick={() => sendOrderReadyNotification(order._id)}
+                                                                    className={`control-button ready-button more-menu-item ${
+                                                                        !order.customerEmail ? 'disabled-btn' : 
+                                                                        emailButtonClicked[order._id] ? 'email-clicked-green' : ''
+                                                                    }`}
+                                                                    title={order.customerEmail ? "Send 'Order Ready' email notification" : "No email address available"}
+                                                                    disabled={!order.customerEmail || emailSending[order._id]}
+                                                                >
+                                                                    {emailSending[order._id] ? 'Sending...' : order.customerEmail ? '📧 Send Ready Email' : '📧 No Email Available'}
+                                                                </button>
                                                                 <button
                                                                     onClick={() => markAsPaid(order._id)}
-                                                                    className="control-button undo-payment-button quarter-width-btn"
-                                                                    title="Undo payment - mark as unpaid"
+                                                                    className={`control-button undo-payment-button more-menu-item${order.paymentId ? ' disabled-btn' : ''}`}
+                                                                    title={order.paymentId ? "Cannot undo — payment was collected via Stripe" : "Undo payment - mark as unpaid"}
+                                                                    disabled={!!order.paymentId}
                                                                 >
-                                                                    Undo Payment
+                                                                    ↶ Undo Payment
                                                                 </button>
                                                                 <button
                                                                     onClick={() => deleteOrder(order._id)}
-                                                                    className="control-button delete-button quarter-width-btn"
+                                                                    className="control-button delete-button more-menu-item"
                                                                     title="Cancel/Delete order"
                                                                 >
-                                                                    Cancel Order
+                                                                    🗑 Cancel Order
                                                                 </button>
                                                             </div>
-                                                        </div>
+                                                        )}
+                                                    </div>
                                                     </>
                                                 )}
                                             </div>
@@ -881,8 +952,8 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                 </div>
                                                 
                                                 <div className="admin-order-total">
-                                                    Total: ${(order.total + (order.tip || 0)).toFixed(2)}
-                                                    {order.tip > 0 && <span className="tip-indicator"> (includes ${order.tip.toFixed(2)} tip)</span>}
+                                                    Total: ${order.stripeTotal ? order.stripeTotal.toFixed(2) : (order.total + (order.tip || 0)).toFixed(2)}
+                                                    {order.stripeTotal ? <span className="tip-indicator"> (Stripe — incl. tax &amp; fee{order.tip > 0 ? ` & $${order.tip.toFixed(2)} tip` : ''})</span> : order.tip > 0 && <span className="tip-indicator"> (includes ${order.tip.toFixed(2)} tip)</span>}
                                                 </div>
                                             </div>
 
@@ -976,8 +1047,8 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                 </div>
                                                 
                                                 <div className="admin-order-total">
-                                                    Total: ${(order.total + (order.tip || 0)).toFixed(2)}
-                                                    {order.tip > 0 && <span className="tip-indicator"> (includes ${order.tip.toFixed(2)} tip)</span>}
+                                                    Total: ${order.stripeTotal ? order.stripeTotal.toFixed(2) : (order.total + (order.tip || 0)).toFixed(2)}
+                                                    {order.stripeTotal ? <span className="tip-indicator"> (Stripe — incl. tax &amp; fee{order.tip > 0 ? ` & $${order.tip.toFixed(2)} tip` : ''})</span> : order.tip > 0 && <span className="tip-indicator"> (includes ${order.tip.toFixed(2)} tip)</span>}
                                                 </div>
                                             </div>
 
@@ -1131,6 +1202,74 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                 onClick={closeEditOptionsModal}
                             >
                                 Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Stripe Payment Modal */}
+            {stripePayModal && (
+                <div className="ol-stripe-modal-overlay" onClick={() => setStripePayModal(null)}>
+                    <div className="ol-stripe-modal" onClick={e => e.stopPropagation()}>
+                        <div className="ol-stripe-modal-header">
+                            <h3>💳 Stripe Payment</h3>
+                            <button className="ol-stripe-modal-close" onClick={() => setStripePayModal(null)}>×</button>
+                        </div>
+                        <div className="ol-stripe-modal-body">
+                            <div className="ol-stripe-breakdown">
+                                <div className="ol-stripe-breakdown-row">
+                                    <span>Subtotal</span>
+                                    <span>${stripePayModal.subtotal.toFixed(2)}</span>
+                                </div>
+                                <div className="ol-stripe-breakdown-row">
+                                    <span>Tax (8.25%)</span>
+                                    <span>${stripePayModal.tax.toFixed(2)}</span>
+                                </div>
+                                <div className="ol-stripe-breakdown-row">
+                                    <span>Convenience Fee</span>
+                                    <span>${stripePayModal.fee.toFixed(2)}</span>
+                                </div>
+                                {stripePayModal.tip > 0 && (
+                                    <div className="ol-stripe-breakdown-row">
+                                        <span>Tip</span>
+                                        <span>${stripePayModal.tip.toFixed(2)}</span>
+                                    </div>
+                                )}
+                                <div className="ol-stripe-breakdown-row ol-stripe-breakdown-total">
+                                    <span>Total</span>
+                                    <span>${stripePayModal.stripeTotal.toFixed(2)}</span>
+                                </div>
+                            </div>
+                            <div className="ol-stripe-qr-wrap">
+                                <img
+                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(stripePayModal.url)}`}
+                                    alt="Payment QR"
+                                    className="ol-stripe-qr"
+                                />
+                                <p className="ol-stripe-qr-caption">Customer scans to pay</p>
+                            </div>
+                            <button
+                                className="ol-stripe-share-btn"
+                                onClick={() => {
+                                    if (navigator.share) {
+                                        navigator.share({
+                                            title: 'Chaat Mahal Payment',
+                                            text: `Pay $${stripePayModal.stripeTotal.toFixed(2)} for your Chaat Mahal order`,
+                                            url: stripePayModal.url,
+                                        }).catch(() => {});
+                                    } else {
+                                        window.open(stripePayModal.url, '_blank');
+                                    }
+                                }}
+                            >
+                                📱 Share Payment Link
+                            </button>
+                            <button
+                                className="ol-stripe-close-btn"
+                                onClick={() => setStripePayModal(null)}
+                            >
+                                Close
                             </button>
                         </div>
                     </div>

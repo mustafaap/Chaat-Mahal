@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
+/* Prevent iOS from auto-zooming when tapping inputs (requires font-size >= 16px) */
+input, textarea, select {
+    font-size: 16px !important;
+}
+
 .navbar {
     background: linear-gradient(135deg, #b85c38 0%, #a14d2c 100%);
     padding: 6px 0; /* Reduced from 12px */

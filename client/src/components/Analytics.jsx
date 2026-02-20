@@ -11,7 +11,7 @@ const Analytics = () => {
     const [orders, setOrders] = useState([]);
     const [menuItems, setMenuItems] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [timeFilter, setTimeFilter] = useState('all');
+    const [timeFilter, setTimeFilter] = useState('month');
     const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [compareMode, setCompareMode] = useState(false);
@@ -27,7 +27,7 @@ const Analytics = () => {
         try {
             setLoading(true);
             const [ordersRes, menuRes] = await Promise.all([
-                axios.get('/api/orders/all'),
+                axios.get('/api/orders/all?ignoreReset=true'), // analytics always needs full history
                 axios.get('/api/menu')
             ]);
             setOrders(ordersRes.data);
@@ -99,13 +99,21 @@ const Analytics = () => {
         });
     };
 
+    // Actual money collected for an order:
+    // Stripe orders → stripeTotal (subtotal + tax + fee + tip)
+    // Cash/counter orders → total (subtotal) + tip
+    const orderRevenue = (order) =>
+        order.stripeTotal != null ? order.stripeTotal : (order.total + (order.tip || 0));
+
     // Calculate key metrics
     const calculateMetrics = (orders) => {
         const completedOrders = orders.filter(o => o.status === 'Completed');
-        const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-        const totalTips = orders.reduce((sum, order) => sum + (order.tip || 0), 0);
+        // Exclude cancelled orders so revenue/tips/avg only reflect real/active orders
+        const nonCancelledOrders = orders.filter(o => o.status !== 'Cancelled');
+        const totalRevenue = nonCancelledOrders.reduce((sum, order) => sum + orderRevenue(order), 0);
+        const totalTips = nonCancelledOrders.reduce((sum, order) => sum + (order.tip || 0), 0);
         const totalOrders = orders.length;
-        const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+        const avgOrderValue = nonCancelledOrders.length > 0 ? totalRevenue / nonCancelledOrders.length : 0;
         const completionRate = totalOrders > 0 ? (completedOrders.length / totalOrders) * 100 : 0;
         const paidOrders = orders.filter(o => o.paid).length;
         const paymentRate = totalOrders > 0 ? (paidOrders / totalOrders) * 100 : 0;
@@ -128,21 +136,40 @@ const Analytics = () => {
         return itemString.split(' (')[0];
     };
 
-    // Get top selling items
+    // Calculate actual price of an item string including extra option costs
+    const calculateItemPrice = (itemString) => {
+        const parts = itemString.split(' (');
+        const itemName = parts[0];
+        const options = parts[1] ? parts[1].replace(')', '').split(', ') : [];
+        const menuItem = menuItems.find(m => m.name === itemName);
+        if (!menuItem) return 0;
+        let price = menuItem.price;
+        if (menuItem.extraOptions && options.length > 0) {
+            options.forEach(option => {
+                if (menuItem.extraOptions[option]) {
+                    price += menuItem.extraOptions[option];
+                } else {
+                    const baseOptionName = option.replace(/\s*\(\+\$\d+(\.\d+)?\)/, '');
+                    if (menuItem.extraOptions[baseOptionName]) {
+                        price += menuItem.extraOptions[baseOptionName];
+                    }
+                }
+            });
+        }
+        return price;
+    };
+
+    // Get top selling items (exclude cancelled — those were never served)
     const getTopSellingItems = (orders) => {
         const itemCounts = {};
         const itemRevenue = {};
 
-        orders.forEach(order => {
+        orders.filter(o => o.status !== 'Cancelled').forEach(order => {
             order.items.forEach(itemString => {
                 const itemName = parseItemName(itemString);
                 itemCounts[itemName] = (itemCounts[itemName] || 0) + 1;
-                
-                // Calculate revenue (approximate based on menu price)
-                const menuItem = menuItems.find(m => m.name === itemName);
-                if (menuItem) {
-                    itemRevenue[itemName] = (itemRevenue[itemName] || 0) + menuItem.price;
-                }
+                // Calculate revenue using actual price including extra options
+                itemRevenue[itemName] = (itemRevenue[itemName] || 0) + calculateItemPrice(itemString);
             });
         });
 
@@ -156,19 +183,19 @@ const Analytics = () => {
             .slice(0, 10);
     };
 
-    // Get sales by category
+    // Get sales by category (exclude cancelled orders)
     const getSalesByCategory = (orders) => {
         const categorySales = {};
         const categoryCount = {};
 
-        orders.forEach(order => {
+        orders.filter(o => o.status !== 'Cancelled').forEach(order => {
             order.items.forEach(itemString => {
                 const itemName = parseItemName(itemString);
                 const menuItem = menuItems.find(m => m.name === itemName);
                 
                 if (menuItem && menuItem.category) {
                     const category = menuItem.category;
-                    categorySales[category] = (categorySales[category] || 0) + menuItem.price;
+                    categorySales[category] = (categorySales[category] || 0) + calculateItemPrice(itemString);
                     categoryCount[category] = (categoryCount[category] || 0) + 1;
                 }
             });
@@ -186,11 +213,11 @@ const Analytics = () => {
             .sort((a, b) => b.revenue - a.revenue);
     };
 
-    // Get orders by hour of day
+    // Get orders by hour of day (exclude cancelled)
     const getOrdersByHour = (orders) => {
         const hourCounts = Array(24).fill(0);
         
-        orders.forEach(order => {
+        orders.filter(o => o.status !== 'Cancelled').forEach(order => {
             const hour = new Date(order.createdAt).getHours();
             hourCounts[hour]++;
         });
@@ -204,48 +231,48 @@ const Analytics = () => {
         })).filter(h => h.count > 0);
     };
 
-    // Get revenue trend by day (last 7 days or within filter)
+    // Get revenue trend by day (last 7 days or within filter, exclude cancelled)
     const getRevenueTrend = (orders) => {
+        // Key by full ISO date (YYYY-MM-DD) for correct sorting, display as "Feb 3"
         const dailyRevenue = {};
+        const dailyLabel = {};
 
-        orders.forEach(order => {
-            const date = new Date(order.createdAt).toLocaleDateString();
-            dailyRevenue[date] = (dailyRevenue[date] || 0) + order.total;
+        orders.filter(o => o.status !== 'Cancelled').forEach(order => {
+            const d = new Date(order.createdAt);
+            const key = d.toISOString().split('T')[0]; // "2025-08-29" — year-aware, sorts correctly
+            const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            dailyRevenue[key] = (dailyRevenue[key] || 0) + orderRevenue(order);
+            dailyLabel[key] = label;
         });
 
-        const maxRevenue = Math.max(...Object.values(dailyRevenue), 1);
-
-        return Object.entries(dailyRevenue)
-            .map(([date, revenue]) => ({
-                date,
-                revenue,
-                percentage: (revenue / maxRevenue) * 100
-            }))
-            .slice(-7); // Last 7 days
+        return Object.keys(dailyRevenue)
+            .sort() // ISO strings sort lexicographically = chronologically
+            .map(key => ({ date: dailyLabel[key], revenue: dailyRevenue[key] }));
+        // No slice — filteredOrders is already scoped to the selected time period
     };
 
-    // Payment method breakdown
+    // Payment method breakdown (completed orders only)
     const getPaymentBreakdown = (orders) => {
-        const paidOnline = orders.filter(o => o.paid && o.paymentId).length;
-        const paidCounter = orders.filter(o => o.paid && !o.paymentId).length;
-        const unpaid = orders.filter(o => !o.paid).length;
-        const paidTotal = paidOnline + paidCounter || 1; // Only count paid orders
+        const completedOrders = orders.filter(o => o.status === 'Completed');
+        const paidOnline = completedOrders.filter(o => o.paid && o.paymentId).length;
+        const paidCounter = completedOrders.filter(o => o.paid && !o.paymentId).length;
+        const paidTotal = paidOnline + paidCounter || 1;
 
         return {
             online: {
                 count: paidOnline,
                 percentage: (paidOnline / paidTotal) * 100,
-                revenue: orders.filter(o => o.paid && o.paymentId).reduce((sum, o) => sum + o.total, 0)
+                revenue: completedOrders.filter(o => o.paid && o.paymentId).reduce((sum, o) => sum + orderRevenue(o), 0)
             },
             counter: {
                 count: paidCounter,
                 percentage: (paidCounter / paidTotal) * 100,
-                revenue: orders.filter(o => o.paid && !o.paymentId).reduce((sum, o) => sum + o.total, 0)
+                revenue: completedOrders.filter(o => o.paid && !o.paymentId).reduce((sum, o) => sum + orderRevenue(o), 0)
             },
             unpaid: {
-                count: unpaid,
-                percentage: (unpaid / (orders.length || 1)) * 100,
-                revenue: orders.filter(o => !o.paid).reduce((sum, o) => sum + o.total, 0)
+                count: orders.filter(o => o.status === 'Pending' && !o.paid).length,
+                percentage: 0,
+                revenue: 0
             }
         };
     };
@@ -281,19 +308,20 @@ const Analytics = () => {
         const dayData = Array(daysInMonth).fill(null).map(() => ({ count: 0, revenue: 0 }));
         const monthOrders = [];
 
-        orders.forEach(order => {
+        // Exclude cancelled orders from heatmap counts and revenue
+        orders.filter(o => o.status !== 'Cancelled').forEach(order => {
             const orderDate = new Date(order.createdAt);
             if (orderDate.getMonth() === month && orderDate.getFullYear() === year) {
                 const day = orderDate.getDate() - 1;
                 dayData[day].count++;
-                dayData[day].revenue += order.total || 0;
+                dayData[day].revenue += orderRevenue(order);
                 monthOrders.push(order);
             }
         });
 
         const maxOrders = Math.max(...dayData.map(d => d.count), 1);
         const totalOrders = monthOrders.length;
-        const totalRevenue = monthOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+        const totalRevenue = monthOrders.reduce((sum, o) => sum + orderRevenue(o), 0);
         const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
         const totalTips = monthOrders.reduce((sum, o) => sum + (o.tip || 0), 0);
         
@@ -353,8 +381,8 @@ const Analytics = () => {
         const currentOrders = filteredOrders;
         const previousOrders = getPreviousPeriodOrders();
 
-        const currentRevenue = currentOrders.reduce((sum, o) => sum + o.total, 0);
-        const previousRevenue = previousOrders.reduce((sum, o) => sum + o.total, 0);
+        const currentRevenue = currentOrders.filter(o => o.status !== 'Cancelled').reduce((sum, o) => sum + orderRevenue(o), 0);
+        const previousRevenue = previousOrders.filter(o => o.status !== 'Cancelled').reduce((sum, o) => sum + orderRevenue(o), 0);
 
         const currentCount = currentOrders.length;
         const previousCount = previousOrders.length;
@@ -384,7 +412,7 @@ const Analytics = () => {
             order.customerName,
             new Date(order.createdAt).toLocaleString(),
             order.items.join('; '),
-            `$${order.total.toFixed(2)}`,
+            `$${orderRevenue(order).toFixed(2)}`,
             order.status,
             order.paid ? 'Yes' : 'No'
         ]);
@@ -415,99 +443,61 @@ const Analytics = () => {
             return orderDate >= monthStart && orderDate <= monthEnd;
         });
 
-        // Calculate all metrics
-        const totalTransactions = monthOrders.length;
+        // Tax report only covers completed (paid/served) orders — cancelled orders are excluded
         const completedOrders = monthOrders.filter(o => o.status === 'Completed');
-        const cancelledOrders = monthOrders.filter(o => o.status === 'Cancelled');
-        
-        // Gross sales (all orders including cancelled)
-        const grossSales = monthOrders.reduce((sum, o) => sum + o.total, 0);
-        
-        // Returns (cancelled orders)
-        const returns = cancelledOrders.reduce((sum, o) => sum + o.total, 0);
-        
-        // Net sales (completed orders only)
-        const netSales = completedOrders.reduce((sum, o) => sum + o.total, 0);
-        
-        // Calculate tax (8.25% NC sales tax)
-        // Formula: total = subtotal * 1.0825, so tax = total - (total / 1.0825)
-        const totalTax = completedOrders.reduce((sum, order) => {
-            const subtotalWithTip = order.total - 0.35; // Remove convenience fee
-            const taxAmount = subtotalWithTip / 1.0825 * 0.0825;
-            return sum + taxAmount;
-        }, 0);
-        
+
+        // Gross sales = completed order subtotals (pre-tax/fee/tip)
+        const grossSales = completedOrders.reduce((sum, o) => sum + o.total, 0);
+        // Tax collected from stored taxAmount (Stripe orders only; cash = $0)
+        const totalTax = completedOrders.reduce((sum, o) => sum + (o.taxAmount || 0), 0);
         // Tips
         const totalTips = completedOrders.reduce((sum, o) => sum + (o.tip || 0), 0);
-        
-        // Total payments collected
-        const totalCollected = netSales;
-        
-        // Payment processing fees (convenience fee)
-        const convenienceFees = completedOrders.length * 0.35;
-        
-        // Card processing fees (estimated 2.9% + $0.30 for online payments)
-        const onlinePayments = completedOrders.filter(o => o.paid && o.paymentId);
-        const cardProcessingFees = onlinePayments.reduce((sum, o) => {
-            return sum + (o.total * 0.029 + 0.30);
-        }, 0);
-        
-        const totalFees = convenienceFees + cardProcessingFees;
-        
-        // Net total (what you keep after fees)
+        // Total collected = actual money received (stripeTotal for online, subtotal+tip for counter)
+        const totalCollected = completedOrders.reduce((sum, o) => sum + orderRevenue(o), 0);
+        // Processing fees (Stripe 2.9%+$0.30; cash = $0)
+        const totalFees = completedOrders.reduce((sum, o) => sum + (o.convenienceFee || 0), 0);
+        // Net total = what you keep after processing fees
         const netTotal = totalCollected - totalFees;
-        
-        // Items breakdown
-        const itemsRevenue = completedOrders.reduce((sum, order) => {
-            const subtotalWithTip = order.total - 0.35;
-            const taxAmount = subtotalWithTip / 1.0825 * 0.0825;
-            const subtotal = subtotalWithTip - taxAmount - (order.tip || 0);
-            return sum + subtotal;
-        }, 0);
+        // Taxable revenue = subtotals of completed Stripe orders only
+        const onlinePayments = completedOrders.filter(o => o.paid && o.paymentId);
+        const taxableRevenue = onlinePayments.reduce((sum, o) => sum + o.total, 0);
+        // Payment breakdown
+        const onlineRevenue = onlinePayments.reduce((sum, o) => sum + orderRevenue(o), 0);
+        const counterRevenue = totalCollected - onlineRevenue;
 
         const monthName = new Date(reportYear, reportMonth).toLocaleString('en-US', { month: 'long' });
         const dateRange = `${monthName} 1-${monthEnd.getDate()}, ${reportYear}`;
 
-        const csvContent = `Monthly Sales Summary - Tax Report
-` +
+        const csvContent = `Monthly Sales Summary - Tax Report\n` +
             `${dateRange}\n` +
             `Generated: ${new Date().toLocaleString()}\n\n` +
             `SALES SUMMARY\n` +
             `=================================================\n\n` +
-            `Total Sales,"$${netSales.toFixed(2)}"\n\n` +
+            `Total Sales,"$${grossSales.toFixed(2)}"\n\n` +
             `DETAILED BREAKDOWN\n` +
             `Summary,All day (12:00 AM-11:59 PM ET),,\n` +
-            `Gross sales,${totalTransactions} transactions,"$${grossSales.toFixed(2)}"\n` +
-            `  Items,${totalTransactions} transactions,"$${itemsRevenue.toFixed(2)}"\n` +
+            `Gross sales,${completedOrders.length} transactions,"$${grossSales.toFixed(2)}"\n` +
+            `  Items,${completedOrders.length} transactions,"$${grossSales.toFixed(2)}"\n` +
             `  Service charges,,"$0.00"\n` +
-            `Returns,${cancelledOrders.length} transactions,"($${returns.toFixed(2)})"\n` +
-            `Discounts & comps,,"$0.00"\n` +
-            `Net sales,${completedOrders.length} transactions,"$${netSales.toFixed(2)}"\n\n` +
-            `Deferred sales,,\n` +
-            `  Gift card sales,,"$0.00"\n\n` +
-            `Taxes,${completedOrders.length} transactions,"$${totalTax.toFixed(2)}"\n` +
+            `Discounts & comps,,"$0.00"\n\n` +
+            `Taxes,${onlinePayments.length} transactions,"$${totalTax.toFixed(2)}"\n` +
             `Tips,${completedOrders.filter(o => o.tip > 0).length} transactions,"$${totalTips.toFixed(2)}"\n\n` +
             `Total sales,${completedOrders.length} transactions,"$${totalCollected.toFixed(2)}"\n\n` +
             `Total payments collected,${completedOrders.length} transactions,"$${totalCollected.toFixed(2)}"\n` +
-            `  Card,"$${onlinePayments.reduce((s,o) => s + o.total, 0).toFixed(2)}"\n` +
-            `  Cash/Counter,"$${(totalCollected - onlinePayments.reduce((s,o) => s + o.total, 0)).toFixed(2)}"\n\n` +
+            `  Card,"$${onlineRevenue.toFixed(2)}"\n` +
+            `  Cash/Counter,"$${counterRevenue.toFixed(2)}"\n\n` +
             `FEES\n` +
-            `Convenience fees,,"($${convenienceFees.toFixed(2)})"\n` +
-            `Payment processing fees (estimated),,"($${cardProcessingFees.toFixed(2)})"\n` +
             `Total fees,,"($${totalFees.toFixed(2)})"\n\n` +
             `NET TOTAL,,"$${netTotal.toFixed(2)}"\n\n` +
             `=================================================\n` +
             `TAX INFORMATION (North Carolina)\n` +
             `Tax Rate: 8.25%\n` +
-            `Taxable Sales: "$${itemsRevenue.toFixed(2)}"\n` +
+            `Taxable Sales: "$${taxableRevenue.toFixed(2)}"\n` +
             `Tax Collected: "$${totalTax.toFixed(2)}"\n\n` +
             `PAYMENT METHODS\n` +
             `Online Payments: ${onlinePayments.length} orders\n` +
             `Counter Payments: ${completedOrders.length - onlinePayments.length} orders\n\n` +
-            `ORDER STATUS\n` +
-            `Completed: ${completedOrders.length} orders\n` +
-            `Cancelled: ${cancelledOrders.length} orders\n` +
-            `Total: ${totalTransactions} orders`;
+            `Completed Orders: ${completedOrders.length}`;
 
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
@@ -530,39 +520,25 @@ const Analytics = () => {
             return orderDate >= monthStart && orderDate <= monthEnd;
         });
 
-        // Calculate all metrics
-        const totalTransactions = monthOrders.length;
+        // Tax report only covers completed (paid/served) orders — cancelled orders excluded
         const completedOrders = monthOrders.filter(o => o.status === 'Completed');
-        const cancelledOrders = monthOrders.filter(o => o.status === 'Cancelled');
-        
-        const grossSales = monthOrders.reduce((sum, o) => sum + o.total, 0);
-        const returns = cancelledOrders.reduce((sum, o) => sum + o.total, 0);
-        const netSales = completedOrders.reduce((sum, o) => sum + o.total, 0);
-        
-        const totalTax = completedOrders.reduce((sum, order) => {
-            const subtotalWithTip = order.total - 0.35;
-            const taxAmount = subtotalWithTip / 1.0825 * 0.0825;
-            return sum + taxAmount;
-        }, 0);
-        
+
+        // Gross sales = completed order subtotals (pre-tax/fee/tip)
+        const grossSales = completedOrders.reduce((sum, o) => sum + o.total, 0);
+        // Tax and tips from stored fields
+        const totalTax = completedOrders.reduce((sum, o) => sum + (o.taxAmount || 0), 0);
         const totalTips = completedOrders.reduce((sum, o) => sum + (o.tip || 0), 0);
-        const totalCollected = netSales;
-        const convenienceFees = completedOrders.length * 0.35;
-        
-        const onlinePayments = completedOrders.filter(o => o.paid && o.paymentId);
-        const cardProcessingFees = onlinePayments.reduce((sum, o) => {
-            return sum + (o.total * 0.029 + 0.30);
-        }, 0);
-        
-        const totalFees = convenienceFees + cardProcessingFees;
+        // Total collected = actual money received (stripeTotal for online, subtotal+tip for counter)
+        const totalCollected = completedOrders.reduce((sum, o) => sum + orderRevenue(o), 0);
+        // Fees from stored convenienceFee (Stripe 2.9%+$0.30; cash = $0)
+        const totalFees = completedOrders.reduce((sum, o) => sum + (o.convenienceFee || 0), 0);
         const netTotal = totalCollected - totalFees;
-        
-        const itemsRevenue = completedOrders.reduce((sum, order) => {
-            const subtotalWithTip = order.total - 0.35;
-            const taxAmount = subtotalWithTip / 1.0825 * 0.0825;
-            const subtotal = subtotalWithTip - taxAmount - (order.tip || 0);
-            return sum + subtotal;
-        }, 0);
+        // Taxable revenue = subtotals of completed Stripe orders (only orders that had tax applied)
+        const onlinePayments = completedOrders.filter(o => o.paid && o.paymentId);
+        const taxableRevenue = onlinePayments.reduce((sum, o) => sum + o.total, 0);
+        // Payment method breakdown
+        const onlineRevenue = onlinePayments.reduce((sum, o) => sum + orderRevenue(o), 0);
+        const counterRevenue = totalCollected - onlineRevenue;
 
         const monthName = new Date(reportYear, reportMonth).toLocaleString('en-US', { month: 'long' });
         const dateRange = `${monthName} 1-${monthEnd.getDate()}, ${reportYear}`;
@@ -594,7 +570,7 @@ const Analytics = () => {
         doc.setFontSize(32);
         doc.setTextColor(0);
         doc.setFont(undefined, 'bold');
-        doc.text(`$${netSales.toFixed(2)}`, 20, yPos);
+        doc.text(`$${grossSales.toFixed(2)}`, 20, yPos);
         yPos += 20;
 
         // Summary Section
@@ -623,41 +599,25 @@ const Analytics = () => {
             yPos += 7;
         };
 
-        // Gross sales
+        // Gross sales (completed orders only — cancelled excluded from tax report)
         doc.setFont(undefined, 'bold');
-        addLineItem('Gross sales', `${totalTransactions} transactions`, `$${grossSales.toFixed(2)}`);
+        addLineItem('Gross sales', `${completedOrders.length} transactions`, `$${grossSales.toFixed(2)}`);
         doc.setFont(undefined, 'normal');
-        addLineItem('  Items', `${totalTransactions} transactions`, `$${itemsRevenue.toFixed(2)}`, 5);
+        addLineItem('  Items', `${completedOrders.length} transactions`, `$${grossSales.toFixed(2)}`, 5);
         addLineItem('  Service charges', '', '$0.00', 5);
-        
-        // Returns
-        if (cancelledOrders.length > 0) {
-            addLineItem('Returns', `${cancelledOrders.length} transactions`, `($${returns.toFixed(2)})`);
-        }
         addLineItem('Discounts & comps', '', '$0.00');
-        
-        // Net sales
-        doc.setFont(undefined, 'bold');
-        addLineItem('Net sales', `${completedOrders.length} transactions`, `$${netSales.toFixed(2)}`);
         yPos += 3;
 
-        // Deferred sales
+        // Taxes — only online (Stripe) orders have tax applied
         doc.setFont(undefined, 'bold');
-        addLineItem('Deferred sales', '', '');
-        doc.setFont(undefined, 'normal');
-        addLineItem('  Gift card sales', '', '$0.00', 5);
-        yPos += 3;
-
-        // Taxes
-        doc.setFont(undefined, 'bold');
-        addLineItem('Taxes', `${completedOrders.length} transactions`, `$${totalTax.toFixed(2)}`);
+        addLineItem('Taxes', `${onlinePayments.length} transactions`, `$${totalTax.toFixed(2)}`);
         
         // Tips
         const tipsCount = completedOrders.filter(o => o.tip > 0).length;
         addLineItem('Tips', `${tipsCount} transactions`, `$${totalTips.toFixed(2)}`);
         yPos += 3;
 
-        // Total sales (bold)
+        // Total sales = gross + tax + tips
         doc.setFont(undefined, 'bold');
         addLineItem('Total sales', `${completedOrders.length} transactions`, `$${totalCollected.toFixed(2)}`);
         yPos += 5;
@@ -666,9 +626,8 @@ const Analytics = () => {
         doc.setFont(undefined, 'bold');
         addLineItem('Total payments collected', `${completedOrders.length} transactions`, `$${totalCollected.toFixed(2)}`);
         doc.setFont(undefined, 'normal');
-        addLineItem('  Card', '', `$${onlinePayments.reduce((s,o) => s + o.total, 0).toFixed(2)}`, 5);
-        const counterTotal = totalCollected - onlinePayments.reduce((s,o) => s + o.total, 0);
-        addLineItem('  Counter/Cash', '', `$${counterTotal.toFixed(2)}`, 5);
+        addLineItem('  Card', '', `$${onlineRevenue.toFixed(2)}`, 5);
+        addLineItem('  Counter/Cash', '', `$${counterRevenue.toFixed(2)}`, 5);
         yPos += 5;
 
         // Fees
@@ -676,8 +635,7 @@ const Analytics = () => {
         doc.text('Fees', 20, yPos);
         yPos += 7;
         doc.setFont(undefined, 'normal');
-        addLineItem('  Convenience fees', '', `($${convenienceFees.toFixed(2)})`, 5);
-        addLineItem('  Payment processing fees', '', `($${cardProcessingFees.toFixed(2)})`, 5);
+        addLineItem('  Total fees', '', `($${totalFees.toFixed(2)})`, 5);
         yPos += 3;
 
         // Net total (bold and larger)
@@ -692,7 +650,7 @@ const Analytics = () => {
         doc.setFont(undefined, 'normal');
         doc.text('Tax Information: NC Sales Tax 8.25%', 20, yPos);
         yPos += 5;
-        doc.text(`Taxable Sales: $${itemsRevenue.toFixed(2)} | Tax Collected: $${totalTax.toFixed(2)}`, 20, yPos);
+        doc.text(`Taxable Sales: $${taxableRevenue.toFixed(2)} | Tax Collected: $${totalTax.toFixed(2)}`, 20, yPos);
 
         // Add page footer
         doc.setFontSize(8);
@@ -1130,10 +1088,7 @@ const Analytics = () => {
                     <div className="revenue-trend-container">
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart
-                                data={revenueTrend.map(day => ({
-                                    date: day.date.split('/')[1] + '/' + day.date.split('/')[0],
-                                    revenue: day.revenue
-                                }))}
+                                data={revenueTrend}
                                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" />

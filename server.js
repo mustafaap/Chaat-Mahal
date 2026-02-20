@@ -51,7 +51,14 @@ app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), asy
     if (orderId) {
       try {
         const Order = require('./models/Order');
-        await Order.findByIdAndUpdate(orderId, { paid: true, paymentId: session.id });
+        // Build update — store financial breakdown fields from metadata if present
+        const updateFields = { paid: true, paymentId: session.id };
+        const meta = session.metadata || {};
+        if (meta.taxAmount) updateFields.taxAmount = parseFloat(meta.taxAmount);
+        if (meta.convenienceFee) updateFields.convenienceFee = parseFloat(meta.convenienceFee);
+        if (meta.stripeTotal) updateFields.stripeTotal = parseFloat(meta.stripeTotal);
+        await Order.findByIdAndUpdate(orderId, updateFields);
+        // total stays as subtotal; stripeTotal holds the full charged amount
         io.emit('ordersUpdated');
         console.log(`Order ${orderId} marked as paid via Stripe webhook`);
       } catch (err) {

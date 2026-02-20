@@ -64,7 +64,7 @@ router.post('/create-intent', async (req, res) => {
 // Create a Stripe Checkout Session (for counter Stripe payments via QR/link)
 router.post('/create-checkout-session', async (req, res) => {
   try {
-    const { amountInCents, customerName, customerEmail, orderId, description } = req.body;
+    const { amountInCents, customerName, customerEmail, orderId, description, taxAmount, convenienceFee, stripeTotal } = req.body;
 
     if (!amountInCents || isNaN(Number(amountInCents))) {
       return res.status(400).json({ success: false, error: 'Invalid amount' });
@@ -90,19 +90,55 @@ router.post('/create-checkout-session', async (req, res) => {
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: `${baseUrl}/?payment=success`,
+      success_url: `${baseUrl}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/?payment=cancelled`,
       customer_email: customerEmail || undefined,
       metadata: {
         orderId: orderId || '',
         customerName: customerName || '',
         source: 'counter_order',
+        taxAmount: taxAmount != null ? String(taxAmount) : '',
+        convenienceFee: convenienceFee != null ? String(convenienceFee) : '',
+        stripeTotal: stripeTotal != null ? String(stripeTotal) : '',
       },
     });
 
     res.json({ success: true, url: session.url, sessionId: session.id });
   } catch (error) {
     console.error('Stripe checkout session error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Verify a Checkout Session and mark the order as paid (fallback for when webhook doesn't fire locally)
+router.post('/verify-session', async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    if (!sessionId) return res.status(400).json({ success: false, error: 'Missing sessionId' });
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (session.payment_status !== 'paid') {
+      return res.json({ success: false, message: 'Payment not completed' });
+    }
+
+    const orderId = session.metadata?.orderId;
+    if (!orderId) return res.json({ success: false, message: 'No orderId in session' });
+
+    const Order = require('../models/Order');
+    const order = await Order.findById(orderId);
+    if (!order) return res.json({ success: false, message: 'Order not found' });
+
+    const updateFields = { paid: true, paymentId: session.id };
+    const meta = session.metadata || {};
+    if (meta.taxAmount) updateFields.taxAmount = parseFloat(meta.taxAmount);
+    if (meta.convenienceFee) updateFields.convenienceFee = parseFloat(meta.convenienceFee);
+    if (meta.stripeTotal) updateFields.stripeTotal = parseFloat(meta.stripeTotal);
+
+    await Order.findByIdAndUpdate(orderId, updateFields);
+    if (req.io) req.io.emit('ordersUpdated');
+    res.json({ success: true, orderId });
+  } catch (error) {
+    console.error('verify-session error:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

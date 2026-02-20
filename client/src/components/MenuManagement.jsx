@@ -55,7 +55,8 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
         otherOptions: [],
         extraOptions: {},
         noModal: false,
-        active: true // Add this new field
+        active: true,
+        includeSpice: false
     });
 
     // Show toast notification
@@ -270,12 +271,33 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
             otherOptions: [],
             extraOptions: {},
             noModal: false,
-            active: true // Keep the field name as 'active' for backend compatibility
+            active: true,
+            includeSpice: false
         });
         setEditingItem(null);
         setShowAddForm(false);
         setUploadedImage(null);
         setImagePreview(null);
+    };
+
+    // Opens the add form with a proper reset using the currently loaded categories
+    const handleAddNew = () => {
+        setFormData({
+            name: '',
+            price: '',
+            image: '',
+            category: categories.length > 0 ? categories[0] : 'Chaat',
+            description: '',
+            otherOptions: [],
+            extraOptions: {},
+            noModal: false,
+            active: true,
+            includeSpice: false
+        });
+        setEditingItem(null);
+        setUploadedImage(null);
+        setImagePreview(null);
+        setShowAddForm(true);
     };
 
     const handleEdit = (item) => {
@@ -287,6 +309,8 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
             !opt.match(/\(\+\$\d+(\.\d+)?\)$/)
         );
 
+        const hasSpice = existingOptions.some(opt => standardSpiceLevels.includes(opt));
+
         setFormData({
             name: item.name,
             price: item.price.toString(),
@@ -296,7 +320,8 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
             otherOptions: otherOptions,
             extraOptions: item.extraOptions || {},
             noModal: item.noModal || false,
-            active: item.active !== undefined ? item.active : true // Add this line with fallback
+            active: item.active !== undefined ? item.active : true,
+            includeSpice: hasSpice
         });
         
         // Set preview for existing image
@@ -318,8 +343,8 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
 
         let standardOptions = [];
         
-        // Only add automatic spice levels for Chaat and Wraps, not Drinks
-        if (formData.category === 'Chaat' || formData.category === 'Wraps') {
+        // Add spice levels only if explicitly enabled via toggle
+        if (formData.includeSpice) {
             standardOptions = ['Mild', 'Medium', 'Spicy'];
         }
         
@@ -343,6 +368,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
         };
 
         delete itemData.otherOptions;
+        delete itemData.includeSpice;
 
         try {
             if (editingItem) {
@@ -752,7 +778,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                     <div className="menu-management-actions">
                         <button 
                             className="add-item-btn"
-                            onClick={() => setShowAddForm(true)}
+                            onClick={handleAddNew}
                         >
                             <span className="btn-icon">➕</span>
                             Add New Item
@@ -907,7 +933,8 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                                 otherOptions: [],
                                                 extraOptions: {},
                                                 noModal: false,
-                                                active: true
+                                                active: true,
+                                                includeSpice: false
                                             });
                                             setImagePreview(null);
                                             setUploadedImage(null);
@@ -1174,62 +1201,102 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                 />
                             </div>
 
-                            {/* Spice Level Info - Updated to exclude drinks */}
+                            {/* Spice Level Toggle */}
                             <div className="form-group full-width">
                                 <div className="spice-level-info-box">
-                                    <h4>🌶️ Spice Level Options (Automatic)</h4>
-                                    <p>
-                                        {formData.category === 'Chaat' || formData.category === 'Wraps' 
-                                            ? 'This item will automatically include: Mild, Medium, Spicy'
-                                            : formData.category === 'Drinks'
-                                            ? 'No automatic options for drinks. Use the options sections below or enable "No Options Modal" for simple drinks.'
-                                            : 'Select a category to see automatic options'
-                                        }
-                                    </p>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                                        <div>
+                                            <h4 style={{ margin: 0 }}>🌶️ Spice Level Slider</h4>
+                                            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>
+                                                {formData.includeSpice
+                                                    ? 'Customer will see Mild / Medium / Spicy options'
+                                                    : 'No spice slider — customer will not be asked about spice'}
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, includeSpice: !prev.includeSpice }))}
+                                            style={{
+                                                padding: '8px 18px',
+                                                borderRadius: '20px',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                fontWeight: '600',
+                                                fontSize: '0.9rem',
+                                                background: formData.includeSpice ? '#e53e3e' : '#48bb78',
+                                                color: '#fff',
+                                                whiteSpace: 'nowrap'
+                                            }}
+                                        >
+                                            {formData.includeSpice ? '✕ Remove Spice Slider' : '+ Add Spice Slider'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Add the Active Status toggle after the No Modal section */}
+                            {/* Available for Customers toggle */}
                             <div className="form-group full-width">
-                                <div className="active-status-section">
-                                    <label className="active-status-label">
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.active}
-                                            onChange={(e) => setFormData(prev => ({
-                                                ...prev,
-                                                active: e.target.checked
-                                            }))}
-                                            className="active-status-checkbox"
-                                        />
-                                        <span className="active-status-text">
-                                            <strong>✅ Available for Customers</strong>
-                                            <br />
-                                            <small>Uncheck to make this item unavailable in the customer menu (item will be hidden but not deleted)</small>
-                                        </span>
-                                    </label>
+                                <div className="spice-level-info-box">
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                                        <div>
+                                            <h4 style={{ margin: 0 }}>✅ Available for Customers</h4>
+                                            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>
+                                                {formData.active
+                                                    ? 'Item is visible and orderable in the customer menu'
+                                                    : 'Item is hidden from customers (not deleted)'}
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, active: !prev.active }))}
+                                            style={{
+                                                padding: '8px 18px',
+                                                borderRadius: '20px',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                fontWeight: '600',
+                                                fontSize: '0.9rem',
+                                                background: formData.active ? '#e53e3e' : '#48bb78',
+                                                color: '#fff',
+                                                whiteSpace: 'nowrap'
+                                            }}
+                                        >
+                                            {formData.active ? '✕ Make Unavailable' : '+ Make Available'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Add the No Modal option here */}
+                            {/* No Options Modal toggle */}
                             <div className="form-group full-width">
-                                <div className="no-modal-section">
-                                    <label className="no-modal-label">
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.noModal}
-                                            onChange={(e) => setFormData(prev => ({
-                                                ...prev,
-                                                noModal: e.target.checked
-                                            }))}
-                                            className="no-modal-checkbox"
-                                        />
-                                        <span className="no-modal-text">
-                                            <strong>🚫 No Options Modal</strong>
-                                            <br />
-                                            <small>Check this to make the item add directly to cart without opening an options modal (like simple drinks)</small>
-                                        </span>
-                                    </label>
+                                <div className="spice-level-info-box">
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                                        <div>
+                                            <h4 style={{ margin: 0 }}>🚫 No Options Modal</h4>
+                                            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>
+                                                {formData.noModal
+                                                    ? 'Item adds directly to cart — no options popup shown'
+                                                    : 'Item will show an options popup before adding to cart'}
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, noModal: !prev.noModal }))}
+                                            style={{
+                                                padding: '8px 18px',
+                                                borderRadius: '20px',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                fontWeight: '600',
+                                                fontSize: '0.9rem',
+                                                background: formData.noModal ? '#e53e3e' : '#48bb78',
+                                                color: '#fff',
+                                                whiteSpace: 'nowrap'
+                                            }}
+                                        >
+                                            {formData.noModal ? '✕ Disable No-Modal' : '+ Enable No-Modal'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1361,7 +1428,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                         <p>No menu items found in this category.</p>
                         <button 
                             className="add-first-item-btn"
-                            onClick={() => setShowAddForm(true)}
+                            onClick={handleAddNew}
                         >
                             Add Your First Item
                         </button>

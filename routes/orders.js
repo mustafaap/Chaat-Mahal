@@ -6,6 +6,7 @@ const { getNextOrderNumber } = require('../utils/orderCounter');
 const { sendOrderConfirmationEmail, sendOrderReadyEmail } = require('../utils/emailService');
 
 // GET all orders
+// Pass ?ignoreReset=true to bypass the view-reset timestamp filter (used by analytics)
 router.get('/all', async (req, res) => {
     try {
         const fs = require('fs').promises;
@@ -13,15 +14,25 @@ router.get('/all', async (req, res) => {
         const timestampFilePath = path.join(__dirname, '..', 'data', 'resetTimestamp.json');
         
         let resetTimestamp = null;
-        try {
-            const timestampData = await fs.readFile(timestampFilePath, 'utf8');
-            resetTimestamp = JSON.parse(timestampData).timestamp;
-        } catch (error) {
-            // No reset timestamp file exists, show all orders
+        if (req.query.ignoreReset !== 'true') {
+            try {
+                const timestampData = await fs.readFile(timestampFilePath, 'utf8');
+                resetTimestamp = JSON.parse(timestampData).timestamp;
+            } catch (error) {
+                // No reset timestamp file exists, show all orders
+            }
         }
         
-        // Filter orders created after reset timestamp
-        const query = resetTimestamp ? { createdAt: { $gte: new Date(resetTimestamp) } } : {};
+        // When a reset timestamp exists, only hide Pending orders older than the reset.
+        // Completed and Cancelled orders are always shown regardless of the reset.
+        const query = resetTimestamp
+            ? {
+                $or: [
+                    { createdAt: { $gte: new Date(resetTimestamp) } },           // any order after reset
+                    { status: { $in: ['Completed', 'Cancelled'] } }              // or non-pending regardless of age
+                ]
+              }
+            : {};
         const orders = await Order.find(query).sort({ createdAt: -1 });
         
         res.json(orders);
@@ -36,7 +47,7 @@ router.post('/', async (req, res) => {
     console.log('Received order data:', req.body); // Debug log
     
     try {
-        const { customerName, customerEmail, items, total, tip, notes, paymentId, paid } = req.body;
+        const { customerName, customerEmail, items, total, tip, taxAmount, convenienceFee, stripeTotal, notes, paymentId, paid } = req.body;
 
         // Validate required fields
         if (!customerName || !items || !total) {
@@ -58,7 +69,10 @@ router.post('/', async (req, res) => {
             customerEmail: customerEmail || '',
             items,
             total,
-            tip: tip || 0, // Add tip field
+            tip: tip || 0,
+            taxAmount: taxAmount || 0,
+            convenienceFee: convenienceFee || 0,
+            stripeTotal: stripeTotal || null,
             notes: notes || '',
             status: 'Pending',
             paymentId: paymentId || null,  // Explicitly set paymentId
@@ -135,7 +149,11 @@ router.post('/', async (req, res) => {
                         };
                     }),
                     total,
-                    tip: tip || 0, // Add tip to email data
+                    tip: tip || 0,
+                    taxAmount: taxAmount || 0,
+                    convenienceFee: convenienceFee || 0,
+                    stripeTotal: stripeTotal || null,
+                    paymentId: paymentId || null,
                     notes: notes || ''
                 };
                 
@@ -169,11 +187,16 @@ router.post('/', async (req, res) => {
 // PATCH - Update order paid status
 router.patch('/:id/paid', async (req, res) => {
     try {
-        const { paid } = req.body;
+        const { paid, taxAmount, convenienceFee, stripeTotal } = req.body;
+
+        const update = { paid };
+        if (taxAmount !== undefined) update.taxAmount = taxAmount;
+        if (convenienceFee !== undefined) update.convenienceFee = convenienceFee;
+        if (stripeTotal !== undefined) update.stripeTotal = stripeTotal;
         
         const order = await Order.findByIdAndUpdate(
             req.params.id,
-            { paid: paid },
+            update,
             { new: true }
         );
         
@@ -365,14 +388,21 @@ router.post('/:id/notify-ready', async (req, res) => {
     }
 });
 
-// POST - Reset order view timestamp (hide old orders, show only new ones)
+// POST - Reset order view timestamp (cancel pending orders + hide old orders)
 router.post('/reset-timestamp', async (req, res) => {
     try {
         const fs = require('fs').promises;
         const path = require('path');
         const timestampFilePath = path.join(__dirname, '..', 'data', 'resetTimestamp.json');
-        
-        // Create timestamp file with current time
+
+        // Cancel all currently pending orders so they count correctly in analytics
+        const cancelResult = await Order.updateMany(
+            { status: 'Pending' },
+            { status: 'Cancelled' }
+        );
+        console.log(`Reset: cancelled ${cancelResult.modifiedCount} pending order(s)`);
+
+        // Save reset timestamp so the board hides pre-reset orders going forward
         const resetData = {
             timestamp: new Date().toISOString()
         };
@@ -382,7 +412,11 @@ router.post('/reset-timestamp', async (req, res) => {
         await fs.writeFile(timestampFilePath, JSON.stringify(resetData, null, 2));
         
         req.io.emit('ordersUpdated');
-        res.json({ message: 'Order view reset successfully', timestamp: resetData.timestamp });
+        res.json({
+            message: 'Order view reset successfully',
+            timestamp: resetData.timestamp,
+            cancelledOrders: cancelResult.modifiedCount
+        });
     } catch (error) {
         console.error('Error resetting order view:', error);
         res.status(500).json({ message: 'Failed to reset order view' });

@@ -13,15 +13,13 @@ const createTransporter = () => {
 };
 
 const generateOrderConfirmationEmailHTML = (orderData) => {
-    const { customerName, orderNumber, items, total, tip = 0, paymentId } = orderData; // Add tip = 0
-    
-    // Calculate breakdown
-    const subtotalWithTip = total - 0.35; // Remove convenience fee
-    const taxAmount = subtotalWithTip / 1.0825 * 0.0825; // Calculate tax
-    const subtotal = subtotalWithTip - taxAmount - tip; // Add - tip here
-    const convenienceFee = 0.35;
-    const totalWithTaxAndFee = total;
-    
+    const { customerName, orderNumber, items, total, tip = 0, taxAmount = 0, convenienceFee = 0, stripeTotal = null } = orderData;
+
+    // If stripeTotal is present this was a card payment — use stored breakdown fields.
+    // Otherwise it's a cash/counter order — just show subtotal + tip.
+    const isStripe = !!stripeTotal;
+    const grandTotal = isStripe ? stripeTotal : (total + tip);
+
     const cssContent = fs.readFileSync(path.join(__dirname, 'styles', 'emailService.css'), 'utf8');
     
     return `
@@ -76,16 +74,18 @@ const generateOrderConfirmationEmailHTML = (orderData) => {
                         <table style="width: 100%; border-collapse: collapse;">
                             <tr style="border-bottom: 1px dashed rgba(0, 0, 0, 0.1);">
                                 <td style="padding: 8px 0; color: #666; font-weight: 500;">Subtotal:</td>
-                                <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #333;">$${subtotal.toFixed(2)}</td>
+                                <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #333;">$${total.toFixed(2)}</td>
                             </tr>
+                            ${isStripe ? `
                             <tr style="border-bottom: 1px dashed rgba(0, 0, 0, 0.1);">
-                                <td style="padding: 8px 0; color: #666; font-weight: 500;">Tax:</td>
+                                <td style="padding: 8px 0; color: #666; font-weight: 500;">Tax (8.25%):</td>
                                 <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #333;">$${taxAmount.toFixed(2)}</td>
                             </tr>
                             <tr style="border-bottom: 1px dashed rgba(0, 0, 0, 0.1);">
                                 <td style="padding: 8px 0; color: #666; font-weight: 500;">Convenience Fee:</td>
                                 <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #333;">$${convenienceFee.toFixed(2)}</td>
                             </tr>
+                            ` : ''}
                             ${tip > 0 ? `
                             <tr style="border-bottom: 1px dashed rgba(0, 0, 0, 0.1);">
                                 <td style="padding: 8px 0; color: #b85c38; font-weight: 600;">Tip:</td>
@@ -96,7 +96,7 @@ const generateOrderConfirmationEmailHTML = (orderData) => {
                     </div>
                     
                     <div class="total">
-                        Total Paid: $${totalWithTaxAndFee.toFixed(2)}
+                        Total ${isStripe ? 'Paid' : 'Due'}: $${grandTotal.toFixed(2)}
                     </div>
                 </div>
                 
