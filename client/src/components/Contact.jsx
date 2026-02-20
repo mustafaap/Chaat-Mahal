@@ -54,8 +54,8 @@ const Contact = () => {
                         </div>
                         <div className="contact-item">
                             <h3>🕐 Hours</h3>
-                            <p>Monday - Wednesday: Closed</p>
-                            <p>Thursday - Sunday: 6:00 PM - 10:30 PM</p>
+                            <p>Tuesday - Wednesday: Closed</p>
+                            <p>Thursday - Monday: 5:30 PM - 10:30 PM</p>
                         </div>
                         <div className="contact-item">
                             <h3>📱 Follow Us</h3>

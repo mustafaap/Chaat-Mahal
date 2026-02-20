@@ -932,15 +932,21 @@
         font-size: 0.95rem;
     }
     
-    .option-input-group,
-    .extra-option-input-group {
-        flex-direction: column;
-        align-items: stretch;
+    .option-input-group input,
+    .extra-option-input-group input {
+        font-size: 0.9rem;
+        padding: 8px;
+    }
+    
+    .option-icon,
+    .premium-icon {
+        font-size: 1rem;
     }
     
     .remove-option-btn {
-        align-self: flex-end;
-        margin-top: 5px;
+        width: 28px;
+        height: 28px;
+        font-size: 1.1rem;
     }
 }
 

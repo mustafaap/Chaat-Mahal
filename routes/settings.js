@@ -12,7 +12,8 @@ const ensureSettingsFile = async () => {
     } catch (error) {
         // File doesn't exist, create it with defaults
         const defaultSettings = {
-            onlinePaymentEnabled: true
+            onlinePaymentEnabled: true,
+            payAtCounterEnabled: true
         };
         await fs.mkdir(path.dirname(settingsFilePath), { recursive: true });
         await fs.writeFile(settingsFilePath, JSON.stringify(defaultSettings, null, 2));
@@ -24,7 +25,28 @@ router.get('/', async (req, res) => {
     try {
         await ensureSettingsFile();
         const settingsData = await fs.readFile(settingsFilePath, 'utf8');
-        const settings = JSON.parse(settingsData);
+        let settings = JSON.parse(settingsData);
+        
+        // Ensure all required fields exist (migration/upgrade logic)
+        let needsUpdate = false;
+        const requiredDefaults = {
+            onlinePaymentEnabled: true,
+            payAtCounterEnabled: true
+        };
+        
+        for (const [key, defaultValue] of Object.entries(requiredDefaults)) {
+            if (settings[key] === undefined) {
+                settings[key] = defaultValue;
+                needsUpdate = true;
+            }
+        }
+        
+        // If any fields were missing, update the file
+        if (needsUpdate) {
+            await fs.writeFile(settingsFilePath, JSON.stringify(settings, null, 2));
+            console.log('Settings file upgraded with missing fields:', settings);
+        }
+        
         res.json(settings);
     } catch (error) {
         console.error('Error reading settings:', error);

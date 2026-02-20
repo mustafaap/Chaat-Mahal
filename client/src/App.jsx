@@ -68,12 +68,12 @@ const Footer = () => {
             <h3>Hours</h3>
             <ul className="hours-list">
               <li>
-                <span className="day">Monday - Wednesday</span>
+                <span className="day">Tuesday - Wednesday</span>
                 <span className="time">Closed</span>
               </li>
               <li>
-                <span className="day">Thursday - Sunday</span>
-                <span className="time">6:00 PM - 10:30 PM</span>
+                <span className="day">Thursday - Monday</span>
+                <span className="time">5:30 PM - 10:30 PM</span>
               </li>
             </ul>
           </div>

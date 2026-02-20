@@ -16,24 +16,24 @@ h1, h2, h3{
     font-weight: 600;
 }
 
-h1 {
+.kiosk-container h1 {
     font-size: 35px;
     font-weight: 700;
     margin: 0px 12px;
 }
 
-h2 {
+.kiosk-container h2 {
     font-size: 25px;
     margin-top: -5px;
     font-weight: 600;
 }
 
-h3 {
+.kiosk-container h3 {
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
 }
 
-form {
+.kiosk-container form {
     background: #fff;
     max-width: 1200px;
     margin: 32px auto;
@@ -766,6 +766,7 @@ form {
     background: white;
     padding: 25px 25px 25px 25px; /* Reduced padding to save space */
     border-radius: 16px;
+    border: 3px solid #b85c38;
     width: 90%;
     max-width: 500px; /* Increased to accommodate 2 columns */
     text-align: center;
@@ -906,14 +907,14 @@ form {
     transform: translateY(-1px);
 }
 
-label {
+.kiosk-container label {
     font-family: 'Inter', sans-serif;
     margin-left: 8px;
     font-size: 1rem;
     font-weight: 500;
 }
 
-input[type="checkbox"], input[type="radio"] {
+.kiosk-container input[type="checkbox"], .kiosk-container input[type="radio"] {
     accent-color: #b85c38;
 }
 
@@ -1552,62 +1553,106 @@ input[type="checkbox"], input[type="radio"] {
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
 }
 
-/* Spice Slider Styles */
+/* Spice Slider Styles - Enhanced Professional Design */
 .spice-slider-container {
-    margin-bottom: 8px; /* Reduced spacing */
-    padding: 8px; /* Reduced padding */
-    background: #f8f9fa;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
     border-radius: 12px;
-    border: 1px solid #e0e0e0;
+    border: 2px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.spice-slider-container:hover {
+    border-color: #b85c38;
+    box-shadow: 0 4px 12px rgba(184, 92, 56, 0.15);
 }
 
 .spice-slider-label {
     font-family: 'Poppins', sans-serif;
-    font-size: 1rem; /* Slightly smaller */
-    font-weight: 450;
-    color: #000000;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #2c3e50;
+    display: block;
+    margin-bottom: 12px;
+    text-align: center;
 }
 
 .spice-slider {
-    width: 80%;
-    margin-top: 12px; /* Reduced spacing */
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    height: 8px;
-    border-radius: 4px;
-    background: #ddd;
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
     outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right, #ddd 0%, #b85c38 100%);
+    cursor: pointer;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
+}
+
+.spice-slider:hover {
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(184, 92, 56, 0.2);
 }
 
 .spice-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
     appearance: none;
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    background: #b85c38;
+    background: white;
+    border: 3px solid #b85c38;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(184, 92, 56, 0.3);
-    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(184, 92, 56, 0.3);
+    transition: all 0.2s ease;
 }
 
 .spice-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-    box-shadow: 0 4px 12px rgba(184, 92, 56, 0.5);
+    transform: scale(1.15);
+    box-shadow: 0 4px 15px rgba(184, 92, 56, 0.5);
+    border-color: #d35400;
+}
+
+.spice-slider::-webkit-slider-thumb:active {
+    transform: scale(1.05);
+}
+
+.spice-slider::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid #b85c38;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(184, 92, 56, 0.3);
+    transition: all 0.2s ease;
+}
+
+.spice-slider::-moz-range-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 15px rgba(184, 92, 56, 0.5);
+    border-color: #d35400;
+}
+
+.spice-slider::-moz-range-thumb:active {
+    transform: scale(1.05);
 }
 
 .spice-levels {
     font-family: 'Inter', sans-serif;
     display: flex;
-    justify-content: space-between; /* This will automatically space the 3 items evenly */
-    color: #b85c38;
-    font-size: 0.85rem; /* Smaller text */
-    font-weight: 500;
-    margin-top: 8px; /* Reduced spacing */
-    max-width: 90%;
-    margin-left: auto;
-    margin-right: auto;
+    justify-content: space-between;
+    color: #5a6c7d;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 12px;
+    padding: 0 5px;
+}
+
+.spice-levels span {
+    transition: all 0.2s ease;
 }
 
 /* Options Grid Container - for 2-column layout */

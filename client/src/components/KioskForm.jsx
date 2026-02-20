@@ -19,7 +19,7 @@ const KioskForm = ({ initialStep = 1 }) => {
     const [showCartSummary, setShowCartSummary] = useState(false);
     const [cartTotal, setCartTotal] = useState(0);
     const [paymentId, setPaymentId] = useState(null);
-    const [settings, setSettings] = useState({ onlinePaymentEnabled: true });
+    const [settings, setSettings] = useState({ onlinePaymentEnabled: true, payAtCounterEnabled: true });
     const [tipAmount, setTipAmount] = useState(0);
     
     const [toast, setToast] = useState({
@@ -63,7 +63,7 @@ const KioskForm = ({ initialStep = 1 }) => {
         } catch (error) {
             console.error('Error fetching settings:', error);
             // Fallback to default settings if fetch fails
-            setSettings({ onlinePaymentEnabled: true });
+            setSettings({ onlinePaymentEnabled: true, payAtCounterEnabled: true });
         }
     };
 
@@ -148,6 +148,20 @@ const KioskForm = ({ initialStep = 1 }) => {
 
         return () => window.removeEventListener('scroll', handleScroll);
     }, [categories]);
+
+    // Prevent body scroll when modal or cart summary is open
+    useEffect(() => {
+        if (modalItem || showCartSummary) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        
+        // Cleanup on unmount
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [modalItem, showCartSummary]);
 
     // Function to scroll to section
     const scrollToSection = (section) => {
@@ -406,7 +420,8 @@ const KioskForm = ({ initialStep = 1 }) => {
         }, 0);
 
         const taxAmount = subtotal * 0.0825;
-        const totalWithTax = +(subtotal + taxAmount + 0.35 + tip).toFixed(2);
+        const convenienceFee = (subtotal + taxAmount + tip) * 0.029 + 0.30;
+        const totalWithTax = +(subtotal + taxAmount + convenienceFee + tip).toFixed(2);
 
         // For online payments, send total with tax and tip
         const orderData = {
@@ -761,6 +776,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                     onPaymentSuccess={handlePaymentSuccess}
                     onPaymentCancel={handlePaymentCancel}
                     onPayAtCounter={handlePayAtCounter}
+                    payAtCounterEnabled={settings.payAtCounterEnabled}
                     customerName={customerName}
                     orderItems={Object.entries(selectedItems).map(([key, { name, quantity, options }]) => ({
                         name,
@@ -845,7 +861,14 @@ const KioskForm = ({ initialStep = 1 }) => {
                             </div>
                             <div className="pricing-row">
                                 <span>Convenience Fee:</span>
-                                <span>${paymentId ? '0.35' : '0.15'}</span>
+                                <span>${(() => {
+                                    const sub = Object.entries(selectedItems).reduce((sum, [key, { name, quantity, options }]) => {
+                                        const itemPrice = calculateItemPrice(name, options);
+                                        return sum + (itemPrice * quantity);
+                                    }, 0);
+                                    const tax = sub * 0.0825;
+                                    return ((sub + tax + tipAmount) * 0.029 + 0.30).toFixed(2);
+                                })()}</span>
                             </div>
                             {tipAmount > 0 && (
                                 <div className="pricing-row tip-row">
@@ -863,8 +886,8 @@ const KioskForm = ({ initialStep = 1 }) => {
                                     return sum + (itemPrice * quantity);
                                 }, 0);
                                 const tax = subtotal * 0.0825;
-                                const convenienceFee = paymentId ? 0.35 : 0.15; // Use conditional for actual calculation
-                                return (subtotal + tax + convenienceFee + tipAmount).toFixed(2);
+                                const fee = (subtotal + tax + tipAmount) * 0.029 + 0.30;
+                                return (subtotal + tax + fee + tipAmount).toFixed(2);
                             })()}
                         </div>
                         {notes && (

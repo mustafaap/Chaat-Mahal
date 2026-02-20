@@ -25,6 +25,45 @@ const io = new Server(server, {
 
 // Middleware
 app.use(cors());
+
+// ── Stripe webhook (must be before bodyParser so raw body is preserved) ──
+const StripeWebhook = require('stripe')((process.env.STRIPE_SECRET_KEY || '').trim(), { apiVersion: '2024-06-20' });
+app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  let event;
+  if (webhookSecret && sig) {
+    try {
+      event = StripeWebhook.webhooks.constructEvent(req.body, sig, webhookSecret);
+    } catch (err) {
+      console.error('Webhook signature error:', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+  } else {
+    // No secret configured — parse body manually (dev/testing only)
+    try { event = JSON.parse(req.body.toString()); } catch { return res.status(400).send('Invalid body'); }
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    const orderId = session.metadata?.orderId;
+    if (orderId) {
+      try {
+        const Order = require('./models/Order');
+        await Order.findByIdAndUpdate(orderId, { paid: true, paymentId: session.id });
+        io.emit('ordersUpdated');
+        console.log(`Order ${orderId} marked as paid via Stripe webhook`);
+      } catch (err) {
+        console.error('Error updating order from webhook:', err);
+      }
+    }
+  }
+
+  res.json({ received: true });
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.json({ limit: '10mb' }));

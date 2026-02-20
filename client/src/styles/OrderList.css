@@ -349,6 +349,18 @@
     padding: 12px; /* Reduced from 16px */
     border-radius: 10px; /* Reduced from 12px */
     box-shadow: 0 3px 12px rgba(40, 167, 69, 0.2); /* Reduced shadow */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tip-indicator {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #f39c12;
+    font-style: italic;
 }
 
 /* Ensure the info-card container uses flexbox for proper alignment */
@@ -570,64 +582,6 @@
 
 .reset-button.standalone {
     margin: 0;
-}
-
-/* Scroll to Top Button - Simple and Clean */
-.scroll-to-top-btn {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    background: rgba(52, 152, 219, 0.9);
-    color: white;
-    border: none;
-    width: 50px;
-    height: 50px;
-    border-radius: 12px; /* Rounded square instead of circle */
-    font-size: 1.2rem;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.25);
-    backdrop-filter: blur(10px);
-    transition: all 0.2s ease;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding-bottom: 16px;
-}
-
-.scroll-to-top-btn:hover {
-    background: rgba(52, 152, 219, 1);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(52, 152, 219, 0.3);
-}
-
-.scroll-to-top-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.4);
-}
-
-/* Mobile responsive for scroll to top button */
-@media (max-width: 768px) {
-    .scroll-to-top-btn {
-        bottom: 20px;
-        right: 20px;
-        width: 45px;
-        height: 45px;
-        font-size: 1.1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .scroll-to-top-btn {
-        bottom: 15px;
-        right: 15px;
-        width: 42px;
-        height: 42px;
-        font-size: 1rem;
-        border-radius: 10px;
-    }
 }
 
 /* Enhanced mobile responsive design */
@@ -1561,6 +1515,7 @@
     margin: 0;
     font-size: 1.2rem;
     font-weight: 600;
+    color: white;
 }
 
 .close-modal-btn {

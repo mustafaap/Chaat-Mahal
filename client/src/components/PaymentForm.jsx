@@ -5,7 +5,7 @@ import '../styles/PaymentForm.css';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || '');
 
-const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerName, orderItems, onPayAtCounter }) => {
+const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerName, orderItems, onPayAtCounter, payAtCounterEnabled = true }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -20,7 +20,8 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
   const [selectedTipType, setSelectedTipType] = useState('fixed');
 
   const taxAmount = useMemo(() => orderTotal * 0.0825, [orderTotal]);
-  const totalWithTax = useMemo(() => orderTotal + taxAmount + 0.35 + tipAmount, [orderTotal, taxAmount, tipAmount]);
+  const convenienceFee = useMemo(() => (orderTotal + taxAmount + tipAmount) * 0.029 + 0.30, [orderTotal, taxAmount, tipAmount]);
+  const totalWithTax = useMemo(() => orderTotal + taxAmount + convenienceFee + tipAmount, [orderTotal, taxAmount, convenienceFee, tipAmount]);
 
   // Initialize Apple Pay / Google Pay
   useEffect(() => {
@@ -58,7 +59,9 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
 
       try {
         // Use current totalWithTax at the time of payment
-        const currentTotal = orderTotal + (orderTotal * 0.0825) + 0.35 + tipAmount;
+        const tax = orderTotal * 0.0825;
+        const fee = (orderTotal + tax + tipAmount) * 0.029 + 0.30;
+        const currentTotal = orderTotal + tax + fee + tipAmount;
         
         // 1) Create PaymentIntent on server
         const createRes = await fetch('/api/payments/create-intent', {
@@ -220,7 +223,7 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
         </div>
         <div className="payment-summary-row">
           <span>Convenience Fee:</span>
-          <span>$0.35</span>
+          <span>${convenienceFee.toFixed(2)}</span>
         </div>
         {tipAmount > 0 && (
           <div className="payment-summary-row tip-row">
@@ -350,24 +353,26 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
       </div>
 
       {/* Pay at Counter Option - Moved to bottom */}
-      <div className="payment-option-section counter-payment-section">
-        <div className="payment-divider">
-          <span>or</span>
+      {payAtCounterEnabled && (
+        <div className="payment-option-section counter-payment-section">
+          <div className="payment-divider">
+            <span>or</span>
+          </div>
+          
+          <button
+            type="button"
+            className="pay-at-counter-btn"
+            onClick={handlePayAtCounter}
+            disabled={isProcessing || isCounterPaymentProcessing} // Disable if either is processing
+          >
+            {isCounterPaymentProcessing ? 'Processing...' : '💵 Pay at Counter'}
+          </button>
+          <p className="pay-at-counter-note">
+            Skip online payment and pay at the counter.<br />
+            <span className="tax-disclaimer">Note: Final price after tax may vary slightly due to fees and tax regulations.</span>
+          </p>
         </div>
-        
-        <button
-          type="button"
-          className="pay-at-counter-btn"
-          onClick={handlePayAtCounter}
-          disabled={isProcessing || isCounterPaymentProcessing} // Disable if either is processing
-        >
-          {isCounterPaymentProcessing ? 'Processing...' : '💵 Pay at Counter'}
-        </button>
-        <p className="pay-at-counter-note">
-          Skip online payment and pay at the counter.<br />
-          <span className="tax-disclaimer">Note: Final price after tax may vary slightly due to fees and tax regulations.</span>
-        </p>
-      </div>
+      )}
 
       <div className="payment-security">
         <div className="security-badges">

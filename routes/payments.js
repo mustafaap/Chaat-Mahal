@@ -61,6 +61,52 @@ router.post('/create-intent', async (req, res) => {
   }
 });
 
+// Create a Stripe Checkout Session (for counter Stripe payments via QR/link)
+router.post('/create-checkout-session', async (req, res) => {
+  try {
+    const { amountInCents, customerName, customerEmail, orderId, description } = req.body;
+
+    if (!amountInCents || isNaN(Number(amountInCents))) {
+      return res.status(400).json({ success: false, error: 'Invalid amount' });
+    }
+
+    if (!stripeSecret) {
+      return res.status(500).json({ success: false, error: 'Payment system not configured' });
+    }
+
+    const baseUrl = (process.env.FRONTEND_URL || 'https://chaatmahal.onrender.com').replace(/\/$/, '');
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `Chaat Mahal — ${customerName || 'Counter Order'}`,
+            description: description || 'Counter Order',
+          },
+          unit_amount: Math.round(Number(amountInCents)),
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      success_url: `${baseUrl}/?payment=success`,
+      cancel_url: `${baseUrl}/?payment=cancelled`,
+      customer_email: customerEmail || undefined,
+      metadata: {
+        orderId: orderId || '',
+        customerName: customerName || '',
+        source: 'counter_order',
+      },
+    });
+
+    res.json({ success: true, url: session.url, sessionId: session.id });
+  } catch (error) {
+    console.error('Stripe checkout session error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Simple credentials test
 router.get('/test-credentials', async (req, res) => {
   try {

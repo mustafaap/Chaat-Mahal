@@ -4,13 +4,13 @@ import io from 'socket.io-client';
 import ConfirmationModal from './ConfirmationModal';
 import ItemSummary from './ItemSummary'; // Import ItemSummary component
 import Toast from './Toast';
+import QuickOrderForm from './QuickOrderForm';
 import '../styles/OrderList.css';
 
 const socket = io();
 
 const OrderList = ({ currentView, setCurrentView }) => {
     const [orders, setOrders] = useState([]);
-    const [showScrollTop, setShowScrollTop] = useState(false);
     const [menuItems, setMenuItems] = useState([]);
     const [editingOrder, setEditingOrder] = useState(null);
     const [editOrderItems, setEditOrderItems] = useState({});
@@ -74,28 +74,25 @@ const OrderList = ({ currentView, setCurrentView }) => {
         };
     }, []);
 
-    // Scroll to top functionality
-    useEffect(() => {
-        const handleScroll = () => {
-            setShowScrollTop(window.pageYOffset > 300);
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
     // Add this useEffect to scroll to top when view changes
     useEffect(() => {
         // Scroll to top when view changes
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [view]);
 
-    const scrollToTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    };
+    // Prevent body scroll when edit options modal is open
+    useEffect(() => {
+        if (editOptionModal) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        
+        // Cleanup on unmount
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [editOptionModal]);
 
     // Modal helper functions
     const openModal = (config) => {
@@ -630,22 +627,21 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                             </div>
                                             
                                             <div className="order-info-section">
-                                                <div className="info-card">
-                                                    <div className="order-items">
-                                                        <div className="order-items-header">
-                                                            <div className="items-header-content">
-                                                                <span>Items to Prepare</span>
-                                                                {!isBeingEdited && (
-                                                                    <button 
-                                                                        className="edit-order-btn"
-                                                                        onClick={() => startEditingOrder(order)}
-                                                                        title="Edit order items"
-                                                                    >
-                                                                        ✏️ Edit
-                                                                    </button>
-                                                                )}
-                                                            </div>
+                                                <div className="order-items">
+                                                    <div className="order-items-header">
+                                                        <div className="items-header-content">
+                                                            <span>Items to Prepare</span>
+                                                            {!isBeingEdited && (
+                                                                <button 
+                                                                    className="edit-order-btn"
+                                                                    onClick={() => startEditingOrder(order)}
+                                                                    title="Edit order items"
+                                                                >
+                                                                    ✏️ Edit
+                                                                </button>
+                                                            )}
                                                         </div>
+                                                    </div>
                                                         
                                                         {isBeingEdited ? (
                                                             // Edit mode
@@ -744,14 +740,12 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                                 );
                                                             })
                                                         )}
-                                                    </div>
                                                 </div>
                                                 
-                                                <div className="info-card">
-                                                    <div className="admin-order-total">
-                                                        Total: ${order.total.toFixed(2)}
-                                                        {/*Total: ${isBeingEdited ? calculateEditOrderTotal().toFixed(2) : order.total}*/}
-                                                    </div>
+                                                <div className="admin-order-total">
+                                                    Total: ${(order.total + (order.tip || 0)).toFixed(2)}
+                                                    {order.tip > 0 && <span className="tip-indicator"> (includes ${order.tip.toFixed(2)} tip)</span>}
+                                                    {/*Total: ${isBeingEdited ? calculateEditOrderTotal().toFixed(2) : order.total}*/}
                                                 </div>
                                             </div>
 
@@ -875,23 +869,20 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                             </div>
                                             
                                             <div className="order-info-section">
-                                                <div className="info-card">
-                                                    <div className="order-items">
-                                                        <div className="order-items-header">
-                                                            Items Ordered
-                                                        </div>
-                                                        {Object.entries(itemCounts).map(([name, qty]) => (
-                                                            <div key={name} className="order-item-detail">
-                                                                <strong>{qty}x</strong> {name}
-                                                            </div>
-                                                        ))}
+                                                <div className="order-items">
+                                                    <div className="order-items-header">
+                                                        Items Ordered
                                                     </div>
+                                                    {Object.entries(itemCounts).map(([name, qty]) => (
+                                                        <div key={name} className="order-item-detail">
+                                                            <strong>{qty}x</strong> {name}
+                                                        </div>
+                                                    ))}
                                                 </div>
                                                 
-                                                <div className="info-card">
-                                                    <div className="admin-order-total">
-                                                        Total: ${order.total.toFixed(2)}
-                                                    </div>
+                                                <div className="admin-order-total">
+                                                    Total: ${(order.total + (order.tip || 0)).toFixed(2)}
+                                                    {order.tip > 0 && <span className="tip-indicator"> (includes ${order.tip.toFixed(2)} tip)</span>}
                                                 </div>
                                             </div>
 
@@ -973,23 +964,20 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                             </div>
                                             
                                             <div className="order-info-section">
-                                                <div className="info-card">
-                                                    <div className="order-items">
-                                                        <div className="order-items-header">
-                                                            Items Ordered
-                                                        </div>
-                                                        {Object.entries(itemCounts).map(([name, qty]) => (
-                                                            <div key={name} className="order-item-detail">
-                                                                <strong>{qty}x</strong> {name}
-                                                            </div>
-                                                        ))}
+                                                <div className="order-items">
+                                                    <div className="order-items-header">
+                                                        Items Ordered
                                                     </div>
+                                                    {Object.entries(itemCounts).map(([name, qty]) => (
+                                                        <div key={name} className="order-item-detail">
+                                                            <strong>{qty}x</strong> {name}
+                                                        </div>
+                                                    ))}
                                                 </div>
                                                 
-                                                <div className="info-card">
-                                                    <div className="admin-order-total">
-                                                        Total: ${order.total.toFixed(2)}
-                                                    </div>
+                                                <div className="admin-order-total">
+                                                    Total: ${(order.total + (order.tip || 0)).toFixed(2)}
+                                                    {order.tip > 0 && <span className="tip-indicator"> (includes ${order.tip.toFixed(2)} tip)</span>}
                                                 </div>
                                             </div>
 
@@ -1040,17 +1028,6 @@ const OrderList = ({ currentView, setCurrentView }) => {
                 cancelText={modalState.cancelText}
                 type={modalState.type}
             />
-
-            {/* Scroll to Top Button */}
-            {showScrollTop && (
-                <button 
-                    className="scroll-to-top-btn"
-                    onClick={scrollToTop}
-                    title="Back to top"
-                >
-                    ↑
-                </button>
-            )}
 
             {/* Options Modal */}
             {editOptionModal && (
@@ -1159,6 +1136,13 @@ const OrderList = ({ currentView, setCurrentView }) => {
                     </div>
                 </div>
             )}
+
+            {/* Quick Order Form - Floating Button */}
+            <QuickOrderForm 
+                menuItems={menuItems}
+                onOrderCreated={fetchOrders}
+                showToast={showToast}
+            />
 
             <Toast 
                 show={toast.show}

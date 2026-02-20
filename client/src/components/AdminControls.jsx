@@ -13,7 +13,8 @@ const AdminControls = () => {
     });
 
     const [settings, setSettings] = useState({
-        onlinePaymentEnabled: true
+        onlinePaymentEnabled: true,
+        payAtCounterEnabled: true
     });
 
     const [modalState, setModalState] = useState({
@@ -81,6 +82,28 @@ const AdminControls = () => {
                     showToast(`Online payments ${newStatus ? 'enabled' : 'disabled'} successfully!`, 'success');
                 } else {
                     showToast('Failed to update payment settings. Please try again.', 'error');
+                }
+            }
+        });
+    };
+
+    const togglePayAtCounter = () => {
+        const newStatus = !settings.payAtCounterEnabled;
+        
+        openModal({
+            type: newStatus ? 'default' : 'danger', 
+            title: newStatus ? 'Enable Pay at Counter' : 'Disable Pay at Counter',
+            message: newStatus 
+                ? 'Are you sure you want to enable pay at counter? Customers will be able to skip online payment and pay at the counter.'
+                : 'Are you sure you want to disable pay at counter? Customers will only be able to pay online. This is useful for events where you want to ensure all payments are processed online beforehand.',
+            confirmText: newStatus ? 'Enable Pay at Counter' : 'Disable Pay at Counter',
+            cancelText: 'Cancel',
+            onConfirm: async () => {
+                const success = await updateSettings({ payAtCounterEnabled: newStatus });
+                if (success) {
+                    showToast(`Pay at counter ${newStatus ? 'enabled' : 'disabled'} successfully!`, 'success');
+                } else {
+                    showToast('Failed to update pay at counter settings. Please try again.', 'error');
                 }
             }
         });
@@ -197,6 +220,27 @@ const AdminControls = () => {
                                     onClick={toggleOnlinePayment}
                                 >
                                     {settings.onlinePaymentEnabled ? 'Disable Online Payments' : 'Enable Online Payments'}
+                                </button>
+                            </div>
+
+                            <div className="setting-card">
+                                <div className="setting-header">
+                                    <div className="setting-icon">💵</div>
+                                    <div className="setting-info">
+                                        <h3>Pay at Counter Settings</h3>
+                                        <p>Enable or disable pay at counter option (useful for events requiring only online payments)</p>
+                                    </div>
+                                </div>
+                                <div className="payment-status">
+                                    <span className={`status-indicator ${settings.payAtCounterEnabled ? 'enabled' : 'disabled'}`}>
+                                        {settings.payAtCounterEnabled ? '🟢 Pay at Counter Enabled' : '🔴 Pay at Counter Disabled'}
+                                    </span>
+                                </div>
+                                <button 
+                                    className={`admin-control-button ${settings.payAtCounterEnabled ? 'disable-btn' : 'enable-btn'}`}
+                                    onClick={togglePayAtCounter}
+                                >
+                                    {settings.payAtCounterEnabled ? 'Disable Pay at Counter' : 'Enable Pay at Counter'}
                                 </button>
                             </div>
 
