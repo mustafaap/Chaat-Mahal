@@ -115,7 +115,8 @@ const Analytics = () => {
         const totalOrders = orders.length;
         const avgOrderValue = nonCancelledOrders.length > 0 ? totalRevenue / nonCancelledOrders.length : 0;
         const completionRate = totalOrders > 0 ? (completedOrders.length / totalOrders) * 100 : 0;
-        const paidOrders = orders.filter(o => o.paid).length;
+        // Exclude cancelled orders from paid count — cancelled paid = money not kept
+        const paidOrders = orders.filter(o => o.paid && o.status !== 'Cancelled').length;
         const paymentRate = totalOrders > 0 ? (paidOrders / totalOrders) * 100 : 0;
 
         return {

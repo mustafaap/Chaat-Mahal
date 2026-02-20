@@ -377,7 +377,6 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                 title="Quick add order for counter customers"
             >
                 <span className="qof-btn-icon">{isExpanded ? '−' : '+'}</span>
-                <span className="qof-btn-text">Counter Order</span>
             </button>
 
             {isExpanded && (
@@ -394,44 +393,6 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                         </div>
 
                         <div className="qof-form-body">
-                            <div className="qof-customer-row">
-                                <div className="qof-customer-section">
-                                    <label className="qof-label">Customer Name *</label>
-                                    <input
-                                        type="text"
-                                        className="qof-input"
-                                        value={customerName}
-                                        onChange={(e) => setCustomerName(e.target.value)}
-                                        placeholder="Enter customer name"
-                                        disabled={isSubmitting}
-                                    />
-                                </div>
-
-                                <div className="qof-customer-section">
-                                    <label className="qof-label">Customer Email (Optional)</label>
-                                    <input
-                                        type="email"
-                                        className="qof-input"
-                                        value={customerEmail}
-                                        onChange={(e) => setCustomerEmail(e.target.value)}
-                                        placeholder="Enter email (optional)"
-                                        disabled={isSubmitting}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="qof-customer-section">
-                                <label className="qof-label">Order Notes (Optional)</label>
-                                <textarea
-                                    className="qof-input qof-textarea"
-                                    value={notes}
-                                    onChange={(e) => setNotes(e.target.value)}
-                                    placeholder="Add special instructions or notes"
-                                    disabled={isSubmitting}
-                                    rows="2"
-                                />
-                            </div>
-
                             <div className="qof-items-section">
                                 <label className="qof-label">Add Items</label>
                                 <div className="qof-menu-grid">
@@ -511,6 +472,44 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                                     </div>
                                 </div>
                             )}
+
+                            <div className="qof-customer-row">
+                                <div className="qof-customer-section">
+                                    <label className="qof-label">Customer Name *</label>
+                                    <input
+                                        type="text"
+                                        className="qof-input"
+                                        value={customerName}
+                                        onChange={(e) => setCustomerName(e.target.value)}
+                                        placeholder="Enter customer name"
+                                        disabled={isSubmitting}
+                                    />
+                                </div>
+
+                                <div className="qof-customer-section">
+                                    <label className="qof-label">Customer Email (Optional)</label>
+                                    <input
+                                        type="email"
+                                        className="qof-input"
+                                        value={customerEmail}
+                                        onChange={(e) => setCustomerEmail(e.target.value)}
+                                        placeholder="Enter email (optional)"
+                                        disabled={isSubmitting}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="qof-customer-section">
+                                <label className="qof-label">Order Notes (Optional)</label>
+                                <textarea
+                                    className="qof-input qof-textarea"
+                                    value={notes}
+                                    onChange={(e) => setNotes(e.target.value)}
+                                    placeholder="Add special instructions or notes"
+                                    disabled={isSubmitting}
+                                    rows="2"
+                                />
+                            </div>
 
                             <div className="qof-tip-section">
                                 <label className="qof-label">Tip (Optional)</label>

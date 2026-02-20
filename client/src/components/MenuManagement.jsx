@@ -1267,16 +1267,16 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                 </div>
                             </div>
 
-                            {/* No Options Modal toggle */}
+                            {/* Options Modal toggle */}
                             <div className="form-group full-width">
                                 <div className="spice-level-info-box">
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
                                         <div>
-                                            <h4 style={{ margin: 0 }}>🚫 No Options Modal</h4>
+                                            <h4 style={{ margin: 0 }}>🗂️ Options Modal</h4>
                                             <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>
                                                 {formData.noModal
                                                     ? 'Item adds directly to cart — no options popup shown'
-                                                    : 'Item will show an options popup before adding to cart'}
+                                                    : 'Customer sees an options popup before adding to cart'}
                                             </p>
                                         </div>
                                         <button
@@ -1289,12 +1289,12 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                                 cursor: 'pointer',
                                                 fontWeight: '600',
                                                 fontSize: '0.9rem',
-                                                background: formData.noModal ? '#e53e3e' : '#48bb78',
+                                                background: formData.noModal ? '#48bb78' : '#e53e3e',
                                                 color: '#fff',
                                                 whiteSpace: 'nowrap'
                                             }}
                                         >
-                                            {formData.noModal ? '✕ Disable No-Modal' : '+ Enable No-Modal'}
+                                            {formData.noModal ? '+ Add Modal' : '✕ Remove Modal'}
                                         </button>
                                     </div>
                                 </div>
