@@ -89,9 +89,11 @@ mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     serverSelectionTimeoutMS: 10000,  // Fail fast if Atlas is unreachable (10s)
-    socketTimeoutMS: 45000,           // Close idle sockets after 45s
+    socketTimeoutMS: 20000,           // Shorter: detect dead sockets faster (Atlas kills idle at ~30s)
     connectTimeoutMS: 10000,          // Connection attempt timeout
     maxPoolSize: 10,                  // Limit connection pool to avoid memory bloat
+    heartbeatFrequencyMS: 10000,      // Ping Atlas every 10s — detects idle-killed connections BEFORE a real query hits them
+    minPoolSize: 1,                   // Keep at least 1 connection warm at all times
 })
 .then(() => {
     console.log('MongoDB connected');

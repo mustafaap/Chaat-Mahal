@@ -24,17 +24,29 @@ const deleteImageFile = (imagePath) => {
 
 // Get all menu items
 router.get('/', async (req, res) => {
-    try {
-        const includeInactive = req.query.includeInactive === 'true';
-        
-        const filter = includeInactive ? {} : { active: { $ne: false } };
-        // maxTimeMS kills the query server-side if MongoDB is slow/stuck — prevents indefinite hang
-        const menuItems = await Menu.find(filter).sort({ id: 1 }).maxTimeMS(8000);
-        
-        res.json(menuItems);
-    } catch (error) {
-        console.error('Error fetching menu items:', error);
-        res.status(500).json({ message: 'Failed to load menu items' });
+    const includeInactive = req.query.includeInactive === 'true';
+    const filter = includeInactive ? {} : { active: { $ne: false } };
+
+    // Retry once on network timeout — Atlas kills idle TCP connections on shared clusters;
+    // the driver detects the dead socket on first use and needs one retry to reconnect.
+    const MAX_RETRIES = 2;
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            const menuItems = await Menu.find(filter).sort({ id: 1 }).maxTimeMS(8000);
+            return res.json(menuItems);
+        } catch (error) {
+            const isNetworkError = error.name === 'MongoNetworkTimeoutError' || 
+                                   error.name === 'MongoNetworkError' ||
+                                   error.message?.includes('timed out') ||
+                                   error.message?.includes('connection');
+            if (isNetworkError && attempt < MAX_RETRIES) {
+                console.warn(`Menu fetch attempt ${attempt} failed (${error.name}), retrying...`);
+                await new Promise(r => setTimeout(r, 500)); // brief pause before retry
+                continue;
+            }
+            console.error('Error fetching menu items:', error);
+            return res.status(500).json({ message: 'Failed to load menu items' });
+        }
     }
 });
 
