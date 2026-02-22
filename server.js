@@ -81,6 +81,9 @@ app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ limit: '2mb', extended: true }));
 app.use(express.static('client/build'));
 
+// bufferTimeoutMS is a Mongoose-level option — must NOT go inside the driver options object
+mongoose.set('bufferTimeoutMS', 10000);
+
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
@@ -89,7 +92,6 @@ mongoose.connect(process.env.MONGODB_URI, {
     socketTimeoutMS: 45000,           // Close idle sockets after 45s
     connectTimeoutMS: 10000,          // Connection attempt timeout
     maxPoolSize: 10,                  // Limit connection pool to avoid memory bloat
-    bufferTimeoutMS: 10000,           // Buffered queries fail after 10s instead of hanging forever
 })
 .then(() => {
     console.log('MongoDB connected');
