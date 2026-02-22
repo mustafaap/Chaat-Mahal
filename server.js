@@ -20,7 +20,11 @@ const io = new Server(server, {
     cors: {
         origin: "*",
         methods: ["GET", "POST", "PUT", "DELETE"]
-    }
+    },
+    // Disconnect stale/zombie connections quickly to free memory
+    pingTimeout: 20000,      // 20s — close socket if no pong received
+    pingInterval: 15000,     // 15s — send pings more frequently
+    maxHttpBufferSize: 1e6   // 1MB max message size (default is 1MB, be explicit)
 });
 
 // Middleware
@@ -71,16 +75,21 @@ app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), asy
 });
 // ─────────────────────────────────────────────────────────────────────────────
 
-app.use(bodyParser.json({ limit: '10mb' }));
-app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(bodyParser.json({ limit: '2mb' }));
+app.use(bodyParser.urlencoded({ limit: '2mb', extended: true }));
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ limit: '2mb', extended: true }));
 app.use(express.static('client/build'));
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 10000,  // Fail fast if Atlas is unreachable (10s)
+    socketTimeoutMS: 45000,           // Close idle sockets after 45s
+    connectTimeoutMS: 10000,          // Connection attempt timeout
+    maxPoolSize: 10,                  // Limit connection pool to avoid memory bloat
+    bufferTimeoutMS: 10000,           // Buffered queries fail after 10s instead of hanging forever
 })
 .then(() => {
     console.log('MongoDB connected');

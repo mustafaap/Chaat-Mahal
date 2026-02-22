@@ -28,7 +28,8 @@ router.get('/', async (req, res) => {
         const includeInactive = req.query.includeInactive === 'true';
         
         const filter = includeInactive ? {} : { active: { $ne: false } };
-        const menuItems = await Menu.find(filter).sort({ id: 1 });
+        // maxTimeMS kills the query server-side if MongoDB is slow/stuck — prevents indefinite hang
+        const menuItems = await Menu.find(filter).sort({ id: 1 }).maxTimeMS(8000);
         
         res.json(menuItems);
     } catch (error) {

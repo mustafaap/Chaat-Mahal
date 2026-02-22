@@ -58,7 +58,7 @@ const KioskForm = ({ initialStep = 1 }) => {
 
     const fetchSettings = async () => {
         try {
-            const response = await axios.get('/api/settings');
+            const response = await axios.get('/api/settings', { timeout: 8000 });
             setSettings(response.data);
         } catch (error) {
             console.error('Error fetching settings:', error);
@@ -71,7 +71,9 @@ const KioskForm = ({ initialStep = 1 }) => {
     useEffect(() => {
         const fetchMenuItems = async () => {
             try {
-                const response = await axios.get('/api/menu');
+                // 8s timeout — if the server hangs (e.g. DB not connected yet), fail fast
+                // and show the fallback menu rather than spinning forever
+                const response = await axios.get('/api/menu', { timeout: 8000 });
                 setMenuItems(response.data);
             } catch (error) {
                 console.error('Error fetching menu items:', error);

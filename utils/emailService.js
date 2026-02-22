@@ -2,6 +2,15 @@ const nodemailer = require('nodemailer');
 const fs = require('fs');
 const path = require('path');
 
+// Cache CSS at module load time — avoids repeated disk reads under high order volume
+let _emailCss = null;
+const getEmailCss = () => {
+    if (!_emailCss) {
+        _emailCss = fs.readFileSync(path.join(__dirname, 'styles', 'emailService.css'), 'utf8');
+    }
+    return _emailCss;
+};
+
 const createTransporter = () => {
     return nodemailer.createTransport({
         service: 'gmail',
@@ -20,7 +29,7 @@ const generateOrderConfirmationEmailHTML = (orderData) => {
     const isStripe = !!stripeTotal;
     const grandTotal = isStripe ? stripeTotal : (total + tip);
 
-    const cssContent = fs.readFileSync(path.join(__dirname, 'styles', 'emailService.css'), 'utf8');
+    const cssContent = getEmailCss();
     
     return `
     <!DOCTYPE html>
@@ -137,7 +146,7 @@ const generateOrderConfirmationEmailHTML = (orderData) => {
 const generateOrderReadyEmailHTML = (orderData) => {
     const { customerName, orderNumber } = orderData;
     
-    const cssContent = fs.readFileSync(path.join(__dirname, 'styles', 'emailService.css'), 'utf8');
+    const cssContent = getEmailCss();
     
     return `
     <!DOCTYPE html>
