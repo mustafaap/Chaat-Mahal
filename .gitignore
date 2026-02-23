@@ -7,3 +7,5 @@ data/orderCounter.json
 data/settings.json
 data/resetTimestamp.json
 data/menu_backup_*.json
+data/menu_*recovery*.json
+data/menu_*import*.json
