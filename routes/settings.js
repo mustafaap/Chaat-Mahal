@@ -13,7 +13,15 @@ const ensureSettingsFile = async () => {
         // File doesn't exist, create it with defaults
         const defaultSettings = {
             onlinePaymentEnabled: true,
-            payAtCounterEnabled: true
+            payAtCounterEnabled: true,
+            categories: [
+                "Puri Chaat",
+                "Street Chaat",
+                "Wraps",
+                "Drinks",
+                "Burgers",
+                "Rice Bowls"
+            ]
         };
         await fs.mkdir(path.dirname(settingsFilePath), { recursive: true });
         await fs.writeFile(settingsFilePath, JSON.stringify(defaultSettings, null, 2));
@@ -31,7 +39,15 @@ router.get('/', async (req, res) => {
         let needsUpdate = false;
         const requiredDefaults = {
             onlinePaymentEnabled: true,
-            payAtCounterEnabled: true
+            payAtCounterEnabled: true,
+            categories: [
+                "Puri Chaat",
+                "Street Chaat",
+                "Wraps",
+                "Drinks",
+                "Burgers",
+                "Rice Bowls"
+            ]
         };
         
         for (const [key, defaultValue] of Object.entries(requiredDefaults)) {
