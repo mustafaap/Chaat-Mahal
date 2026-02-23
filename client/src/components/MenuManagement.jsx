@@ -154,23 +154,20 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
         setIsUploadingImage(true);
 
         try {
-            // Convert image to base64
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = reader.result;
-                setUploadedImage({ data: base64String });
-                setImagePreview(base64String);
-                setFormData(prev => ({ ...prev, image: base64String }));
-                setIsUploadingImage(false);
-            };
-            reader.onerror = () => {
-                showToast('Failed to read image file. Please try again.', 'error');
-                setIsUploadingImage(false);
-            };
-            reader.readAsDataURL(file);
+            // Upload image to server (saved as a file, not base64 in DB)
+            const formData = new FormData();
+            formData.append('image', file);
+            const response = await axios.post('/api/upload-image', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            const imagePath = response.data.imagePath;
+            setUploadedImage({ data: imagePath });
+            setImagePreview(URL.createObjectURL(file));
+            setFormData(prev => ({ ...prev, image: imagePath }));
         } catch (error) {
-            console.error('Error processing image:', error);
-            showToast('Failed to process image. Please try again.', 'error');
+            console.error('Error uploading image:', error);
+            showToast('Failed to upload image. Please try again.', 'error');
+        } finally {
             setIsUploadingImage(false);
         }
     };
