@@ -1,0 +1,509 @@
+[
+  {
+    "_id": "68e823b28c4521fcb0e84d34",
+    "id": 1,
+    "name": "Panipuri",
+    "price": 4.99,
+    "options": [
+      "Mild",
+      "Medium",
+      "Spicy",
+      "No Onions",
+      "No Cilantro",
+      "Ragda (+$1)"
+    ],
+    "extraOptions": {
+      "Ragda": 1
+    },
+    "category": "Puri Chaat",
+    "description": "Crispy shells filled with seasoned potatoes and chickpeas, served with spicy minty water.",
+    "noModal": false,
+    "__v": 0,
+    "createdAt": "2025-10-09T21:05:54.092Z",
+    "updatedAt": "2026-02-21T14:06:36.688Z",
+    "active": false,
+    "order": 0
+  },
+  {
+    "_id": "68e823b28c4521fcb0e84d35",
+    "id": 2,
+    "name": "Masala Puri",
+    "price": 5.99,
+    "options": [
+      "Mild",
+      "Medium",
+      "Spicy",
+      "No Onions",
+      "No Cilantro"
+    ],
+    "extraOptions": {},
+    "category": "Puri Chaat",
+    "description": "Crispy ball filled with spiced potatoes, chickpeas, and homemade chutneys (sauces)",
+    "noModal": false,
+    "__v": 0,
+    "createdAt": "2025-10-09T21:05:54.092Z",
+    "updatedAt": "2026-02-21T18:31:13.050Z",
+    "active": true,
+    "order": 0
+  },
+  {
+    "_id": "68e823b28c4521fcb0e84d36",
+    "id": 3,
+    "name": "Dahipuri",
+    "price": 7.99,
+    "options": [
+      "Mild",
+      "Medium",
+      "Spicy",
+      "No Onions",
+      "No Cilantro",
+      "Ragda ( peas curry) (+$1)"
+    ],
+    "extraOptions": {
+      "Ragda ( peas curry)": 1
+    },
+    "category": "Puri Chaat",
+    "description": "Crispy shells filled with seasoned potatoes, chickpeas, sweet yogurt, chutneys, and spices, topped with sev",
+    "noModal": false,
+    "__v": 0,
+    "createdAt": "2025-10-09T21:05:54.092Z",
+    "updatedAt": "2026-02-21T18:30:17.701Z",
+    "active": true,
+    "order": 0
+  },
+  {
+    "_id": "68e823b28c4521fcb0e84d37",
+    "id": 4,
+    "name": "Sevpuri",
+    "price": 7.99,
+    "options": [
+      "Mild",
+      "Medium",
+      "Spicy",
+      "No Onions",
+      "No Cilantro",
+      "Ragda (peas curry) (+$1)",
+      "Sweet Yogurt  (+$1)"
+    ],
+    "extraOptions": {
+      "Ragda (peas curry)": 1,
+      "Sweet Yogurt ": 1
+    },
+    "category": "Puri Chaat",
+    "description": "Crispy puris topped with sev, potatoes, onions, and chutneys",
+    "noModal": false,
+    "__v": 0,
+    "createdAt": "2025-10-09T21:05:54.093Z",
+    "updatedAt": "2026-02-21T14:06:56.311Z",
+    "active": false,
+    "order": 0
+  },
+  {
+    "_id": "68e823b28c4521fcb0e84d38",
+    "id": 5,
+    "name": "Bhelpuri",
+    "price": 5.99,
+    "options": [
+      "Mild",
+      "Medium",
+      "Spicy",
+      "No Onions",
+      "No Cilantro"
+    ],
+    "extraOptions": {},
+    "category": "Street Chaat",
+    "description": "Popular street snack with puffed rice, onions, fried lentils, and chutneys",
+    "noModal": false,
+    "__v": 0,
+    "createdAt": "2025-10-09T21:05:54.093Z",
+    "updatedAt": "2026-02-21T14:07:12.176Z",
+    "active": true
+  },
+  {
+    "_id": "68e823b28c4521fcb0e84d39",
+    "id": 6,
+    "name": "Paneer Wrap",
+    "price": 13.99,
+    "options": [
+      "Mild",
+      "Medium",
+      "Spicy",
+      "No Onions",
+      "No Cilantro",
+      "Extra Paneer (+$2)",
+      "Extra Cheese (+$1)"
+    ],
+    "extraOptions": {
+      "Extra Paneer": 2,
+      "Extra Cheese": 1
+    },
+    "category": "Wraps",
+    "description": "Seasoned paneer(Indian cottage cheese) with creamy jalapeño sauce, hot sauce, onion, & cilantro wrapped in crispy naan",
+    "noModal": false,
+    "__v": 0,
+    "createdAt": "2025-10-09T21:05:54.093Z",
+    "updatedAt": "2026-02-21T14:07:29.346Z",
+    "active": true
+  },
+  {
+    "_id": "68e823b28c4521fcb0e84d3a",
+    "id": 7,
+    "name": "Chicken Wrap ",
+    "price": 13.99,
+    "options": [
+      "Mild",
+      "Medium",
+      "Spicy",
+      "No Onions",
+      "No Cilantro",
+      "Extra meat (+$2)",
+      "Extra cheese (+$1)"
+    ],
+    "extraOptions": {
+      "Extra meat": 2,
+      "Extra cheese": 1
+    },
+    "category": "Wraps",
+    "description": "Seasoned chicken mix with creamy sauce, onion, & cilantro wrapped in crispy naan ",
+    "noModal": false,
+    "__v": 0,
+    "createdAt": "2025-10-09T21:05:54.093Z",
+    "updatedAt": "2026-02-21T14:07:47.012Z",
+    "active": true,
+    "order": 2
+  },
+  {
+    "_id": "68e823b28c4521fcb0e84d3b",
+    "id": 8,
+    "name": "Mango Lassi ",
+    "price": 3.99,
+    "options": [
+      "Large  (+$2)"
+    ],
+    "extraOptions": {
+      "Large ": 2
+    },
+    "category": "Drinks",
+    "description": "Refreshing yogurt-based mango drink",
+    "noModal": false,
+    "__v": 0,
+    "createdAt": "2025-10-09T21:05:54.093Z",
+    "updatedAt": "2026-02-21T18:35:47.634Z",
+    "active": true,
+    "order": 0
+  },
+  {
+    "_id": "68e823b28c4521fcb0e84d3c",
+    "id": 9,
+    "name": "Water",
+    "price": 1,
+    "options": [
+      "Cold",
+      "Room Temperature"
+    ],
+    "extraOptions": {},
+    "category": "Drinks",
+    "description": "",
+    "noModal": true,
+    "__v": 0,
+    "createdAt": "2025-10-09T21:05:54.093Z",
+    "updatedAt": "2026-02-21T18:35:48.042Z",
+    "active": true,
+    "order": 1
+  },
+  {
+    "_id": "68e97f5a9df698cdec568da7",
+    "id": 12,
+    "name": "Vada pav 1 pc",
+    "price": 4.99,
+    "options": [
+      "Mild",
+      "Medium",
+      "Spicy",
+      "Cheese  (+$1)"
+    ],
+    "extraOptions": {
+      "Cheese ": 1
+    },
+    "category": "Burgers",
+    "description": "Spicy potato fritter sandwiched in a soft bun with tangy chutneys",
+    "noModal": false,
+    "active": false,
+    "createdAt": "2025-10-10T21:49:14.403Z",
+    "updatedAt": "2026-02-21T14:07:58.495Z",
+    "__v": 0,
+    "order": 0
+  },
+  {
+    "_id": "68ea649fe516aa0be7da2969",
+    "id": 13,
+    "name": "Chips ",
+    "price": 0.99,
+    "options": [
+      "Lays potato chips",
+      "Doritos"
+    ],
+    "extraOptions": {},
+    "category": "Drinks",
+    "description": "Classic choice of chips",
+    "noModal": false,
+    "active": true,
+    "createdAt": "2025-10-11T14:07:27.724Z",
+    "updatedAt": "2026-02-21T18:35:46.354Z",
+    "__v": 0,
+    "order": 2
+  },
+  {
+    "_id": "68ea652be516aa0be7da296c",
+    "id": 14,
+    "name": "Cheese wrap",
+    "price": 7.99,
+    "options": [
+      "Mild",
+      "Medium",
+      "Spicy",
+      "No Onions",
+      "No Cilantro",
+      "Extra Cheese (+$1)"
+    ],
+    "extraOptions": {
+      "Extra Cheese": 1
+    },
+    "category": "Wraps",
+    "description": "Cheesy wrap filled with cream sauce, hot sauce, onion, and cilantro. ",
+    "noModal": false,
+    "active": false,
+    "createdAt": "2025-10-11T14:09:47.974Z",
+    "updatedAt": "2026-02-21T14:08:12.569Z",
+    "__v": 0,
+    "order": 1
+  },
+  {
+    "_id": "68ea6550e516aa0be7da296f",
+    "id": 15,
+    "name": "Samosa chaat",
+    "price": 10.99,
+    "options": [
+      "Mild",
+      "Medium",
+      "Spicy",
+      "No Onions",
+      "No Cilantro",
+      "Ragda (+$1)"
+    ],
+    "extraOptions": {
+      "Ragda": 1
+    },
+    "category": "Street Chaat",
+    "description": "Crispy chopped samosas topped with onions, cilantro, flavorful chutneys, sweet yogurt, and sev",
+    "noModal": false,
+    "active": true,
+    "createdAt": "2025-10-11T14:10:24.589Z",
+    "updatedAt": "2026-02-21T14:08:29.237Z",
+    "__v": 0
+  },
+  {
+    "_id": "68ea7248e516aa0be7da29bc",
+    "id": 16,
+    "name": "Soda",
+    "price": 0.99,
+    "options": [
+      "Pepsi",
+      "Sprite",
+      "Coke"
+    ],
+    "extraOptions": {},
+    "category": "Drinks",
+    "description": "Refreshing drink choices",
+    "noModal": false,
+    "active": true,
+    "createdAt": "2025-10-11T15:05:44.031Z",
+    "updatedAt": "2026-02-21T04:13:56.677Z",
+    "__v": 0,
+    "order": 3
+  },
+  {
+    "_id": "68f50438647b2181b5e32a7c",
+    "id": 17,
+    "name": "Tapioca Fritters",
+    "price": 6.99,
+    "options": [],
+    "extraOptions": {},
+    "category": "Street Chaat",
+    "description": "6 crispy fritters made with tapioca pearls, potatoes, and peanuts served with mint yogurt ",
+    "noModal": true,
+    "active": false,
+    "createdAt": "2025-10-19T15:31:04.680Z",
+    "updatedAt": "2026-02-21T14:08:53.403Z",
+    "__v": 0,
+    "order": 0
+  },
+  {
+    "_id": "693d7ca54eeaefe94261bb15",
+    "id": 18,
+    "name": "Paneer slider ",
+    "price": 6.99,
+    "options": [
+      "Mild",
+      "Medium",
+      "Spicy",
+      "No onions",
+      "No cilentros",
+      "Extra cheese (+$1)",
+      "Extra paneer (+$1)",
+      "Add Egg (+$2)"
+    ],
+    "extraOptions": {
+      "Extra cheese": 1,
+      "Extra paneer": 1,
+      "Add Egg": 2
+    },
+    "category": "Burgers",
+    "description": "Seasoned paneer with cheese and house made sauce sandwiched between buttery toasted buns",
+    "noModal": false,
+    "active": true,
+    "createdAt": "2025-12-13T14:48:05.769Z",
+    "updatedAt": "2026-02-21T14:09:14.097Z",
+    "__v": 0
+  },
+  {
+    "_id": "693d7d064eeaefe94261bb19",
+    "id": 19,
+    "name": "Chicken Slider",
+    "price": 6.99,
+    "options": [
+      "Mild",
+      "Medium",
+      "Spicy",
+      "No onions",
+      "No cilentros",
+      "Extra meet (+$1)",
+      "Extra cheese (+$1)",
+      "Add egg (+$2)"
+    ],
+    "extraOptions": {
+      "Extra meet": 1,
+      "Extra cheese": 1,
+      "Add egg": 2
+    },
+    "category": "Burgers",
+    "description": "Seasoned halal chicken with cheese and house made creamy sauce sandwiched between buttery toasted buns.",
+    "noModal": false,
+    "active": true,
+    "createdAt": "2025-12-13T14:49:42.543Z",
+    "updatedAt": "2026-02-21T14:09:33.399Z",
+    "__v": 0
+  },
+  {
+    "_id": "693d81b84eeaefe94261bb1c",
+    "id": 20,
+    "name": "Bang bang chaat",
+    "price": 8.99,
+    "options": [
+      "Mild",
+      "Medium",
+      "Spicy",
+      "No onion",
+      "No cilantro",
+      "No yogurt"
+    ],
+    "extraOptions": {},
+    "category": "Street Chaat",
+    "description": "Crispy flat puris layered with hot peas curry, potato–chickpea masala, creamy yogurt, housemade spice blend, onions, cilantro, and sev.",
+    "noModal": false,
+    "active": false,
+    "createdAt": "2025-12-13T15:09:44.741Z",
+    "updatedAt": "2026-02-21T14:09:44.224Z",
+    "__v": 0,
+    "order": 0
+  },
+  {
+    "_id": "695f3e1e4eeaefe94261bd8a",
+    "id": 21,
+    "name": "Egg wrap",
+    "price": 8.99,
+    "options": [
+      "Mild",
+      "Medium",
+      "Spicy",
+      "No Onions",
+      "No Cilantro",
+      "Extra egg (+$2)",
+      "Extra cheese (+$1)"
+    ],
+    "extraOptions": {
+      "Extra egg": 2,
+      "Extra cheese": 1
+    },
+    "category": "Wraps",
+    "description": "Creamy, seasoned egg cooked with spices, onion, and cilantro wrapped in crispy naan, with cheese and housemade cream sauce",
+    "noModal": false,
+    "active": false,
+    "createdAt": "2026-01-08T05:18:22.374Z",
+    "updatedAt": "2026-02-21T14:09:51.223Z",
+    "__v": 0,
+    "order": 2
+  },
+  {
+    "_id": "69603bb04eeaefe94261bdcc",
+    "id": 22,
+    "name": "Butter chicken rice ",
+    "price": 12.99,
+    "options": [
+      "Extra chicken (+$2)"
+    ],
+    "extraOptions": {
+      "Extra chicken": 2
+    },
+    "category": "Rice Bowls",
+    "description": "Boneless halal chicken in a tomato cream-butter curry with cumin & aromatic Basmati rice.",
+    "noModal": false,
+    "active": false,
+    "createdAt": "2026-01-08T23:20:16.564Z",
+    "updatedAt": "2026-02-21T14:09:54.046Z",
+    "__v": 0,
+    "order": 0
+  },
+  {
+    "_id": "69603bc34eeaefe94261bdcf",
+    "id": 23,
+    "name": "Butter paneer rice ",
+    "price": 12.99,
+    "options": [
+      "Extra paneer (+$2)"
+    ],
+    "extraOptions": {
+      "Extra paneer": 2
+    },
+    "category": "Rice Bowls",
+    "description": "Seasoned pan fried Paneer in a tomato cream-butter curry with aromatic Basmati rice.",
+    "noModal": false,
+    "active": false,
+    "createdAt": "2026-01-08T23:20:35.689Z",
+    "updatedAt": "2026-02-21T14:09:56.687Z",
+    "__v": 0,
+    "order": 0
+  },
+  {
+    "_id": "696963e34eeaefe94261c250",
+    "id": 24,
+    "name": "Dabeli",
+    "price": 4.99,
+    "options": [
+      "Mild",
+      "Medium",
+      "Spicy",
+      "No Onions",
+      "No Cilantro"
+    ],
+    "extraOptions": {},
+    "category": "Burgers",
+    "description": "Soft bun stuffed with spicy-sweet potato filling, tangy chutneys, and peanuts finished with butter and sev. ",
+    "noModal": false,
+    "active": false,
+    "createdAt": "2026-01-15T22:02:11.938Z",
+    "updatedAt": "2026-02-21T14:10:01.821Z",
+    "__v": 0,
+    "order": 0
+  }
+]
