@@ -50,7 +50,7 @@ const Contact = () => {
                         </div>
                         <div className="contact-item">
                             <h3>✉️ Email</h3>
-                            <p>snackit@chaatmahal.com</p>
+                            <p><a href="mailto:info.chaatmahal@gmail.com">info.chaatmahal@gmail.com</a></p>
                         </div>
                         <div className="contact-item">
                             <h3>🕐 Hours</h3>
@@ -59,9 +59,8 @@ const Contact = () => {
                         </div>
                         <div className="contact-item">
                             <h3>📱 Follow Us</h3>
-                            <p>Instagram: @the.chaat.mahal</p>
-                            <p>Facebook: the.chaat.mahal</p>
-                            {/* <p>Twitter: @chaatmahal_clt</p> */}
+                            <p>Instagram: <a href="https://www.instagram.com/the.chaat.mahal" target="_blank" rel="noopener noreferrer">@the.chaat.mahal</a></p>
+                            <p>Facebook: <a href="https://www.facebook.com/the.chaat.mahal" target="_blank" rel="noopener noreferrer">the.chaat.mahal</a></p>
                         </div>
                     </div>
                 </div>

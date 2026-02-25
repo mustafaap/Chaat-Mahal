@@ -6,7 +6,7 @@ import Analytics from './Analytics';
 import Toast from './Toast';
 import '../styles/AdminControls.css';
 
-const AdminControls = () => {
+const AdminControls = ({ adminRole }) => {
     const [currentView, setCurrentView] = useState(() => {
         const savedView = localStorage.getItem('adminControlsView');
         return savedView || 'dashboard';
@@ -159,21 +159,6 @@ const AdminControls = () => {
         });
     };
 
-    // Add logout function
-    const handleLogout = () => {
-        openModal({
-            type: 'danger',
-            title: 'Logout Confirmation',
-            message: 'Are you sure you want to logout? You will need to enter the admin password again to access this panel.',
-            confirmText: 'Logout',
-            cancelText: 'Cancel',
-            onConfirm: () => {
-                localStorage.removeItem('adminAuthenticated');
-                window.location.href = '/orders'; // This will redirect to login since auth is removed
-            }
-        });
-    };
-
     const renderContent = () => {
         switch (currentView) {
             case 'menu':
@@ -191,6 +176,17 @@ const AdminControls = () => {
                 );
             
             case 'analytics':
+                if (adminRole !== 'owner') {
+                    return (
+                        <div className="content-section">
+                            <h2>🔒 Access Restricted</h2>
+                            <div className="dashboard-welcome">
+                                <div className="welcome-icon">🔒</div>
+                                <h3>Analytics is only available to owners</h3>
+                            </div>
+                        </div>
+                    );
+                }
                 return (
                     <div className="content-section">
                         <Analytics />
@@ -271,7 +267,7 @@ const AdminControls = () => {
                         <div className="dashboard-welcome">
                             <div className="welcome-icon">🎯</div>
                             <h3>Select an option from the sidebar</h3>
-                            <p>Use the navigation menu to manage your restaurant's menu, view analytics, configure settings, or logout.</p>
+                            <p>Use the navigation menu to manage your restaurant's menu, configure settings, and more.</p>
                         </div>
                     </div>
                 );
@@ -304,6 +300,7 @@ const AdminControls = () => {
                         <span className="nav-text">Categories</span>
                     </button>
                     
+                    {adminRole === 'owner' && (
                     <button 
                         className={`nav-item ${currentView === 'analytics' ? 'active' : ''}`}
                         onClick={() => setCurrentView('analytics')}
@@ -311,6 +308,7 @@ const AdminControls = () => {
                         <span className="nav-icon">📊</span>
                         <span className="nav-text">Analytics</span>
                     </button>
+                    )}
                     
                     <button 
                         className={`nav-item ${currentView === 'settings' ? 'active' : ''}`}
@@ -320,13 +318,7 @@ const AdminControls = () => {
                         <span className="nav-text">Settings</span>
                     </button>
                     
-                    <button 
-                        className="nav-item logout-item"
-                        onClick={handleLogout}
-                    >
-                        <span className="nav-icon">🚪</span>
-                        <span className="nav-text">Logout</span>
-                    </button>
+
                 </nav>
             </div>
 

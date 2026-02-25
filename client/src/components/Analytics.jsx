@@ -18,17 +18,28 @@ const Analytics = () => {
     const [heatmapMonth, setHeatmapMonth] = useState(new Date());
     const [reportMonth, setReportMonth] = useState(new Date().getMonth());
     const [reportYear, setReportYear] = useState(new Date().getFullYear());
+    const [ordersPage, setOrdersPage] = useState(1);
+    const ORDERS_PER_PAGE = 10;
+    const [rcPage, setRcPage] = useState(1);
+    const RC_PER_PAGE = 8;
+    const [selectedOrder, setSelectedOrder] = useState(null);
 
     useEffect(() => {
         fetchData();
     }, []);
+
+    // Reset orders page when filter changes
+    useEffect(() => {
+        setOrdersPage(1);
+        setRcPage(1);
+    }, [timeFilter, customDateRange]);
 
     const fetchData = async () => {
         try {
             setLoading(true);
             const [ordersRes, menuRes] = await Promise.all([
                 axios.get('/api/orders/all?ignoreReset=true'), // analytics always needs full history
-                axios.get('/api/menu')
+                axios.get('/api/menu?includeInactive=true')
             ]);
             setOrders(ordersRes.data);
             setMenuItems(menuRes.data);
@@ -51,9 +62,10 @@ const Analytics = () => {
             
             // Custom date range
             if (timeFilter === 'custom' && customDateRange.start && customDateRange.end) {
-                const start = new Date(customDateRange.start);
-                const end = new Date(customDateRange.end);
-                end.setHours(23, 59, 59, 999);
+                const [sy, sm, sd] = customDateRange.start.split('-').map(Number);
+                const [ey, em, ed] = customDateRange.end.split('-').map(Number);
+                const start = new Date(sy, sm - 1, sd, 0, 0, 0, 0);
+                const end   = new Date(ey, em - 1, ed, 23, 59, 59, 999);
                 return orderDate >= start && orderDate <= end;
             }
             
@@ -83,15 +95,14 @@ const Analytics = () => {
             switch(timeFilter) {
                 case 'today':
                     const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-                    const dayBefore = new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000);
-                    return orderDate >= dayBefore && orderDate < yesterday;
+                    return orderDate >= yesterday && orderDate < today;
                 case 'week':
                     const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
                     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
                     return orderDate >= twoWeeksAgo && orderDate < weekAgo;
                 case 'month':
                     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-                    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+                    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
                     return orderDate >= lastMonthStart && orderDate <= lastMonthEnd;
                 default:
                     return false;
@@ -166,11 +177,12 @@ const Analytics = () => {
         const itemRevenue = {};
 
         orders.filter(o => o.status !== 'Cancelled').forEach(order => {
+            const fallbackPerItem = order.total / (order.items.length || 1);
             order.items.forEach(itemString => {
                 const itemName = parseItemName(itemString);
                 itemCounts[itemName] = (itemCounts[itemName] || 0) + 1;
-                // Calculate revenue using actual price including extra options
-                itemRevenue[itemName] = (itemRevenue[itemName] || 0) + calculateItemPrice(itemString);
+                const calcPrice = calculateItemPrice(itemString);
+                itemRevenue[itemName] = (itemRevenue[itemName] || 0) + (calcPrice > 0 ? calcPrice : fallbackPerItem);
             });
         });
 
@@ -190,15 +202,15 @@ const Analytics = () => {
         const categoryCount = {};
 
         orders.filter(o => o.status !== 'Cancelled').forEach(order => {
+            const fallbackPerItem = order.total / (order.items.length || 1);
             order.items.forEach(itemString => {
                 const itemName = parseItemName(itemString);
                 const menuItem = menuItems.find(m => m.name === itemName);
-                
-                if (menuItem && menuItem.category) {
-                    const category = menuItem.category;
-                    categorySales[category] = (categorySales[category] || 0) + calculateItemPrice(itemString);
-                    categoryCount[category] = (categoryCount[category] || 0) + 1;
-                }
+                const category = (menuItem && menuItem.category) ? menuItem.category : 'Other';
+                const calcPrice = calculateItemPrice(itemString);
+                const price = calcPrice > 0 ? calcPrice : fallbackPerItem;
+                categorySales[category] = (categorySales[category] || 0) + price;
+                categoryCount[category] = (categoryCount[category] || 0) + 1;
             });
         });
 
@@ -276,6 +288,44 @@ const Analytics = () => {
                 revenue: 0
             }
         };
+    };
+
+    // Repeat customer stats
+    const getRepeatCustomerStats = (orders) => {
+        const nonCancelled = orders.filter(o => o.status !== 'Cancelled');
+        const customerMap = {};
+
+        nonCancelled.forEach(order => {
+            const key = (order.customerEmail || order.customerName).toLowerCase().trim();
+            if (!customerMap[key]) {
+                customerMap[key] = {
+                    name: order.customerName,
+                    email: order.customerEmail || '',
+                    orders: 0,
+                    revenue: 0,
+                    lastOrder: null
+                };
+            }
+            customerMap[key].orders++;
+            customerMap[key].revenue += orderRevenue(order);
+            const d = new Date(order.createdAt);
+            if (!customerMap[key].lastOrder || d > customerMap[key].lastOrder) {
+                customerMap[key].lastOrder = d;
+            }
+        });
+
+        const customers = Object.values(customerMap);
+        const uniqueCount = customers.length;
+        const repeatCustomers = customers.filter(c => c.orders > 1);
+        const repeatCount = repeatCustomers.length;
+        const repeatRate = uniqueCount > 0 ? (repeatCount / uniqueCount) * 100 : 0;
+        const avgOrdersPerRepeat = repeatCount > 0
+            ? repeatCustomers.reduce((s, c) => s + c.orders, 0) / repeatCount
+            : 0;
+        const topRepeatCustomers = [...repeatCustomers]
+            .sort((a, b) => b.orders - a.orders);
+
+        return { uniqueCount, repeatCount, repeatRate, avgOrdersPerRepeat, topRepeatCustomers };
     };
 
     // Average wait time (from order creation to completion)
@@ -486,7 +536,7 @@ const Analytics = () => {
             `Total sales,${completedOrders.length} transactions,"$${totalCollected.toFixed(2)}"\n\n` +
             `Total payments collected,${completedOrders.length} transactions,"$${totalCollected.toFixed(2)}"\n` +
             `  Card,"$${onlineRevenue.toFixed(2)}"\n` +
-            `  Cash/Counter,"$${counterRevenue.toFixed(2)}"\n\n` +
+            `  Cash,"$${counterRevenue.toFixed(2)}"\n\n` +
             `FEES\n` +
             `Total fees,,"($${totalFees.toFixed(2)})"\n\n` +
             `NET TOTAL,,"$${netTotal.toFixed(2)}"\n\n` +
@@ -497,7 +547,7 @@ const Analytics = () => {
             `Tax Collected: "$${totalTax.toFixed(2)}"\n\n` +
             `PAYMENT METHODS\n` +
             `Online Payments: ${onlinePayments.length} orders\n` +
-            `Counter Payments: ${completedOrders.length - onlinePayments.length} orders\n\n` +
+            `Cash Payments: ${completedOrders.length - onlinePayments.length} orders\n\n` +
             `Completed Orders: ${completedOrders.length}`;
 
         const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -628,7 +678,7 @@ const Analytics = () => {
         addLineItem('Total payments collected', `${completedOrders.length} transactions`, `$${totalCollected.toFixed(2)}`);
         doc.setFont(undefined, 'normal');
         addLineItem('  Card', '', `$${onlineRevenue.toFixed(2)}`, 5);
-        addLineItem('  Counter/Cash', '', `$${counterRevenue.toFixed(2)}`, 5);
+        addLineItem('  Cash', '', `$${counterRevenue.toFixed(2)}`, 5);
         yPos += 5;
 
         // Fees
@@ -672,6 +722,7 @@ const Analytics = () => {
     const revenueTrend = getRevenueTrend(filteredOrders);
     const paymentBreakdown = getPaymentBreakdown(filteredOrders);
     const waitTime = getAverageWaitTime(filteredOrders);
+    const repeatStats = getRepeatCustomerStats(filteredOrders);
     const heatmapData = getHeatmapData(orders, heatmapMonth); // Use all orders, not filtered
 
     // Heatmap month navigation
@@ -714,6 +765,7 @@ const Analytics = () => {
     }
 
     return (
+        <>
         <div className="analytics-container">
             <h2 className="analytics-title">📊 Analytics Dashboard</h2>
             <div className="analytics-header">
@@ -923,6 +975,96 @@ const Analytics = () => {
                 </div>
             </div>
 
+            {/* Orders for selected period */}
+            {filteredOrders.length > 0 && (
+                <div className="analytics-section">
+                    <div className="orders-section-header">
+                        <h3>🧾 Orders
+                            <span className="orders-period-label">
+                                {timeFilter === 'today' ? 'Today'
+                                : timeFilter === 'week' ? 'Last 7 Days'
+                                : timeFilter === 'month' ? 'This Month'
+                                : timeFilter === 'custom' ? 'Custom Range'
+                                : 'All Time'}
+                            </span>
+                        </h3>
+                        <div className="orders-summary-chips">
+                            <span className="orders-chip total">{filteredOrders.length} Orders</span>
+                            <span className="orders-chip completed">{filteredOrders.filter(o => o.status === 'Completed').length} Completed</span>
+                            <span className="orders-chip revenue">${filteredOrders.filter(o => o.status !== 'Cancelled').reduce((s, o) => s + orderRevenue(o), 0).toFixed(2)} Revenue</span>
+                        </div>
+                    </div>
+                    <div className="analytics-orders-table-wrapper">
+                        <table className="analytics-orders-table">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Customer</th>
+                                    <th>Total</th>
+                                    <th>Tip</th>
+                                    <th>Payment</th>
+                                    <th>Status</th>
+                                    <th>Date &amp; Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {[...filteredOrders]
+                                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                                    .slice((ordersPage - 1) * ORDERS_PER_PAGE, ordersPage * ORDERS_PER_PAGE)
+                                    .map((order, idx) => (
+                                        <tr key={order._id} className={`analytics-order-row ${idx % 2 === 0 ? 'aot-row-even' : 'aot-row-odd'} aot-row-clickable`} onClick={() => setSelectedOrder(order)}>
+                                            <td className="aot-num">#{order.orderNumber}</td>
+                                            <td className="aot-customer">{order.customerName}</td>
+                                            <td className="aot-total">${orderRevenue(order).toFixed(2)}</td>
+                                            <td className="aot-tip">{order.tip > 0 ? `$${order.tip.toFixed(2)}` : <span className="aot-tip-none">—</span>}</td>
+                                            <td>
+                                                <span className={`aot-payment-badge ${order.paid ? (order.paymentId ? 'card' : 'paid') : 'unpaid'}`}>
+                                                    {order.paid ? (order.paymentId ? '💳 Card' : '✅ Cash Paid') : '💵 Cash'}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span className={`aot-status-badge aot-badge-${order.status.toLowerCase()}`}>
+                                                    {order.status === 'Completed' ? '✓ ' : order.status === 'Cancelled' ? '✕ ' : '⏳ '}{order.status}
+                                                </span>
+                                            </td>
+                                            <td className="aot-date">
+                                                <span className="aot-date-main">{new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                                <span className="aot-time">{new Date(order.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+                                            </td>
+                                        </tr>
+                                    ))
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    {filteredOrders.length > ORDERS_PER_PAGE && (
+                        <div className="analytics-pagination">
+                            <button className="aot-page-btn" disabled={ordersPage === 1} onClick={() => setOrdersPage(p => p - 1)}>← Previous</button>
+                            <div className="aot-page-dots">
+                                {Array.from({ length: Math.min(5, Math.ceil(filteredOrders.length / ORDERS_PER_PAGE)) }, (_, i) => {
+                                    const total = Math.ceil(filteredOrders.length / ORDERS_PER_PAGE);
+                                    let page;
+                                    if (total <= 5) {
+                                        page = i + 1;
+                                    } else if (ordersPage <= 3) {
+                                        page = i + 1;
+                                    } else if (ordersPage >= total - 2) {
+                                        page = total - 4 + i;
+                                    } else {
+                                        page = ordersPage - 2 + i;
+                                    }
+                                    return (
+                                        <button key={page} className={`aot-page-dot ${ordersPage === page ? 'active' : ''}`} onClick={() => setOrdersPage(page)}>{page}</button>
+                                    );
+                                })}
+                            </div>
+                            <button className="aot-page-btn" disabled={ordersPage >= Math.ceil(filteredOrders.length / ORDERS_PER_PAGE)} onClick={() => setOrdersPage(p => p + 1)}>Next →</button>
+                        </div>
+                    )}
+                    <div className="aot-pagination-count">Showing {Math.min((ordersPage - 1) * ORDERS_PER_PAGE + 1, filteredOrders.length)}–{Math.min(ordersPage * ORDERS_PER_PAGE, filteredOrders.length)} of {filteredOrders.length} orders</div>
+                </div>
+            )}
+
             {/* Payment Breakdown */}
             <div className="analytics-section">
                 <h3>💳 Payment Method Breakdown</h3>
@@ -946,7 +1088,7 @@ const Analytics = () => {
                         <div className="analytics-payment-item counter">
                             <div className="analytics-payment-header">
                                 <span className="analytics-payment-icon">🏪</span>
-                                <span className="analytics-payment-label">Counter Payments</span>
+                                <span className="analytics-payment-label">Cash Payments</span>
                             </div>
                             <div className="analytics-payment-stats">
                                 <span className="analytics-payment-count">{paymentBreakdown.counter.count} orders</span>
@@ -966,7 +1108,7 @@ const Analytics = () => {
                                 <Pie
                                     data={[
                                         { name: 'Online', value: paymentBreakdown.online.count, revenue: paymentBreakdown.online.revenue },
-                                        { name: 'Counter', value: paymentBreakdown.counter.count, revenue: paymentBreakdown.counter.revenue }
+                                        { name: 'Cash', value: paymentBreakdown.counter.count, revenue: paymentBreakdown.counter.revenue }
                                     ]}
                                     cx="50%"
                                     cy="50%"
@@ -990,6 +1132,92 @@ const Analytics = () => {
                         </ResponsiveContainer>
                     </div>
                 </div>
+            </div>
+
+            {/* Repeat Customers */}
+            <div className="analytics-section">
+                <h3>🔄 Repeat Customer Stats</h3>
+                <div className="rc-stats-grid">
+                    <div className="rc-stat-card">
+                        <div className="rc-stat-icon">👥</div>
+                        <div className="rc-stat-value">{repeatStats.uniqueCount}</div>
+                        <div className="rc-stat-label">Unique Customers</div>
+                    </div>
+                    <div className="rc-stat-card">
+                        <div className="rc-stat-icon">🔁</div>
+                        <div className="rc-stat-value">{repeatStats.repeatCount}</div>
+                        <div className="rc-stat-label">Repeat Customers</div>
+                    </div>
+                    <div className="rc-stat-card highlight">
+                        <div className="rc-stat-icon">📈</div>
+                        <div className="rc-stat-value">{repeatStats.repeatRate.toFixed(1)}%</div>
+                        <div className="rc-stat-label">Repeat Rate</div>
+                    </div>
+                    <div className="rc-stat-card">
+                        <div className="rc-stat-icon">🛒</div>
+                        <div className="rc-stat-value">{repeatStats.avgOrdersPerRepeat.toFixed(1)}</div>
+                        <div className="rc-stat-label">Avg Orders / Repeat</div>
+                    </div>
+                </div>
+
+                {repeatStats.topRepeatCustomers.length > 0 && (
+                    <div className="rc-top-customers">
+                        <div className="rc-top-title">Top Returning Customers</div>
+                        <div className="rc-table-wrapper">
+                        <table className="rc-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Customer</th>
+                                    <th>Orders</th>
+                                    <th>Total Spent</th>
+                                    <th>Last Order</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {repeatStats.topRepeatCustomers
+                                    .slice((rcPage - 1) * RC_PER_PAGE, rcPage * RC_PER_PAGE)
+                                    .map((c, i) => {
+                                        const globalIdx = (rcPage - 1) * RC_PER_PAGE + i;
+                                        return (
+                                            <tr key={i} className={globalIdx % 2 === 0 ? 'rc-row-even' : 'rc-row-odd'}>
+                                                <td className="rc-rank">{globalIdx + 1}</td>
+                                                <td className="rc-name">
+                                                    <div>{c.name}</div>
+                                                    {c.email && <div className="rc-email">{c.email}</div>}
+                                                </td>
+                                                <td><span className="rc-order-count">{c.orders}×</span></td>
+                                                <td className="rc-spent">${c.revenue.toFixed(2)}</td>
+                                                <td className="rc-last">{c.lastOrder ? new Date(c.lastOrder).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</td>
+                                            </tr>
+                                        );
+                                    })
+                                }
+                            </tbody>
+                        </table>
+                        </div>
+                        {repeatStats.topRepeatCustomers.length > RC_PER_PAGE && (
+                            <div className="analytics-pagination">
+                                <button className="aot-page-btn" disabled={rcPage === 1} onClick={() => setRcPage(p => p - 1)}>← Previous</button>
+                                <div className="aot-page-dots">
+                                    {Array.from({ length: Math.min(5, Math.ceil(repeatStats.topRepeatCustomers.length / RC_PER_PAGE)) }, (_, i) => {
+                                        const total = Math.ceil(repeatStats.topRepeatCustomers.length / RC_PER_PAGE);
+                                        let page;
+                                        if (total <= 5) page = i + 1;
+                                        else if (rcPage <= 3) page = i + 1;
+                                        else if (rcPage >= total - 2) page = total - 4 + i;
+                                        else page = rcPage - 2 + i;
+                                        return (
+                                            <button key={page} className={`aot-page-dot ${rcPage === page ? 'active' : ''}`} onClick={() => setRcPage(page)}>{page}</button>
+                                        );
+                                    })}
+                                </div>
+                                <button className="aot-page-btn" disabled={rcPage >= Math.ceil(repeatStats.topRepeatCustomers.length / RC_PER_PAGE)} onClick={() => setRcPage(p => p + 1)}>Next →</button>
+                            </div>
+                        )}
+                        <div className="aot-pagination-count">Showing {Math.min((rcPage - 1) * RC_PER_PAGE + 1, repeatStats.topRepeatCustomers.length)}–{Math.min(rcPage * RC_PER_PAGE, repeatStats.topRepeatCustomers.length)} of {repeatStats.topRepeatCustomers.length} repeat customers</div>
+                    </div>
+                )}
             </div>
 
             <div className="analytics-row">
@@ -1236,7 +1464,6 @@ const Analytics = () => {
                                                 key={dayIndex}
                                                 className="heatmap-day"
                                                 style={{backgroundColor: color}}
-                                                title={`${dayData.date} (${dayData.dayOfWeek})\n${dayData.count} orders\n$${dayData.revenue.toFixed(2)} revenue`}
                                             >
                                                 <span className="heatmap-day-number">{dayData.day}</span>
                                                 {dayData.count > 0 && (
@@ -1245,6 +1472,19 @@ const Analytics = () => {
                                                         <span className="heatmap-revenue">${dayData.revenue.toFixed(0)}</span>
                                                     </div>
                                                 )}
+                                                <div className="heatmap-tooltip">
+                                                    <div className="heatmap-tooltip-date">{dayData.date}</div>
+                                                    <div className="heatmap-tooltip-day">{dayData.dayOfWeek}</div>
+                                                    <div className="heatmap-tooltip-divider"></div>
+                                                    <div className="heatmap-tooltip-row">
+                                                        <span>Orders</span>
+                                                        <span className="heatmap-tooltip-val">{dayData.count}</span>
+                                                    </div>
+                                                    <div className="heatmap-tooltip-row">
+                                                        <span>Revenue</span>
+                                                        <span className="heatmap-tooltip-val">${dayData.revenue.toFixed(2)}</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         );
                                     })}
@@ -1379,6 +1619,118 @@ const Analytics = () => {
                 </div>
             )}
         </div>
+
+        {/* Order Detail Modal */}
+        {selectedOrder && (
+            <div className="aot-modal-overlay" onClick={() => setSelectedOrder(null)}>
+                <div className="aot-modal" onClick={e => e.stopPropagation()}>
+                    <div className="aot-modal-header">
+                        <div>
+                            <span className="aot-modal-order-num">Order #{selectedOrder.orderNumber}</span>
+                            <span className={`aot-status-badge aot-badge-${selectedOrder.status.toLowerCase()} aot-modal-status`}>
+                                {selectedOrder.status === 'Completed' ? '✓ ' : selectedOrder.status === 'Cancelled' ? '✕ ' : '⏳ '}{selectedOrder.status}
+                            </span>
+                        </div>
+                        <button className="aot-modal-close" onClick={() => setSelectedOrder(null)}>✕</button>
+                    </div>
+
+                    <div className="aot-modal-body">
+                        {/* Customer & Date */}
+                        <div className="aot-modal-section">
+                            <div className="aot-modal-row">
+                                <span className="aot-modal-label">Customer</span>
+                                <span className="aot-modal-value">{selectedOrder.customerName}</span>
+                            </div>
+                            {selectedOrder.customerEmail && (
+                                <div className="aot-modal-row">
+                                    <span className="aot-modal-label">Email</span>
+                                    <span className="aot-modal-value">{selectedOrder.customerEmail}</span>
+                                </div>
+                            )}
+                            <div className="aot-modal-row">
+                                <span className="aot-modal-label">Date &amp; Time</span>
+                                <span className="aot-modal-value">
+                                    {new Date(selectedOrder.createdAt).toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })}
+                                    {' · '}
+                                    {new Date(selectedOrder.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Items */}
+                        <div className="aot-modal-section">
+                            <div className="aot-modal-section-title">Items Ordered</div>
+                            <div className="aot-modal-items">
+                                {(() => {
+                                    const counts = {};
+                                    selectedOrder.items.forEach(i => { counts[i] = (counts[i] || 0) + 1; });
+                                    return Object.entries(counts).map(([item, qty]) => (
+                                        <div key={item} className="aot-modal-item">
+                                            <span className="aot-modal-item-qty">{qty}×</span>
+                                            <span className="aot-modal-item-name">{item.split(' (')[0]}</span>
+                                        </div>
+                                    ));
+                                })()}
+                            </div>
+                        </div>
+
+                        {/* Financials */}
+                        <div className="aot-modal-section">
+                            <div className="aot-modal-section-title">Payment Summary</div>
+                            <div className="aot-modal-row">
+                                <span className="aot-modal-label">Subtotal</span>
+                                <span className="aot-modal-value">${selectedOrder.total.toFixed(2)}</span>
+                            </div>
+                            {selectedOrder.taxAmount > 0 && (
+                                <div className="aot-modal-row">
+                                    <span className="aot-modal-label">Tax</span>
+                                    <span className="aot-modal-value">${selectedOrder.taxAmount.toFixed(2)}</span>
+                                </div>
+                            )}
+                            {selectedOrder.convenienceFee > 0 && (
+                                <div className="aot-modal-row">
+                                    <span className="aot-modal-label">Convenience Fee</span>
+                                    <span className="aot-modal-value">${selectedOrder.convenienceFee.toFixed(2)}</span>
+                                </div>
+                            )}
+                            {selectedOrder.tip > 0 && (
+                                <div className="aot-modal-row">
+                                    <span className="aot-modal-label">Tip</span>
+                                    <span className="aot-modal-value aot-modal-tip">${selectedOrder.tip.toFixed(2)}</span>
+                                </div>
+                            )}
+                            <div className="aot-modal-row aot-modal-total-row">
+                                <span className="aot-modal-label">Total Charged</span>
+                                <span className="aot-modal-value aot-modal-grand-total">${orderRevenue(selectedOrder).toFixed(2)}</span>
+                            </div>
+                            <div className="aot-modal-row">
+                                <span className="aot-modal-label">Payment Method</span>
+                                <span className="aot-modal-value">
+                                    <span className={`aot-payment-badge ${selectedOrder.paid ? (selectedOrder.paymentId ? 'card' : 'paid') : 'unpaid'}`}>
+                                        {selectedOrder.paid ? (selectedOrder.paymentId ? '💳 Card' : '✅ Cash Paid') : '💵 Cash'}
+                                    </span>
+                                </span>
+                            </div>
+                            {selectedOrder.paymentId && (
+                                <div className="aot-modal-row">
+                                    <span className="aot-modal-label">Payment ID</span>
+                                    <span className="aot-modal-value aot-modal-payment-id">{selectedOrder.paymentId}</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Notes */}
+                        {selectedOrder.notes && (
+                            <div className="aot-modal-section">
+                                <div className="aot-modal-section-title">Special Notes</div>
+                                <div className="aot-modal-notes">{selectedOrder.notes}</div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     );
 };
 

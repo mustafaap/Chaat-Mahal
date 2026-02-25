@@ -45,9 +45,9 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="mailto:snackit@chaatmahal.com">
+                <a href="mailto:info.chaatmahal@gmail.com">
                   <span className="icon">✉️</span>
-                  snackit@chaatmahal.com
+                  info.chaatmahal@gmail.com
                 </a>
               </li>
               <li>
@@ -178,7 +178,14 @@ const CustomerNavbar = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) =
 };
 
 // Admin Navbar Component - Updated with Controls tab
-const AdminNavbar = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu, currentView, setCurrentView }) => {
+const AdminNavbar = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu, currentView, setCurrentView, adminRole, onLogout }) => {
+  const [profileMenuOpen, setProfileMenuOpen] = React.useState(false);
+
+  const handleLogoutClick = () => {
+    setProfileMenuOpen(false);
+    onLogout();
+  };
+
   return (
     <nav className="navbar admin-navbar">
       <div className="nav-container">
@@ -235,6 +242,24 @@ const AdminNavbar = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu, curren
           >
             Controls
           </button>
+        </div>
+
+        <div className="admin-profile-wrapper">
+          <button
+            className="admin-profile-circle"
+            onClick={() => setProfileMenuOpen(prev => !prev)}
+            title={adminRole === 'owner' ? 'Owner' : 'Employee'}
+          >
+            {adminRole === 'owner' ? 'OW' : 'EM'}
+          </button>
+          {profileMenuOpen && (
+            <div className="admin-profile-dropdown">
+              <div className="admin-profile-role">{adminRole === 'owner' ? 'Owner' : 'Employee'}</div>
+              <button className="admin-profile-logout-btn" onClick={handleLogoutClick}>
+                🚪 Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </nav>
@@ -319,6 +344,7 @@ const AppContent = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) => {
 // Update the AdminOrdersPage component to include authentication
 const AdminOrdersPage = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [adminRole, setAdminRole] = useState('');
   const [currentView, setCurrentView] = useState(() => {
     const savedView = localStorage.getItem('adminCurrentView');
     return savedView || 'pending';
@@ -327,7 +353,9 @@ const AdminOrdersPage = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) 
   // Check authentication on component mount
   useEffect(() => {
     const authStatus = localStorage.getItem('adminAuthenticated');
+    const role = localStorage.getItem('adminRole') || '';
     setIsAuthenticated(authStatus === 'true');
+    setAdminRole(role);
   }, []);
 
   // Save to localStorage whenever currentView changes
@@ -342,8 +370,17 @@ const AdminOrdersPage = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) 
     }
   }, [currentView]);
 
-  const handleLogin = () => {
+  const handleLogin = (role) => {
     setIsAuthenticated(true);
+    setAdminRole(role);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminAuthenticated');
+    localStorage.removeItem('adminRole');
+    setIsAuthenticated(false);
+    setAdminRole('');
   };
 
   // Show login if not authenticated
@@ -354,7 +391,7 @@ const AdminOrdersPage = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) 
   const renderCurrentView = () => {
     switch(currentView) {
       case 'controls':
-        return <AdminControls />;
+        return <AdminControls adminRole={adminRole} />;
       case 'pending':
       case 'completed':
       case 'cancelled':
@@ -371,6 +408,8 @@ const AdminOrdersPage = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) 
         closeMobileMenu={closeMobileMenu}
         currentView={currentView}
         setCurrentView={setCurrentView}
+        adminRole={adminRole}
+        onLogout={handleLogout}
       />
       {renderCurrentView()}
     </>

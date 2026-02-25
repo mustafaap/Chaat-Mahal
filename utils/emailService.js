@@ -132,7 +132,7 @@ const generateOrderConfirmationEmailHTML = (orderData) => {
                         </a>
                     </p>
                     <p>📞 Phone: (704) 418-0330</p>
-                    <p>✉️ Email: snackit@chaatmahal.com</p>
+                    <p>✉️ Email: info.chaatmahal@gmail.com</p>
                     <p>Follow us on Instagram: <a href="https://www.instagram.com/the.chaat.mahal/">@the.chaat.mahal</a></p>
                     <p>This email was sent automatically. Please don't reply to this email.</p>
                 </div>
@@ -197,7 +197,7 @@ const generateOrderReadyEmailHTML = (orderData) => {
                 <div class="footer">
                     <p><strong>Chaat Mahal Food Truck</strong></p>
                     <p>📞 Phone: (704) 418-0330</p>
-                    <p>✉️ Email: snackit@chaatmahal.com</p>
+                    <p>✉️ Email: info.chaatmahal@gmail.com</p>
                     <p>Follow us on Instagram: <a href="https://www.instagram.com/the.chaat.mahal/">@the.chaat.mahal</a></p>
                     <p>This email was sent automatically. Please don't reply to this email.</p>
                 </div>

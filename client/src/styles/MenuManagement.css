@@ -884,7 +884,7 @@
     
     .item-form-container {
         margin: 10px;
-        max-height: 95vh;
+        max-height: 82vh;
         width: calc(100% - 20px);
     }
 
@@ -917,20 +917,29 @@
 
 @media (max-width: 480px) {
     .item-form {
-        padding: 15px;
+        padding: 10px;
     }
     
     .form-header {
-        padding: 15px;
+        padding: 10px 12px;
     }
 
     .form-header h2 {
-        font-size: 1.2rem;
+        font-size: 1.25rem;
     }
 
     .item-form-container {
         margin: 5px;
+        max-height: 86vh;
         width: calc(100% - 10px);
+    }
+
+    .item-form-overlay {
+        padding: 6px;
+    }
+
+    .form-group {
+        margin-bottom: 10px;
     }
 
     .form-group input:not([type="checkbox"]),

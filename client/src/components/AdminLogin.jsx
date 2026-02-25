@@ -8,10 +8,14 @@ const AdminLogin = ({ onLogin }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        // Check password (you can change this password)
-        if (password === 'chaat123') {
+        if (password === 'chaatowner') {
             localStorage.setItem('adminAuthenticated', 'true');
-            onLogin();
+            localStorage.setItem('adminRole', 'owner');
+            onLogin('owner');
+        } else if (password === 'chaat123') {
+            localStorage.setItem('adminAuthenticated', 'true');
+            localStorage.setItem('adminRole', 'employee');
+            onLogin('employee');
         } else {
             setError('Incorrect password');
             setPassword('');
@@ -21,8 +25,9 @@ const AdminLogin = ({ onLogin }) => {
     return (
         <div className="admin-login-container">
             <div className="admin-login-card">
+                <img src="/images/Chaat-Mahal.jpg" alt="Chaat Mahal" className="admin-login-logo" />
                 <h2>Admin Access</h2>
-                <p>Enter admin password to continue</p>
+                <p>Enter your password to continue</p>
                 
                 <form onSubmit={handleSubmit}>
                     <input

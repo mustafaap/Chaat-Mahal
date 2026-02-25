@@ -49,17 +49,17 @@ const About = () => {
                     <h2>Our Signature Dishes</h2>
                     <div className="dishes-grid">
                         <div className="dish-card">
-                            <img src="/images/panipuri.JPG" alt="Panipuri" />
+                            <img src="/images/panipuri.jpeg" alt="Panipuri"/>
                             <h3>Panipuri</h3>
                             <p>Crispy shells filled with spiced water, tamarind, and chutneys - a true street food classic!</p>
                         </div>
                         <div className="dish-card">
-                            <img src="/images/bhelpuri.JPG" alt="Bhelpuri" />
+                            <img src="/images/bhelpuri.jpeg" alt="Bhelpuri" />
                             <h3>Bhelpuri</h3>
                             <p>A delightful mix of puffed rice, sev, vegetables, and tangy chutneys</p>
                         </div>
                         <div className="dish-card">
-                            <img src="/images/chicken-wrap.JPG" alt="Chicken Wrap" />
+                            <img src="/images/chicken-wrap.jpeg" alt="Chicken Wrap" />
                             <h3>Chicken Wrap</h3>
                             <p>Tender spiced chicken wrapped in fresh naan with vegetables and our signature sauces</p>
                         </div>

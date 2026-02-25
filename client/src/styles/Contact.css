@@ -367,3 +367,16 @@
         height: 80px;
     }
 }
+
+/* Social / email links */
+.contact-item a {
+    color: #e67e22;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.contact-item a:hover {
+    color: #cf6d17;
+    text-decoration: underline;
+}
