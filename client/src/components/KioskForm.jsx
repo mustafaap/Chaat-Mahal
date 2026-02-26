@@ -997,7 +997,17 @@ const KioskForm = ({ initialStep = 1 }) => {
                                                 key={option}
                                                 type="button"
                                                 className={`option-pill ${itemOptions.otherOptions.includes(option) ? 'selected' : ''}`}
-                                                onClick={() => handleOtherOptionToggle(option)}
+                                                onClick={() => {
+                                                    if (modalItem.singleSelect) {
+                                                        // Radio behaviour — clicking selected clears, clicking another replaces
+                                                        setItemOptions(prev => ({
+                                                            ...prev,
+                                                            otherOptions: prev.otherOptions.includes(option) ? [] : [option]
+                                                        }));
+                                                    } else {
+                                                        handleOtherOptionToggle(option);
+                                                    }
+                                                }}
                                             >
                                                 {option}
                                             </button>

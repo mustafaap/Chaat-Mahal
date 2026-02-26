@@ -331,6 +331,14 @@ input, textarea, select {
     background: rgba(255, 255, 255, 0.15);
 }
 
+/* Desktop: push nav links to the right, just beside the profile circle */
+@media (min-width: 769px) {
+    .admin-nav-menu {
+        margin-left: auto;
+        margin-right: 12px;
+    }
+}
+
 .admin-nav-btn {
     background: none !important;
     border: none !important;

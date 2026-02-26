@@ -186,12 +186,14 @@ app.use(express.static(path.join(__dirname, 'client', 'build')));
 const orderRoutes = require('./routes/orders');
 const menuRoutes = require('./routes/menu');
 const paymentRoutes = require('./routes/payments');
-const settingsRoutes = require('./routes/settings'); // Add this line
+const settingsRoutes = require('./routes/settings');
+const authRoutes = require('./routes/auth');
 
 app.use('/api/orders', orderRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/settings', settingsRoutes); // Add this line
+app.use('/api/settings', settingsRoutes);
+app.use('/api/auth', authRoutes);
 
 // Serve React app
 app.get('*', (req, res) => {

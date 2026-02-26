@@ -243,6 +243,13 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
         setSelectedTipType('fixed');
     };
 
+    const handleTipPercent = (pct) => {
+        const amount = parseFloat((calculateTotal() * pct / 100).toFixed(2));
+        setTipAmount(amount);
+        setCustomTip('');
+        setSelectedTipType(`${pct}%`);
+    };
+
     const handleCustomTipChange = (e) => {
         const value = e.target.value;
         setCustomTip(value);
@@ -514,30 +521,20 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                             <div className="qof-tip-section">
                                 <label className="qof-label">Tip (Optional)</label>
                                 <div className="qof-tip-buttons">
-                                    <button
-                                        type="button"
-                                        className={`qof-tip-btn ${selectedTipType === 'fixed' && tipAmount === 1 ? 'selected' : ''}`}
-                                        onClick={() => handleTipAmount(1)}
-                                        disabled={isSubmitting}
-                                    >
-                                        $1
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={`qof-tip-btn ${selectedTipType === 'fixed' && tipAmount === 2 ? 'selected' : ''}`}
-                                        onClick={() => handleTipAmount(2)}
-                                        disabled={isSubmitting}
-                                    >
-                                        $2
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={`qof-tip-btn ${selectedTipType === 'fixed' && tipAmount === 3 ? 'selected' : ''}`}
-                                        onClick={() => handleTipAmount(3)}
-                                        disabled={isSubmitting}
-                                    >
-                                        $3
-                                    </button>
+                                    {[18, 20, 22].map(pct => (
+                                        <button
+                                            key={pct}
+                                            type="button"
+                                            className={`qof-tip-btn ${selectedTipType === `${pct}%` ? 'selected' : ''}`}
+                                            onClick={() => handleTipPercent(pct)}
+                                            disabled={isSubmitting || Object.keys(orderItems).length === 0}
+                                        >
+                                            <span className="qof-tip-pct">{pct}%</span>
+                                            {Object.keys(orderItems).length > 0 && (
+                                                <span className="qof-tip-dollar">${parseFloat((calculateTotal() * pct / 100).toFixed(2)).toFixed(2)}</span>
+                                            )}
+                                        </button>
+                                    ))}
                                     <button
                                         type="button"
                                         className={`qof-tip-btn ${selectedTipType === 'none' && tipAmount === 0 ? 'selected' : ''}`}
@@ -762,15 +759,14 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                                 <div key={option} className="qof-option-container">
                                     <label className="qof-option-label">
                                         <input
-                                            type={optionsModal.menuItem.name === 'Water' ? 'radio' : 'checkbox'}
-                                            name={optionsModal.menuItem.name === 'Water' ? 'water-options' : option}
+                                            type={optionsModal.menuItem.singleSelect ? 'radio' : 'checkbox'}
+                                            name={optionsModal.menuItem.singleSelect ? `single-select-${optionsModal.itemName}` : option}
                                             checked={selectedOptions[optionsModal.itemName]?.includes(option) || false}
                                             onChange={(e) => {
                                                 const checked = e.target.checked;
                                                 setSelectedOptions(prev => {
                                                     const currentOptions = prev[optionsModal.itemName] || [];
-                                                    
-                                                    if (optionsModal.menuItem.name === 'Water') {
+                                                    if (optionsModal.menuItem.singleSelect) {
                                                         return { ...prev, [optionsModal.itemName]: checked ? [option] : [] };
                                                     } else {
                                                         if (checked) {

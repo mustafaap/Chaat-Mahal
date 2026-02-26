@@ -252,7 +252,9 @@ const Analytics = () => {
 
         orders.filter(o => o.status !== 'Cancelled').forEach(order => {
             const d = new Date(order.createdAt);
-            const key = d.toISOString().split('T')[0]; // "2025-08-29" — year-aware, sorts correctly
+            // Use local date components so late-night orders (11 PM local = next day UTC)
+            // are grouped by the correct local calendar date, not the UTC date
+            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
             const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             dailyRevenue[key] = (dailyRevenue[key] || 0) + orderRevenue(order);
             dailyLabel[key] = label;
@@ -371,6 +373,7 @@ const Analytics = () => {
         });
 
         const maxOrders = Math.max(...dayData.map(d => d.count), 1);
+        const maxRevenue = Math.max(...dayData.map(d => d.revenue), 1);
         const totalOrders = monthOrders.length;
         const totalRevenue = monthOrders.reduce((sum, o) => sum + orderRevenue(o), 0);
         const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
@@ -412,7 +415,7 @@ const Analytics = () => {
                 count: data.count,
                 revenue: data.revenue,
                 date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                intensity: (data.count / maxOrders) * 100,
+                intensity: ((data.count / maxOrders) * 0.5 + (data.revenue / maxRevenue) * 0.5) * 100,
                 isEmpty: false
             };
             
@@ -1256,8 +1259,8 @@ const Analytics = () => {
                     {categoryData.length > 0 ? (
                         <>
                             <div className="category-pie-chart">
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <PieChart>
+                                <ResponsiveContainer width="100%" height={280}>
+                                    <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
                                         <Pie
                                             data={categoryData.map(cat => ({
                                                 name: cat.category,
@@ -1267,8 +1270,19 @@ const Analytics = () => {
                                             cx="50%"
                                             cy="50%"
                                             labelLine={false}
-                                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                            outerRadius={80}
+                                            label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                                                if (percent < 0.05) return null;
+                                                const RADIAN = Math.PI / 180;
+                                                const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
+                                                const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                                                const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                                                return (
+                                                    <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12} fontWeight={700}>
+                                                        {`${(percent * 100).toFixed(0)}%`}
+                                                    </text>
+                                                );
+                                            }}
+                                            outerRadius={100}
                                             dataKey="value"
                                         >
                                             {categoryData.map((entry, index) => {
@@ -1318,7 +1332,7 @@ const Analytics = () => {
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart
                                 data={revenueTrend}
-                                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis 
@@ -1328,6 +1342,7 @@ const Analytics = () => {
                                 <YAxis 
                                     tick={{ fontSize: 12 }}
                                     tickFormatter={(value) => `$${value}`}
+                                    width={53}
                                 />
                                 <Tooltip 
                                     formatter={(value) => [`$${value.toFixed(2)}`, 'Revenue']}
@@ -1362,7 +1377,7 @@ const Analytics = () => {
                                           hourData.hour < 12 ? `${hourData.hour} AM` : `${hourData.hour - 12} PM`,
                                     orders: hourData.count
                                 }))}
-                                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                                margin={{ top: 20, right: 10, left: 0, bottom: 5 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis 
@@ -1371,16 +1386,18 @@ const Analytics = () => {
                                 />
                                 <YAxis 
                                     tick={{ fontSize: 12 }}
-                                    label={{ value: 'Orders', angle: -90, position: 'insideLeft' }}
+                                    width={35}
                                 />
                                 <Tooltip 
                                     formatter={(value) => [value, 'Orders']}
                                     cursor={{ fill: 'rgba(33, 150, 243, 0.1)' }}
                                 />
+                                <Legend />
                                 <Bar 
                                     dataKey="orders" 
                                     fill="#4CAF50"
                                     radius={[8, 8, 0, 0]}
+                                    name="Orders"
                                 />
                             </BarChart>
                         </ResponsiveContainer>
@@ -1463,6 +1480,7 @@ const Analytics = () => {
                                             <div
                                                 key={dayIndex}
                                                 className="heatmap-day"
+                                                data-col={dayIndex}
                                                 style={{backgroundColor: color}}
                                             >
                                                 <span className="heatmap-day-number">{dayData.day}</span>
@@ -1512,7 +1530,7 @@ const Analytics = () => {
                     Generate comprehensive monthly sales reports for tax filing and accounting purposes. 
                     Includes gross sales, net sales, tax breakdown, tips, fees, and payment method details.
                 </p>
-                <div style={{display: 'flex', gap: '15px', alignItems: 'flex-end', flexWrap: 'wrap'}}>
+                <div className="tax-report-controls" style={{display: 'flex', gap: '15px', alignItems: 'flex-end', flexWrap: 'wrap'}}>
                     <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
                         <label style={{fontWeight: '600', color: '#333', fontSize: '14px'}}>Month:</label>
                         <select 

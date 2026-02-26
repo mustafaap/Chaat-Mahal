@@ -46,6 +46,10 @@ const menuSchema = new mongoose.Schema({
     order: {
         type: Number,
         default: 0
+    },
+    singleSelect: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true

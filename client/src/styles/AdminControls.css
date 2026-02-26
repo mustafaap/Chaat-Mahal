@@ -402,14 +402,14 @@
 @media (max-width: 768px) {
     .admin-controls-container {
         flex-direction: column;
-        overflow-x: hidden;
+        overflow-x: clip;
     }
     
     .admin-sidebar {
         width: 100%;
         height: auto;
         position: sticky;
-        top: 0;
+        top: 66px;
         z-index: 50;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }

@@ -56,7 +56,8 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
         extraOptions: {},
         noModal: false,
         active: true,
-        includeSpice: false
+        includeSpice: false,
+        singleSelect: false
     });
 
     // Show toast notification
@@ -269,7 +270,8 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
             extraOptions: {},
             noModal: false,
             active: true,
-            includeSpice: false
+            includeSpice: false,
+            singleSelect: false
         });
         setEditingItem(null);
         setShowAddForm(false);
@@ -289,7 +291,8 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
             extraOptions: {},
             noModal: false,
             active: true,
-            includeSpice: false
+            includeSpice: false,
+            singleSelect: false
         });
         setEditingItem(null);
         setUploadedImage(null);
@@ -318,7 +321,8 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
             extraOptions: item.extraOptions || {},
             noModal: item.noModal || false,
             active: item.active !== undefined ? item.active : true,
-            includeSpice: hasSpice
+            includeSpice: hasSpice,
+            singleSelect: item.singleSelect || false
         });
         
         // Set preview for existing image
@@ -1231,6 +1235,39 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                 </div>
                             </div>
 
+                            {/* Single Select Options Toggle */}
+                            <div className="form-group full-width">
+                                <div className="spice-level-info-box">
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                                        <div>
+                                            <h4 style={{ margin: 0 }}>🔘 Single Select Options</h4>
+                                            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>
+                                                {formData.singleSelect
+                                                    ? 'Customer can only pick one option (e.g. Chips flavor, Soda type)'
+                                                    : 'Customer can pick multiple options (checkboxes)'}
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, singleSelect: !prev.singleSelect }))}
+                                            style={{
+                                                padding: '8px 18px',
+                                                borderRadius: '20px',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                fontWeight: '600',
+                                                fontSize: '0.9rem',
+                                                background: formData.singleSelect ? '#e53e3e' : '#48bb78',
+                                                color: '#fff',
+                                                whiteSpace: 'nowrap'
+                                            }}
+                                        >
+                                            {formData.singleSelect ? '✕ Disable Single Select' : '+ Enable Single Select'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* Available for Customers toggle */}
                             <div className="form-group full-width">
                                 <div className="spice-level-info-box">
@@ -1265,38 +1302,6 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                             </div>
 
                             {/* Options Modal toggle */}
-                            <div className="form-group full-width">
-                                <div className="spice-level-info-box">
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-                                        <div>
-                                            <h4 style={{ margin: 0 }}>🗂️ Options Modal</h4>
-                                            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>
-                                                {formData.noModal
-                                                    ? 'Item adds directly to cart — no options popup shown'
-                                                    : 'Customer sees an options popup before adding to cart'}
-                                            </p>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => setFormData(prev => ({ ...prev, noModal: !prev.noModal }))}
-                                            style={{
-                                                padding: '8px 18px',
-                                                borderRadius: '20px',
-                                                border: 'none',
-                                                cursor: 'pointer',
-                                                fontWeight: '600',
-                                                fontSize: '0.9rem',
-                                                background: formData.noModal ? '#48bb78' : '#e53e3e',
-                                                color: '#fff',
-                                                whiteSpace: 'nowrap'
-                                            }}
-                                        >
-                                            {formData.noModal ? '+ Add Modal' : '✕ Remove Modal'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
                             <div className="form-group full-width">
                                 <label>Additional Customization Options</label>
                                 <div className="other-options-info">

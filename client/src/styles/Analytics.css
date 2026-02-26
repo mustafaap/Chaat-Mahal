@@ -1045,6 +1045,35 @@
 }
 
 /* Responsive Design */
+@media (max-width: 1216px) {
+    .header-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .header-controls {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .control-btn {
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .time-filter {
+        width: 100%;
+        justify-content: stretch;
+        overflow-x: auto;
+    }
+
+    .time-filter button {
+        flex: 1;
+    }
+}
+
 @media (max-width: 968px) {
     .analytics-title {
         font-size: 1.8rem;
@@ -1052,21 +1081,6 @@
 
     .analytics-row {
         grid-template-columns: 1fr;
-    }
-
-    .header-controls {
-        width: 100%;
-    }
-
-    .control-btn {
-        flex: 1;
-        min-width: 120px;
-    }
-
-    .time-filter {
-        width: 100%;
-        justify-content: flex-start;
-        overflow-x: auto;
     }
 
     .comparison-banner {
@@ -1122,8 +1136,8 @@
     }
 
     .chart-item {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        align-items: center;
     }
 
     .chart-bar-container {
@@ -1264,6 +1278,43 @@
     .heatmap-stat .stat-value {
         font-size: 16px;
     }
+
+    /* Left-edge columns: slide tooltip right so it stays on screen */
+    .heatmap-day[data-col="0"] .heatmap-tooltip,
+    .heatmap-day[data-col="1"] .heatmap-tooltip {
+        left: 0;
+        transform: translateY(4px);
+    }
+    .heatmap-day[data-col="0"]:not(.empty):hover .heatmap-tooltip,
+    .heatmap-day[data-col="1"]:not(.empty):hover .heatmap-tooltip {
+        left: 0;
+        transform: translateY(0);
+    }
+    .heatmap-day[data-col="0"] .heatmap-tooltip::after,
+    .heatmap-day[data-col="1"] .heatmap-tooltip::after {
+        left: 20px;
+        transform: none;
+    }
+
+    /* Right-edge columns: slide tooltip left so it stays on screen */
+    .heatmap-day[data-col="5"] .heatmap-tooltip,
+    .heatmap-day[data-col="6"] .heatmap-tooltip {
+        left: auto;
+        right: 0;
+        transform: translateY(4px);
+    }
+    .heatmap-day[data-col="5"]:not(.empty):hover .heatmap-tooltip,
+    .heatmap-day[data-col="6"]:not(.empty):hover .heatmap-tooltip {
+        left: auto;
+        right: 0;
+        transform: translateY(0);
+    }
+    .heatmap-day[data-col="5"] .heatmap-tooltip::after,
+    .heatmap-day[data-col="6"] .heatmap-tooltip::after {
+        left: auto;
+        right: 20px;
+        transform: none;
+    }
 }
 
 /* ── Orders Section Header ── */
@@ -1309,9 +1360,35 @@
     white-space: nowrap;
 }
 
+@media (max-width: 480px) {
+    .orders-summary-chips {
+        flex-wrap: nowrap;
+        gap: 5px;
+    }
+    .orders-chip {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+}
+
 .orders-chip.total    { background: #f0f4ff; color: #3a5bd9; border: 1px solid #c7d4fb; }
 .orders-chip.completed{ background: #e8f5e9; color: #2e7d32; border: 1px solid #b2dfdb; }
 .orders-chip.revenue  { background: #fff8e1; color: #e65100; border: 1px solid #ffe082; }
+
+@media (max-width: 480px) {
+    .tax-report-controls {
+        gap: 10px !important;
+    }
+    .tax-report-controls select {
+        padding: 7px 10px !important;
+        font-size: 13px !important;
+    }
+    .tax-report-controls .control-btn {
+        padding: 8px 14px !important;
+        font-size: 12px !important;
+        gap: 5px !important;
+    }
+}
 
 /* ── Orders Table ── */
 .analytics-orders-table-wrapper {

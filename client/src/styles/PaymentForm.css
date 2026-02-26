@@ -650,10 +650,16 @@
     box-shadow: 0 4px 12px rgba(184, 92, 56, 0.3);
 }
 
-.tip-amount {
-    font-size: 0.7rem;
+.tip-pct {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.tip-dollar {
+    font-size: 0.72rem;
     font-weight: 500;
-    opacity: 0.9;
+    opacity: 0.8;
 }
 
 .custom-tip-container {
@@ -736,7 +742,7 @@
         font-size: 0.8rem;
     }
     
-    .tip-amount {
+    .tip-dollar {
         font-size: 0.65rem;
     }
     

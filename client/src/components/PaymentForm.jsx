@@ -15,9 +15,9 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
   const [walletUnavailableReason, setWalletUnavailableReason] = useState('');
   const [isCounterPaymentProcessing, setIsCounterPaymentProcessing] = useState(false);
   
-  const [tipAmount, setTipAmount] = useState(1);
+  const [tipAmount, setTipAmount] = useState(() => parseFloat((orderTotal * 0.18).toFixed(2)));
   const [customTip, setCustomTip] = useState('');
-  const [selectedTipType, setSelectedTipType] = useState('fixed');
+  const [selectedTipType, setSelectedTipType] = useState('18%');
 
   const taxAmount = useMemo(() => orderTotal * 0.0825, [orderTotal]);
   const convenienceFee = useMemo(() => (orderTotal + taxAmount + tipAmount) * 0.029 + 0.30, [orderTotal, taxAmount, tipAmount]);
@@ -198,6 +198,13 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
     setCustomTip('');
   };
 
+  const handleTipPercent = (pct) => {
+    const amount = parseFloat((orderTotal * pct / 100).toFixed(2));
+    setTipAmount(amount);
+    setSelectedTipType(`${pct}%`);
+    setCustomTip('');
+  };
+
   const handleCustomTip = (value) => {
     setCustomTip(value);
     const tip = parseFloat(value) || 0;
@@ -243,27 +250,17 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
         <p className="tips-subtitle">Support our small business!</p>
         
         <div className="tip-buttons">
-          <button
-            type="button"
-            className={`tip-btn ${selectedTipType === 'fixed' && tipAmount === 1 ? 'selected' : ''}`}
-            onClick={() => handleTipAmount(1)}
-          >
-            $1
-          </button>
-          <button
-            type="button"
-            className={`tip-btn ${selectedTipType === 'fixed' && tipAmount === 2 ? 'selected' : ''}`}
-            onClick={() => handleTipAmount(2)}
-          >
-            $2
-          </button>
-          <button
-            type="button"
-            className={`tip-btn ${selectedTipType === 'fixed' && tipAmount === 3 ? 'selected' : ''}`}
-            onClick={() => handleTipAmount(3)}
-          >
-            $3
-          </button>
+          {[18, 20, 22].map(pct => (
+            <button
+              key={pct}
+              type="button"
+              className={`tip-btn ${selectedTipType === `${pct}%` ? 'selected' : ''}`}
+              onClick={() => handleTipPercent(pct)}
+            >
+              <span className="tip-pct">{pct}%</span>
+              <span className="tip-dollar">${parseFloat((orderTotal * pct / 100).toFixed(2)).toFixed(2)}</span>
+            </button>
+          ))}
           <button
             type="button"
             className={`tip-btn ${selectedTipType === 'none' ? 'selected' : ''}`}

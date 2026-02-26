@@ -1,24 +1,27 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import '../styles/AdminLogin.css';
 
 const AdminLogin = ({ onLogin }) => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        if (password === 'chaatowner') {
+        setLoading(true);
+        setError('');
+        try {
+            const res = await axios.post('/api/auth/login', { password });
+            const { role } = res.data;
             localStorage.setItem('adminAuthenticated', 'true');
-            localStorage.setItem('adminRole', 'owner');
-            onLogin('owner');
-        } else if (password === 'chaat123') {
-            localStorage.setItem('adminAuthenticated', 'true');
-            localStorage.setItem('adminRole', 'employee');
-            onLogin('employee');
-        } else {
+            localStorage.setItem('adminRole', role);
+            onLogin(role);
+        } catch (err) {
             setError('Incorrect password');
             setPassword('');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -41,8 +44,8 @@ const AdminLogin = ({ onLogin }) => {
                     
                     {error && <div className="admin-error">{error}</div>}
                     
-                    <button type="submit" className="admin-login-btn">
-                        Access Admin Panel
+                    <button type="submit" className="admin-login-btn" disabled={loading}>
+                        {loading ? 'Verifying...' : 'Access Admin Panel'}
                     </button>
                 </form>
                 
