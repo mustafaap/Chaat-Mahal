@@ -58,7 +58,10 @@
     margin-top: -5px;
     padding-bottom: 15px;
     border-bottom: 3px solid #2196F3;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 }
 
 /* Header */
@@ -164,7 +167,7 @@
     gap: 15px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-left: 4px solid #ccc;
+    border: 1px solid #e8e8e8;
 }
 
 .metric-card:hover {
@@ -172,25 +175,12 @@
     box-shadow: 0 4px 15px rgba(0,0,0,0.15);
 }
 
-.metric-card.revenue {
-    border-left-color: #4CAF50;
-}
-
-.metric-card.orders {
-    border-left-color: #2196F3;
-}
-
-.metric-card.average {
-    border-left-color: #FF9800;
-}
-
-.metric-card.tips {
-    border-left-color: #9C27B0;
-}
-
 .metric-icon {
     font-size: 36px;
     line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .metric-content {
@@ -619,9 +609,6 @@
 }
 
 /* Wait Time Metric */
-.metric-card.wait-time {
-    border-left-color: #FF5722;
-}
 
 /* Payment Breakdown */
 .analytics-payment-breakdown-container {
@@ -646,16 +633,10 @@
     background: #f9f9f9;
 }
 
-.analytics-payment-item.online {
-    border-left: 4px solid #4CAF50;
-}
-
-.analytics-payment-item.counter {
-    border-left: 4px solid #2196F3;
-}
-
+.analytics-payment-item.online,
+.analytics-payment-item.counter,
 .analytics-payment-item.unpaid {
-    border-left: 4px solid #FF9800;
+    border: 1px solid #e8e8e8;
 }
 
 .analytics-payment-header {
@@ -666,6 +647,10 @@
 
 .analytics-payment-icon {
     font-size: 24px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    top: -0.5px;
 }
 
 .analytics-payment-label {
@@ -1846,7 +1831,10 @@
     border: 1.5px solid #e8edf2;
     border-radius: 12px;
     padding: 18px 16px;
-    text-align: center;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
     transition: box-shadow 0.15s;
 }
 
@@ -1860,8 +1848,19 @@
 }
 
 .rc-stat-icon {
-    font-size: 22px;
-    margin-bottom: 8px;
+    font-size: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.rc-stat-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: center;
+    flex: 1;
 }
 
 .rc-stat-value {
@@ -1882,6 +1881,7 @@
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    text-align: center;
 }
 
 /* Top Returning Customers table */

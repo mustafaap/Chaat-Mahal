@@ -1,4 +1,5 @@
 import React from 'react';
+import { FiAward, FiZap, FiTarget } from 'react-icons/fi';
 import '../styles/About.css';
 
 const About = () => {
@@ -31,15 +32,15 @@ const About = () => {
                     <h2>What Makes Us Special</h2>
                     <div className="highlights-grid">
                         <div className="highlight-item">
-                            <h3>🥘 Authentic Recipes</h3>
+                            <h3><FiAward /> Authentic Recipes</h3>
                             <p>Traditional recipes from the streets of India, perfected over generations</p>
                         </div>
                         <div className="highlight-item">
-                            <h3>🌶️ Fresh Ingredients</h3>
+                            <h3><FiZap /> Fresh Ingredients</h3>
                             <p>We use only the freshest spices and ingredients, sourced locally when possible</p>
                         </div>
                         <div className="highlight-item">
-                            <h3>🎯 Made to Order</h3>
+                            <h3><FiTarget /> Made to Order</h3>
                             <p>Every dish is prepared fresh when you order, with customizable spice levels</p>
                         </div>
                     </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { FiX, FiCheck, FiArrowLeft, FiSmartphone, FiClipboard, FiDollarSign, FiCreditCard } from 'react-icons/fi';
 import '../styles/QuickOrderForm.css';
 
 const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
@@ -403,18 +404,25 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                             <div className="qof-items-section">
                                 <label className="qof-label">Add Items</label>
                                 <div className="qof-menu-grid">
-                                    {menuItems.map(item => (
+                                    {menuItems.map(item => {
+                                        const isInCart = Object.keys(orderItems).some(key => key === item.name || key.startsWith(item.name + ' ('));
+                                        const itemCount = Object.entries(orderItems)
+                                            .filter(([key]) => key === item.name || key.startsWith(item.name + ' ('))
+                                            .reduce((sum, [, qty]) => sum + qty, 0);
+                                        return (
                                         <button
                                             key={item.id}
                                             type="button"
-                                            className="qof-menu-item-btn"
+                                            className={`qof-menu-item-btn${isInCart ? ' qof-item-in-cart' : ''}`}
                                             onClick={() => addItem(item.name)}
                                             disabled={isSubmitting}
                                         >
+                                            {itemCount > 0 && <span className="qof-item-count-badge">{itemCount}</span>}
                                             <span className="qof-item-name">{item.name}</span>
                                             <span className="qof-item-price">${item.price}</span>
                                         </button>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
 
@@ -455,7 +463,7 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                                                         disabled={isSubmitting}
                                                         title="Remove item"
                                                     >
-                                                        ✕
+                                                        <FiX />
                                                     </button>
                                                 </div>
                                             </div>
@@ -568,7 +576,7 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                                 onClick={handleCreateOrder}
                                 disabled={isSubmitting || !customerName.trim() || Object.keys(orderItems).length === 0}
                             >
-                                {isSubmitting ? 'Creating...' : '📋 Create Order without Payment'}
+                                {isSubmitting ? 'Creating...' : <><FiClipboard /> Create Order without Payment</>}
                             </button>
                             <button
                                 type="button"
@@ -576,7 +584,7 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                                 onClick={handleCashOrder}
                                 disabled={isSubmitting || !customerName.trim() || Object.keys(orderItems).length === 0}
                             >
-                                {isSubmitting ? 'Processing...' : '💵 Cash'}
+                                {isSubmitting ? 'Processing...' : <><FiDollarSign /> Cash</>}
                             </button>
                             <button
                                 type="button"
@@ -584,7 +592,7 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                                 onClick={handleStripeClick}
                                 disabled={isSubmitting || !customerName.trim() || Object.keys(orderItems).length === 0}
                             >
-                                💳 Stripe
+                                <FiCreditCard /> Stripe
                             </button>
                             <button
                                 type="button"
@@ -601,7 +609,7 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                     {paymentStep === 'stripe-summary' && (
                         <div className="qof-stripe-overlay">
                             <div className="qof-form-header">
-                                <h3 className="qof-title">💳 Stripe Payment</h3>
+                                <h3 className="qof-title"><FiCreditCard /> Stripe Payment</h3>
                                 <p className="qof-subtitle">Total includes tax &amp; convenience fee</p>
                             </div>
                             <div className="qof-stripe-breakdown">
@@ -635,14 +643,14 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                                     onClick={handleConfirmStripe}
                                     disabled={isGeneratingLink}
                                 >
-                                    {isGeneratingLink ? 'Processing...' : '✓ Place Order & Get Payment Link'}
+                                    {isGeneratingLink ? 'Processing...' : <><FiCheck /> Place Order & Get Payment Link</>}
                                 </button>
                                 <button
                                     type="button"
                                     className="qof-cancel-btn"
                                     onClick={() => setPaymentStep(null)}
                                 >
-                                    ← Back
+                                    <FiArrowLeft /> Back
                                 </button>
                             </div>
                         </div>
@@ -683,7 +691,7 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                                         }
                                     }}
                                 >
-                                    📱 Share Payment Link
+                                    <FiSmartphone /> Share Payment Link
                                 </button>
                             </div>
                             <div className="qof-form-actions">
@@ -692,7 +700,7 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                                     className="qof-submit-btn"
                                     onClick={resetForm}
                                 >
-                                    ✓ Done
+                                    <FiCheck /> Done
                                 </button>
                             </div>
                         </div>
@@ -712,7 +720,7 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                                 onClick={closeOptionsModal}
                                 type="button"
                             >
-                                ×
+                                <FiX />
                             </button>
                         </div>
                         

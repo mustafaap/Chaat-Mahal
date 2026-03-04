@@ -262,7 +262,7 @@ router.delete('/:id', async (req, res) => {
             { status: 'Cancelled' },
             { new: true }
         );
-        
+
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
         }
@@ -272,6 +272,44 @@ router.delete('/:id', async (req, res) => {
     } catch (error) {
         console.error('Error cancelling order:', error);
         res.status(500).json({ message: 'Failed to cancel order' });
+    }
+});
+
+// POST - Issue Stripe refund and mark order as unpaid (without cancelling)
+router.post('/:id/refund', async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) return res.status(404).json({ message: 'Order not found' });
+        if (!order.paymentId) return res.status(400).json({ message: 'No Stripe payment on this order' });
+
+        const Stripe = require('stripe');
+        const stripeSecret = (process.env.STRIPE_SECRET_KEY || '').trim();
+        const stripe = new Stripe(stripeSecret, { apiVersion: '2024-06-20' });
+
+        let paymentIntentId = order.paymentId;
+        if (order.paymentId.startsWith('cs_')) {
+            const session = await stripe.checkout.sessions.retrieve(order.paymentId);
+            paymentIntentId = session.payment_intent;
+        }
+
+        if (!paymentIntentId) return res.status(400).json({ message: 'Could not resolve PaymentIntent from order' });
+
+        const refund = await stripe.refunds.create({ payment_intent: paymentIntentId });
+        console.log(`✅ Stripe refund issued: ${refund.id} for order ${order.orderNumber}`);
+
+        // Mark order as unpaid and clear Stripe-specific fields
+        order.paid = false;
+        order.paymentId = null;
+        order.stripeTotal = null;
+        order.taxAmount = 0;
+        order.convenienceFee = 0;
+        await order.save();
+
+        req.io.emit('ordersUpdated');
+        res.json({ message: 'Refund issued successfully', refundId: refund.id, status: refund.status });
+    } catch (error) {
+        console.error('Stripe refund error:', error.message);
+        res.status(500).json({ message: 'Refund failed: ' + error.message });
     }
 });
 
@@ -303,11 +341,14 @@ router.delete('/', async (req, res) => {
 // PUT - Update order items and total
 router.put('/:id', async (req, res) => {
     try {
-        const { items, total } = req.body;
+        const { items, total, tip } = req.body;
+        
+        const updateFields = { items, total };
+        if (tip !== undefined) updateFields.tip = tip;
         
         const order = await Order.findByIdAndUpdate(
             req.params.id,
-            { items, total },
+            updateFields,
             { new: true }
         );
         

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { FiSettings, FiCreditCard, FiDollarSign, FiRefreshCw, FiList, FiTag, FiBarChart2, FiHome, FiCheckCircle, FiXCircle, FiLock } from 'react-icons/fi';
 import ConfirmationModal from './ConfirmationModal';
 import MenuManagement from './MenuManagement';
 import Analytics from './Analytics';
@@ -179,9 +180,9 @@ const AdminControls = ({ adminRole }) => {
                 if (adminRole !== 'owner') {
                     return (
                         <div className="content-section">
-                            <h2>🔒 Access Restricted</h2>
+                            <h2><FiLock /> Access Restricted</h2>
                             <div className="dashboard-welcome">
-                                <div className="welcome-icon">🔒</div>
+                                <div className="welcome-icon"><FiLock /></div>
                                 <h3>Analytics is only available to owners</h3>
                             </div>
                         </div>
@@ -196,11 +197,11 @@ const AdminControls = ({ adminRole }) => {
             case 'settings':
                 return (
                     <div className="content-section">
-                        <h2>⚙️ Settings</h2>
+                        <h2><FiSettings /> Settings</h2>
                         <div className="settings-content">
                             <div className="setting-card">
                                 <div className="setting-header">
-                                    <div className="setting-icon">💳</div>
+                                    <div className="setting-icon"><FiCreditCard /></div>
                                     <div className="setting-info">
                                         <h3>Payment Settings</h3>
                                         <p>Enable or disable online payments (use when payment system is down)</p>
@@ -208,7 +209,7 @@ const AdminControls = ({ adminRole }) => {
                                 </div>
                                 <div className="payment-status">
                                     <span className={`status-indicator ${settings.onlinePaymentEnabled ? 'enabled' : 'disabled'}`}>
-                                        {settings.onlinePaymentEnabled ? '🟢 Online Payments Enabled' : '🔴 Online Payments Disabled'}
+                                        {settings.onlinePaymentEnabled ? <><FiCheckCircle style={{color:'#27ae60'}} /> Online Payments Enabled</> : <><FiXCircle style={{color:'#e74c3c'}} /> Online Payments Disabled</>}
                                     </span>
                                 </div>
                                 <button 
@@ -221,7 +222,7 @@ const AdminControls = ({ adminRole }) => {
 
                             <div className="setting-card">
                                 <div className="setting-header">
-                                    <div className="setting-icon">💵</div>
+                                    <div className="setting-icon"><FiDollarSign /></div>
                                     <div className="setting-info">
                                         <h3>Pay at Counter Settings</h3>
                                         <p>Enable or disable pay at counter option (useful for events requiring only online payments)</p>
@@ -229,7 +230,7 @@ const AdminControls = ({ adminRole }) => {
                                 </div>
                                 <div className="payment-status">
                                     <span className={`status-indicator ${settings.payAtCounterEnabled ? 'enabled' : 'disabled'}`}>
-                                        {settings.payAtCounterEnabled ? '🟢 Pay at Counter Enabled' : '🔴 Pay at Counter Disabled'}
+                                        {settings.payAtCounterEnabled ? <><FiCheckCircle style={{color:'#27ae60'}} /> Pay at Counter Enabled</> : <><FiXCircle style={{color:'#e74c3c'}} /> Pay at Counter Disabled</>}
                                     </span>
                                 </div>
                                 <button 
@@ -242,7 +243,7 @@ const AdminControls = ({ adminRole }) => {
 
                             <div className="setting-card">
                                 <div className="setting-header">
-                                    <div className="setting-icon">🔄</div>
+                                    <div className="setting-icon"><FiRefreshCw /></div>
                                     <div className="setting-info">
                                         <h3>Reset Order View</h3>
                                         <p>Clear current orders from display (orders remain in database for records)</p>
@@ -263,9 +264,9 @@ const AdminControls = ({ adminRole }) => {
             default:
                 return (
                     <div className="content-section">
-                        <h2>👋 Welcome to Admin Dashboard</h2>
+                        <h2><FiHome /> Welcome to Admin Dashboard</h2>
                         <div className="dashboard-welcome">
-                            <div className="welcome-icon">🎯</div>
+                            <div className="welcome-icon"><FiSettings /></div>
                             <h3>Select an option from the sidebar</h3>
                             <p>Use the navigation menu to manage your restaurant's menu, configure settings, and more.</p>
                         </div>
@@ -288,7 +289,7 @@ const AdminControls = ({ adminRole }) => {
                         className={`nav-item ${currentView === 'menu' ? 'active' : ''}`}
                         onClick={() => setCurrentView('menu')}
                     >
-                        <span className="nav-icon">🍽️</span>
+                        <span className="nav-icon"><FiList /></span>
                         <span className="nav-text">Menu Items</span>
                     </button>
                     
@@ -296,7 +297,7 @@ const AdminControls = ({ adminRole }) => {
                         className={`nav-item ${currentView === 'categories' ? 'active' : ''}`}
                         onClick={() => setCurrentView('categories')}
                     >
-                        <span className="nav-icon">🗂️</span>
+                        <span className="nav-icon"><FiTag /></span>
                         <span className="nav-text">Categories</span>
                     </button>
                     
@@ -305,7 +306,7 @@ const AdminControls = ({ adminRole }) => {
                         className={`nav-item ${currentView === 'analytics' ? 'active' : ''}`}
                         onClick={() => setCurrentView('analytics')}
                     >
-                        <span className="nav-icon">📊</span>
+                        <span className="nav-icon"><FiBarChart2 /></span>
                         <span className="nav-text">Analytics</span>
                     </button>
                     )}
@@ -314,7 +315,7 @@ const AdminControls = ({ adminRole }) => {
                         className={`nav-item ${currentView === 'settings' ? 'active' : ''}`}
                         onClick={() => setCurrentView('settings')}
                     >
-                        <span className="nav-icon">⚙️</span>
+                        <span className="nav-icon"><FiSettings /></span>
                         <span className="nav-text">Settings</span>
                     </button>
                     

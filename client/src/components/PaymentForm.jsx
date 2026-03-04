@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, useStripe, useElements, CardElement, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
+import { FiLock, FiCreditCard, FiSmartphone, FiHeart, FiDollarSign } from 'react-icons/fi';
 import '../styles/PaymentForm.css';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || '');
@@ -10,6 +11,7 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState('');
+  const isProcessingRef = useRef(false); // Synchronous lock to prevent double-submit
   const [paymentRequest, setPaymentRequest] = useState(null);
   const [canMakePayment, setCanMakePayment] = useState(false);
   const [walletUnavailableReason, setWalletUnavailableReason] = useState('');
@@ -129,6 +131,9 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
 
   const handleCardPayment = async () => {
     if (!stripe || !elements) return;
+    // Synchronous ref check prevents double-click race condition before React re-renders
+    if (isProcessingRef.current) return;
+    isProcessingRef.current = true;
 
     setIsProcessing(true);
     setPaymentError('');
@@ -149,6 +154,7 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
       const { success, clientSecret, error } = await createRes.json();
       if (!success) {
         setPaymentError(error || 'Failed to start payment');
+        isProcessingRef.current = false;
         setIsProcessing(false);
         return;
       }
@@ -166,16 +172,21 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
 
       if (confirmError) {
         setPaymentError(confirmError.message);
+        isProcessingRef.current = false;
         setIsProcessing(false);
         return;
       }
 
       if (paymentIntent.status === 'succeeded') {
         onPaymentSuccess(paymentIntent.id, tipAmount);
+      } else {
+        isProcessingRef.current = false;
+        setIsProcessing(false);
       }
     } catch (error) {
       console.error('Payment error:', error);
       setPaymentError('An unexpected error occurred.');
+      isProcessingRef.current = false;
       setIsProcessing(false);
     }
   };
@@ -246,7 +257,7 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
 
       {/* Tips Section */}
       <div className="tips-section">
-        <h3 className="tips-label">Add a Tip? 💛</h3>
+        <h3 className="tips-label">Add a Tip? <FiHeart style={{ color: '#f59e0b', position: 'relative', top: '-1px' }} /></h3>
         <p className="tips-subtitle">Support our small business!</p>
         
         <div className="tip-buttons">
@@ -344,7 +355,7 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
             onClick={handleCardPayment}
             disabled={!stripe || !elements || isProcessing}
           >
-            {isProcessing ? 'Processing...' : `Pay $${totalWithTax.toFixed(2)}`}
+            {isProcessing ? 'Processing...' : <><FiCreditCard style={{ marginRight: '6px', position: 'relative', top: '-1px' }} />Pay ${totalWithTax.toFixed(2)}</>}
           </button>
         </div>
       </div>
@@ -362,7 +373,7 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
             onClick={handlePayAtCounter}
             disabled={isProcessing || isCounterPaymentProcessing} // Disable if either is processing
           >
-            {isCounterPaymentProcessing ? 'Processing...' : '💵 Pay at Counter'}
+            {isCounterPaymentProcessing ? 'Processing...' : <><FiDollarSign style={{ marginRight: '6px', position: 'relative', top: '-1px' }} />Pay at Counter</>}
           </button>
           <p className="pay-at-counter-note">
             Skip online payment and pay at the counter.<br />
@@ -373,9 +384,9 @@ const CardCheckout = ({ orderTotal, onPaymentSuccess, onPaymentCancel, customerN
 
       <div className="payment-security">
         <div className="security-badges">
-          <span className="security-badge">🔒 Secure Payment</span>
-          <span className="security-badge">💳 Stripe</span>
-          {canMakePayment && <span className="security-badge">📱 Apple Pay</span>}
+          <span className="security-badge"><FiLock style={{ marginRight: '4px', position: 'relative', top: '-1px' }} />Secure Payment</span>
+          <span className="security-badge"><FiCreditCard style={{ marginRight: '4px', position: 'relative', top: '-1px' }} />Stripe</span>
+          {canMakePayment && <span className="security-badge"><FiSmartphone style={{ marginRight: '4px', position: 'relative', top: '-1px' }} />Apple Pay</span>}
         </div>
         <p className="security-text">
           Your payment information is encrypted and secure. We never store your card details.

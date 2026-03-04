@@ -109,6 +109,10 @@
     font-weight: 700;
     color: #2c3e50;
     margin: 0 0 5px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .qof-subtitle {
@@ -288,6 +292,25 @@
     cursor: pointer;
     transition: all 0.3s ease;
     font-family: 'Inter', sans-serif;
+    position: relative;
+}
+
+.qof-item-count-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #27ae60;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0 4px;
 }
 
 .qof-menu-item-btn:hover:not(:disabled) {
@@ -300,6 +323,20 @@
 .qof-menu-item-btn:disabled {
     cursor: not-allowed;
     opacity: 0.6;
+}
+
+.qof-item-in-cart {
+    background: linear-gradient(135deg, #eafaf1 0%, #d5f5e3 100%);
+    border-color: #27ae60;
+}
+
+.qof-item-in-cart .qof-item-name {
+    color: #1e8449;
+}
+
+.qof-item-in-cart .qof-item-price {
+    color: #27ae60;
+    font-weight: 700;
 }
 
 .qof-item-name {
@@ -903,6 +940,17 @@
     .qof-form-wrapper {
         width: calc(100vw - 80px);
     }
+
+    .qof-tip-btn {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .qof-custom-tip-input {
+        width: 100%;
+        min-width: 0;
+        flex: 1 1 100%;
+    }
 }
 
 /* ── Payment method buttons ─────────────────────────────────── */
@@ -918,6 +966,16 @@
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(127, 140, 141, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.qof-create-order-btn svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex-shrink: 0;
 }
 
 .qof-create-order-btn:hover:not(:disabled) {
@@ -943,6 +1001,10 @@
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(39, 174, 96, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
 
 .qof-cash-btn:hover:not(:disabled) {
@@ -968,6 +1030,10 @@
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(99, 91, 255, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
 
 .qof-stripe-pay-btn:hover:not(:disabled) {

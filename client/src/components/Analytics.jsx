@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { FiCheck, FiX, FiClock, FiCreditCard, FiCheckCircle, FiDollarSign, FiChevronLeft, FiChevronRight, FiCalendar, FiPackage, FiTrendingUp, FiGift, FiUsers, FiRefreshCw, FiShoppingCart, FiDownload, FiAward, FiPieChart, FiFileText, FiBarChart2, FiMonitor } from 'react-icons/fi';
 import {
     LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -18,6 +19,7 @@ const Analytics = () => {
     const [heatmapMonth, setHeatmapMonth] = useState(new Date());
     const [reportMonth, setReportMonth] = useState(new Date().getMonth());
     const [reportYear, setReportYear] = useState(new Date().getFullYear());
+    const [reportType, setReportType] = useState('card');
     const [ordersPage, setOrdersPage] = useState(1);
     const ORDERS_PER_PAGE = 10;
     const [rcPage, setRcPage] = useState(1);
@@ -129,6 +131,14 @@ const Analytics = () => {
         // Exclude cancelled orders from paid count — cancelled paid = money not kept
         const paidOrders = orders.filter(o => o.paid && o.status !== 'Cancelled').length;
         const paymentRate = totalOrders > 0 ? (paidOrders / totalOrders) * 100 : 0;
+        // Net subtotal = pure food sales (revenue minus tips, tax, and convenience fees)
+        // Mirrors effectiveGross logic from report helpers
+        const netSubtotal = nonCancelledOrders.reduce((sum, o) => {
+            if (!o.paymentId) return sum + o.total;        // cash: total IS gross
+            if (o.taxAmount > 0) return sum + o.total;     // modern: total is pure subtotal
+            if (o.stripeTotal) return sum + o.total;       // stripeTotal era: total is pure subtotal
+            return sum + +(o.total / 1.0825).toFixed(2);   // old card: tax embedded, back-calc
+        }, 0);
 
         return {
             totalRevenue,
@@ -137,6 +147,7 @@ const Analytics = () => {
             avgOrderValue,
             completionRate,
             paymentRate,
+            netSubtotal,
             completedOrders: completedOrders.length,
             pendingOrders: orders.filter(o => o.status === 'Pending').length,
             cancelledOrders: orders.filter(o => o.status === 'Cancelled').length
@@ -487,77 +498,126 @@ const Analytics = () => {
         window.URL.revokeObjectURL(url);
     };
 
-    // Generate Monthly Tax Report
+    // Tax/fee helpers for reports.
+    // Modern orders (stripeTotal stored): derive exact values.
+    // Old card orders (no stripeTotal): tax was embedded in `total`, back-calculate it.
+    //   gross = total / 1.0825  →  tax = total − gross
+    //   This ensures: gross + tax + tips = total + tips = exactly what was collected.
+    // Cash orders: no tax or fee ever.
+    const effectiveGross = (o) => {
+        if (!o.paymentId) return o.total; // cash: total IS gross
+        if (o.taxAmount > 0) return o.total; // modern: total is already pure subtotal
+        if (o.stripeTotal) return o.total;   // stripeTotal era: total is pure subtotal
+        // Old card orders: tax embedded in total
+        return +(o.total / 1.0825).toFixed(2);
+    };
+    const effectiveTax = (o) => {
+        if (!o.paymentId) return 0;
+        if (o.taxAmount > 0) return o.taxAmount;
+        if (o.stripeTotal) return +(o.total * 0.0825).toFixed(2);
+        // Old card orders: tax = total − gross
+        return +(o.total - effectiveGross(o)).toFixed(2);
+    };
+    const effectiveFee = (o) => {
+        if (!o.paymentId) return 0;
+        if (o.convenienceFee > 0) return o.convenienceFee;
+        if (o.stripeTotal) {
+            const tax = effectiveTax(o);
+            return +(o.stripeTotal - o.total - tax - (o.tip || 0)).toFixed(2);
+        }
+        // Old card orders: fee was charged but never stored.
+        // Derive from the same formula: 2.9% of (subtotal+tax+tip) + $0.30
+        // For old orders total = subtotal+tax, so basis = total + tip
+        return +((o.total + (o.tip || 0)) * 0.029 + 0.30).toFixed(2);
+    };
+    // Total actually collected.
+    const reportRevenue = (o) => {
+        if (o.stripeTotal != null) return o.stripeTotal;
+        return o.total + (o.tip || 0); // cash or old card: total + tip = full collected amount
+    };
+
+    // Generate Monthly Sales Report (CSV)
     const generateMonthlyTaxReport = () => {
         const monthStart = new Date(reportYear, reportMonth, 1);
         const monthEnd = new Date(reportYear, reportMonth + 1, 0, 23, 59, 59);
-        
-        const monthOrders = orders.filter(order => {
-            const orderDate = new Date(order.createdAt);
-            return orderDate >= monthStart && orderDate <= monthEnd;
+        const monthOrders = orders.filter(o => {
+            const d = new Date(o.createdAt);
+            return d >= monthStart && d <= monthEnd;
         });
-
-        // Tax report only covers completed (paid/served) orders — cancelled orders are excluded
         const completedOrders = monthOrders.filter(o => o.status === 'Completed');
+        const isCard = reportType === 'card';
+        const isCash = reportType === 'cash';
+        const reportOrders = isCard
+            ? completedOrders.filter(o => o.paid && o.paymentId)
+            : isCash
+            ? completedOrders.filter(o => !o.paymentId)
+            : completedOrders;
 
-        // Gross sales = completed order subtotals (pre-tax/fee/tip)
-        const grossSales = completedOrders.reduce((sum, o) => sum + o.total, 0);
-        // Tax collected from stored taxAmount (Stripe orders only; cash = $0)
-        const totalTax = completedOrders.reduce((sum, o) => sum + (o.taxAmount || 0), 0);
-        // Tips
-        const totalTips = completedOrders.reduce((sum, o) => sum + (o.tip || 0), 0);
-        // Total collected = actual money received (stripeTotal for online, subtotal+tip for counter)
-        const totalCollected = completedOrders.reduce((sum, o) => sum + orderRevenue(o), 0);
-        // Processing fees (Stripe 2.9%+$0.30; cash = $0)
-        const totalFees = completedOrders.reduce((sum, o) => sum + (o.convenienceFee || 0), 0);
-        // Net total = what you keep after processing fees
+        const grossSales = reportOrders.reduce((sum, o) => sum + effectiveGross(o), 0);
+        const totalTax = reportOrders.reduce((sum, o) => sum + effectiveTax(o), 0);
+        const totalTips = reportOrders.reduce((sum, o) => sum + (o.tip || 0), 0);
+        const totalCollected = reportOrders.reduce((sum, o) => sum + reportRevenue(o), 0);
+        const totalFees = reportOrders.reduce((sum, o) => sum + effectiveFee(o), 0);
         const netTotal = totalCollected - totalFees;
-        // Taxable revenue = subtotals of completed Stripe orders only
-        const onlinePayments = completedOrders.filter(o => o.paid && o.paymentId);
-        const taxableRevenue = onlinePayments.reduce((sum, o) => sum + o.total, 0);
-        // Payment breakdown
-        const onlineRevenue = onlinePayments.reduce((sum, o) => sum + orderRevenue(o), 0);
-        const counterRevenue = totalCollected - onlineRevenue;
+        const tipsCount = reportOrders.filter(o => o.tip > 0).length;
 
         const monthName = new Date(reportYear, reportMonth).toLocaleString('en-US', { month: 'long' });
         const dateRange = `${monthName} 1-${monthEnd.getDate()}, ${reportYear}`;
+        const typeLabel = isCard ? 'Card Payments' : isCash ? 'Cash Payments' : 'All Payments';
+        const typeSlug = isCard ? 'Card' : isCash ? 'Cash' : 'All';
 
-        const csvContent = `Monthly Sales Summary - Tax Report\n` +
+        const grossWithFees = grossSales + totalFees;
+
+        let csvContent =
+            `Sales summary - ${typeLabel}\n` +
             `${dateRange}\n` +
             `Generated: ${new Date().toLocaleString()}\n\n` +
-            `SALES SUMMARY\n` +
-            `=================================================\n\n` +
-            `Total Sales,"$${grossSales.toFixed(2)}"\n\n` +
-            `DETAILED BREAKDOWN\n` +
-            `Summary,All day (12:00 AM-11:59 PM ET),,\n` +
-            `Gross sales,${completedOrders.length} transactions,"$${grossSales.toFixed(2)}"\n` +
-            `  Items,${completedOrders.length} transactions,"$${grossSales.toFixed(2)}"\n` +
-            `  Service charges,,"$0.00"\n` +
-            `Discounts & comps,,"$0.00"\n\n` +
-            `Taxes,${onlinePayments.length} transactions,"$${totalTax.toFixed(2)}"\n` +
-            `Tips,${completedOrders.filter(o => o.tip > 0).length} transactions,"$${totalTips.toFixed(2)}"\n\n` +
-            `Total sales,${completedOrders.length} transactions,"$${totalCollected.toFixed(2)}"\n\n` +
-            `Total payments collected,${completedOrders.length} transactions,"$${totalCollected.toFixed(2)}"\n` +
-            `  Card,"$${onlineRevenue.toFixed(2)}"\n` +
-            `  Cash,"$${counterRevenue.toFixed(2)}"\n\n` +
-            `FEES\n` +
-            `Total fees,,"($${totalFees.toFixed(2)})"\n\n` +
-            `NET TOTAL,,"$${netTotal.toFixed(2)}"\n\n` +
-            `=================================================\n` +
-            `TAX INFORMATION (North Carolina)\n` +
-            `Tax Rate: 8.25%\n` +
-            `Taxable Sales: "$${taxableRevenue.toFixed(2)}"\n` +
-            `Tax Collected: "$${totalTax.toFixed(2)}"\n\n` +
-            `PAYMENT METHODS\n` +
-            `Online Payments: ${onlinePayments.length} orders\n` +
-            `Cash Payments: ${completedOrders.length - onlinePayments.length} orders\n\n` +
-            `Completed Orders: ${completedOrders.length}`;
+            `Total sales,"$${totalCollected.toFixed(2)}"\n\n` +
+            `Summary,All day (12:00 AM-11:59 PM ET)\n` +
+            `Gross sales,${reportOrders.length} transactions,"$${grossWithFees.toFixed(2)}"\n` +
+            `Items,${reportOrders.length} transactions,"$${grossSales.toFixed(2)}"\n`;
+
+        if (!isCash) {
+            csvContent += `Processing fees,${reportOrders.length} transactions,"$${totalFees.toFixed(2)}"\n`;
+        }
+
+        if (!isCash) {
+            csvContent += `Taxes,${reportOrders.length} transactions,"$${totalTax.toFixed(2)}"\n`;
+        }
+        csvContent +=
+            `Tips,${tipsCount} transactions,"$${totalTips.toFixed(2)}"\n` +
+            `Total sales,${reportOrders.length} transactions,"$${totalCollected.toFixed(2)}"\n\n` +
+            `Total payments collected,${reportOrders.length} transactions,"$${totalCollected.toFixed(2)}"\n`;
+
+        if (isCard) {
+            csvContent += `Card,"$${totalCollected.toFixed(2)}"\n`;
+        } else if (isCash) {
+            csvContent += `Cash,"$${totalCollected.toFixed(2)}"\n`;
+        } else {
+            const cardRev = completedOrders.filter(o => o.paid && o.paymentId).reduce((s, o) => s + reportRevenue(o), 0);
+            const cashRev = totalCollected - cardRev;
+            csvContent += `Card,"$${cardRev.toFixed(2)}"\nCash,"$${cashRev.toFixed(2)}"\n`;
+        }
+
+        if (!isCash) {
+            csvContent +=
+                `\nFees\n` +
+                `Processing fees,"($${totalFees.toFixed(2)})"\n`;
+        }
+        csvContent += `\nNet total,"$${netTotal.toFixed(2)}"\n`;
+
+        if (!isCash) {
+            csvContent +=
+                `\nTax Information (NC 8.25%)\n` +
+                `Taxable Sales,"$${grossSales.toFixed(2)}"\n` +
+                `Tax Collected,"$${totalTax.toFixed(2)}"\n`;
+        }
 
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `Monthly-Tax-Report-${monthName}-${reportYear}.csv`;
+        a.download = `Sales-Summary-${typeSlug}-${monthName}-${reportYear}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -568,152 +628,186 @@ const Analytics = () => {
     const generateMonthlyTaxReportPDF = () => {
         const monthStart = new Date(reportYear, reportMonth, 1);
         const monthEnd = new Date(reportYear, reportMonth + 1, 0, 23, 59, 59);
-        
-        const monthOrders = orders.filter(order => {
-            const orderDate = new Date(order.createdAt);
-            return orderDate >= monthStart && orderDate <= monthEnd;
+        const monthOrders = orders.filter(o => {
+            const d = new Date(o.createdAt);
+            return d >= monthStart && d <= monthEnd;
         });
-
-        // Tax report only covers completed (paid/served) orders — cancelled orders excluded
         const completedOrders = monthOrders.filter(o => o.status === 'Completed');
+        const isCard = reportType === 'card';
+        const isCash = reportType === 'cash';
+        const reportOrders = isCard
+            ? completedOrders.filter(o => o.paid && o.paymentId)
+            : isCash
+            ? completedOrders.filter(o => !o.paymentId)
+            : completedOrders;
 
-        // Gross sales = completed order subtotals (pre-tax/fee/tip)
-        const grossSales = completedOrders.reduce((sum, o) => sum + o.total, 0);
-        // Tax and tips from stored fields
-        const totalTax = completedOrders.reduce((sum, o) => sum + (o.taxAmount || 0), 0);
-        const totalTips = completedOrders.reduce((sum, o) => sum + (o.tip || 0), 0);
-        // Total collected = actual money received (stripeTotal for online, subtotal+tip for counter)
-        const totalCollected = completedOrders.reduce((sum, o) => sum + orderRevenue(o), 0);
-        // Fees from stored convenienceFee (Stripe 2.9%+$0.30; cash = $0)
-        const totalFees = completedOrders.reduce((sum, o) => sum + (o.convenienceFee || 0), 0);
+        const grossSales = reportOrders.reduce((sum, o) => sum + effectiveGross(o), 0);
+        const totalTax = reportOrders.reduce((sum, o) => sum + effectiveTax(o), 0);
+        const totalTips = reportOrders.reduce((sum, o) => sum + (o.tip || 0), 0);
+        const totalCollected = reportOrders.reduce((sum, o) => sum + reportRevenue(o), 0);
+        const totalFees = reportOrders.reduce((sum, o) => sum + effectiveFee(o), 0);
         const netTotal = totalCollected - totalFees;
-        // Taxable revenue = subtotals of completed Stripe orders (only orders that had tax applied)
-        const onlinePayments = completedOrders.filter(o => o.paid && o.paymentId);
-        const taxableRevenue = onlinePayments.reduce((sum, o) => sum + o.total, 0);
-        // Payment method breakdown
-        const onlineRevenue = onlinePayments.reduce((sum, o) => sum + orderRevenue(o), 0);
-        const counterRevenue = totalCollected - onlineRevenue;
+        const tipsCount = reportOrders.filter(o => o.tip > 0).length;
 
         const monthName = new Date(reportYear, reportMonth).toLocaleString('en-US', { month: 'long' });
         const dateRange = `${monthName} 1-${monthEnd.getDate()}, ${reportYear}`;
+        const typeLabel = isCard ? 'Card Payments' : isCash ? 'Cash Payments' : 'All Payments';
+        const typeSlug = isCard ? 'Card' : isCash ? 'Cash' : 'All';
 
-        // Create PDF
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.getWidth();
         let yPos = 20;
 
-        // Header - Date Range
+        // Thin top border line
+        doc.setDrawColor(220);
+        doc.setLineWidth(0.3);
+        doc.line(20, yPos - 5, pageWidth - 20, yPos - 5);
+
+        // Date range
         doc.setFontSize(10);
         doc.setTextColor(100);
+        doc.setFont(undefined, 'normal');
         doc.text(dateRange, 20, yPos);
-        yPos += 10;
+        yPos += 9;
 
-        // Title - Sales summary
-        doc.setFontSize(24);
+        // Title
+        doc.setFontSize(22);
         doc.setTextColor(0);
         doc.setFont(undefined, 'bold');
-        doc.text('Sales summary', 20, yPos);
-        yPos += 15;
-
-        // Total Sales - Large prominent
-        doc.setFontSize(10);
+        doc.text(`Sales summary`, 20, yPos);
+        yPos += 7;
+        doc.setFontSize(11);
         doc.setFont(undefined, 'normal');
         doc.setTextColor(100);
-        doc.text('Total sales', 20, yPos);
+        doc.text(typeLabel, 20, yPos);
         yPos += 12;
-        doc.setFontSize(32);
+
+        // Horizontal rule
+        doc.setDrawColor(220);
+        doc.line(20, yPos, pageWidth - 20, yPos);
+        yPos += 8;
+
+        // Total sales label + big number
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.setFont(undefined, 'normal');
+        doc.text('Total sales', 20, yPos);
+        yPos += 10;
+        doc.setFontSize(28);
         doc.setTextColor(0);
         doc.setFont(undefined, 'bold');
-        doc.text(`$${grossSales.toFixed(2)}`, 20, yPos);
-        yPos += 20;
+        doc.text(`$${totalCollected.toFixed(2)}`, 20, yPos);
+        yPos += 14;
 
-        // Summary Section
-        doc.setFontSize(12);
+        // Horizontal rule
+        doc.setDrawColor(220);
+        doc.line(20, yPos, pageWidth - 20, yPos);
+        yPos += 8;
+
+        // Summary header
+        doc.setFontSize(11);
         doc.setFont(undefined, 'bold');
         doc.setTextColor(0);
         doc.text('Summary', 20, yPos);
-        yPos += 8;
-        
-        doc.setFontSize(10);
+        yPos += 6;
+        doc.setFontSize(9);
         doc.setFont(undefined, 'normal');
-        doc.setTextColor(100);
+        doc.setTextColor(120);
         doc.text('All day (12:00 AM-11:59 PM ET)', 20, yPos);
         yPos += 8;
 
-        // Helper function to add line items
-        const addLineItem = (label, transactions, amount, indent = 0) => {
+        // Row helper: bold label left, gray tx count center, amount right
+        const row = (label, txCount, amount, bold = false, indent = 0) => {
+            doc.setFontSize(10);
             doc.setTextColor(0);
+            doc.setFont(undefined, bold ? 'bold' : 'normal');
             doc.text(label, 20 + indent, yPos);
-            if (transactions) {
-                doc.setTextColor(100);
-                doc.text(transactions, 90, yPos);
+            if (txCount) {
+                doc.setTextColor(130);
+                doc.setFont(undefined, 'normal');
+                doc.text(txCount, 105, yPos, { align: 'center' });
             }
             doc.setTextColor(0);
-            doc.text(amount, pageWidth - 35, yPos, { align: 'right' });
+            doc.setFont(undefined, bold ? 'bold' : 'normal');
+            doc.text(amount, pageWidth - 20, yPos, { align: 'right' });
             yPos += 7;
         };
 
-        // Gross sales (completed orders only — cancelled excluded from tax report)
-        doc.setFont(undefined, 'bold');
-        addLineItem('Gross sales', `${completedOrders.length} transactions`, `$${grossSales.toFixed(2)}`);
-        doc.setFont(undefined, 'normal');
-        addLineItem('  Items', `${completedOrders.length} transactions`, `$${grossSales.toFixed(2)}`, 5);
-        addLineItem('  Service charges', '', '$0.00', 5);
-        addLineItem('Discounts & comps', '', '$0.00');
-        yPos += 3;
+        const divider = () => {
+            doc.setDrawColor(230);
+            doc.setLineWidth(0.2);
+            doc.line(20, yPos - 1, pageWidth - 20, yPos - 1);
+            yPos += 3;
+        };
 
-        // Taxes — only online (Stripe) orders have tax applied
-        doc.setFont(undefined, 'bold');
-        addLineItem('Taxes', `${onlinePayments.length} transactions`, `$${totalTax.toFixed(2)}`);
-        
+        // Gross sales (includes processing fees so that Gross + Tax + Tips = Total sales)
+        const grossWithFees = grossSales + totalFees;
+        row('Gross sales', `${reportOrders.length} transactions`, `$${grossWithFees.toFixed(2)}`, true);
+        row('Items', `${reportOrders.length} transactions`, `$${grossSales.toFixed(2)}`, false, 5);
+        if (!isCash) {
+            row('Processing fees', `${reportOrders.length} transactions`, `$${totalFees.toFixed(2)}`, false, 5);
+        }
+        divider();
+
+        // Taxes — card only
+        if (!isCash) {
+            row('Taxes', `${reportOrders.length} transactions`, `$${totalTax.toFixed(2)}`, true);
+        }
+
         // Tips
-        const tipsCount = completedOrders.filter(o => o.tip > 0).length;
-        addLineItem('Tips', `${tipsCount} transactions`, `$${totalTips.toFixed(2)}`);
-        yPos += 3;
+        row('Tips', `${tipsCount} transactions`, `$${totalTips.toFixed(2)}`, true);
+        divider();
 
-        // Total sales = gross + tax + tips
-        doc.setFont(undefined, 'bold');
-        addLineItem('Total sales', `${completedOrders.length} transactions`, `$${totalCollected.toFixed(2)}`);
-        yPos += 5;
+        // Total sales
+        row('Total sales', `${reportOrders.length} transactions`, `$${totalCollected.toFixed(2)}`, true);
+        yPos += 3;
+        divider();
 
         // Total payments collected
-        doc.setFont(undefined, 'bold');
-        addLineItem('Total payments collected', `${completedOrders.length} transactions`, `$${totalCollected.toFixed(2)}`);
-        doc.setFont(undefined, 'normal');
-        addLineItem('  Card', '', `$${onlineRevenue.toFixed(2)}`, 5);
-        addLineItem('  Cash', '', `$${counterRevenue.toFixed(2)}`, 5);
-        yPos += 5;
+        row('Total payments collected', `${reportOrders.length} transactions`, `$${totalCollected.toFixed(2)}`, true);
+        if (isCard) {
+            row('Card', '', `$${totalCollected.toFixed(2)}`, false, 5);
+        } else if (isCash) {
+            row('Cash', '', `$${totalCollected.toFixed(2)}`, false, 5);
+        } else {
+            const cardRev = completedOrders.filter(o => o.paid && o.paymentId).reduce((s, o) => s + reportRevenue(o), 0);
+            const cashRev = totalCollected - cardRev;
+            row('Card', '', `$${cardRev.toFixed(2)}`, false, 5);
+            row('Cash', '', `$${cashRev.toFixed(2)}`, false, 5);
+        }
+        divider();
 
-        // Fees
-        doc.setFont(undefined, 'bold');
-        doc.text('Fees', 20, yPos);
-        yPos += 7;
-        doc.setFont(undefined, 'normal');
-        addLineItem('  Total fees', '', `($${totalFees.toFixed(2)})`, 5);
-        yPos += 3;
+        // Fees — card only
+        if (!isCash) {
+            row('Fees', '', '', true);
+            row('Processing fees', '', `($${totalFees.toFixed(2)})`, false, 5);
+            divider();
+        }
 
-        // Net total (bold and larger)
-        doc.setFont(undefined, 'bold');
-        doc.setFontSize(12);
-        addLineItem('Net total', '', `$${netTotal.toFixed(2)}`);
+        // Net total
+        doc.setFontSize(11);
+        row('Net total', '', `$${netTotal.toFixed(2)}`, true);
 
-        // Add footer with tax info
-        yPos += 10;
-        doc.setFontSize(9);
-        doc.setTextColor(100);
-        doc.setFont(undefined, 'normal');
-        doc.text('Tax Information: NC Sales Tax 8.25%', 20, yPos);
-        yPos += 5;
-        doc.text(`Taxable Sales: $${taxableRevenue.toFixed(2)} | Tax Collected: $${totalTax.toFixed(2)}`, 20, yPos);
+        // Tax footnote — card only
+        if (!isCash) {
+            yPos += 6;
+            doc.setDrawColor(220);
+            doc.setLineWidth(0.3);
+            doc.line(20, yPos, pageWidth - 20, yPos);
+            yPos += 6;
+            doc.setFontSize(9);
+            doc.setTextColor(120);
+            doc.setFont(undefined, 'normal');
+            doc.text(`NC Sales Tax 8.25% — Taxable Sales: $${grossSales.toFixed(2)}  |  Tax Collected: $${totalTax.toFixed(2)}`, 20, yPos);
+        }
 
-        // Add page footer
+        // Page footer
         doc.setFontSize(8);
-        doc.setTextColor(150);
+        doc.setTextColor(160);
         doc.text('Generated by Chaat Mahal Analytics', 20, doc.internal.pageSize.getHeight() - 10);
         doc.text(new Date().toLocaleString(), pageWidth - 20, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
 
-        // Save PDF
-        doc.save(`Monthly-Tax-Report-${monthName}-${reportYear}.pdf`);
+        doc.save(`Sales-Summary-${typeSlug}-${monthName}-${reportYear}.pdf`);
     };
 
     const filteredOrders = getFilteredOrders();
@@ -770,7 +864,7 @@ const Analytics = () => {
     return (
         <>
         <div className="analytics-container">
-            <h2 className="analytics-title">📊 Analytics Dashboard</h2>
+            <h2 className="analytics-title"><FiBarChart2 /> Analytics Dashboard</h2>
             <div className="analytics-header">
                 <div className="header-actions">
                     <div className="time-filter">
@@ -802,7 +896,7 @@ const Analytics = () => {
                             className={timeFilter === 'custom' ? 'active' : ''} 
                             onClick={() => { setShowDatePicker(!showDatePicker); setTimeFilter('custom'); }}
                         >
-                            📅 Custom
+                            <FiCalendar /> Custom
                         </button>
                     </div>
                     <div className="header-controls">
@@ -811,14 +905,14 @@ const Analytics = () => {
                             onClick={() => setCompareMode(!compareMode)}
                             title="Compare with previous period"
                         >
-                            {compareMode ? '📊 Comparing' : '📊 Compare'}
+                            {compareMode ? <><FiBarChart2 /> Comparing</> : <><FiBarChart2 /> Compare</>}
                         </button>
                         <button 
                             className="control-btn export"
                             onClick={() => exportToCSV(filteredOrders)}
                             title="Export data to CSV"
                         >
-                            📥 Export CSV
+                            <FiDownload /> Export CSV
                         </button>
                     </div>
                 </div>
@@ -875,7 +969,7 @@ const Analytics = () => {
             {/* Key Metrics Cards */}
             <div className="metrics-grid">
                 <div className="metric-card revenue">
-                    <div className="metric-icon">💰</div>
+                    <div className="metric-icon"><FiDollarSign /></div>
                     <div className="metric-content">
                         <h3>Total Revenue</h3>
                         <p className="metric-value">${metrics.totalRevenue.toFixed(2)}</p>
@@ -884,7 +978,7 @@ const Analytics = () => {
                 </div>
 
                 <div className="metric-card orders">
-                    <div className="metric-icon">📦</div>
+                    <div className="metric-icon"><FiPackage /></div>
                     <div className="metric-content">
                         <h3>Total Orders</h3>
                         <p className="metric-value">{metrics.totalOrders}</p>
@@ -893,7 +987,7 @@ const Analytics = () => {
                 </div>
 
                 <div className="metric-card average">
-                    <div className="metric-icon">📊</div>
+                    <div className="metric-icon"><FiTrendingUp /></div>
                     <div className="metric-content">
                         <h3>Avg Order Value</h3>
                         <p className="metric-value">${metrics.avgOrderValue.toFixed(2)}</p>
@@ -902,16 +996,16 @@ const Analytics = () => {
                 </div>
 
                 <div className="metric-card tips">
-                    <div className="metric-icon">🎁</div>
+                    <div className="metric-icon"><FiGift /></div>
                     <div className="metric-content">
                         <h3>Total Tips</h3>
                         <p className="metric-value">${metrics.totalTips.toFixed(2)}</p>
-                        <span className="metric-sublabel">from customers</span>
+                        <span className="metric-sublabel">{metrics.netSubtotal > 0 ? ((metrics.totalTips / metrics.netSubtotal) * 100).toFixed(1) : '0.0'}% of food sales</span>
                     </div>
                 </div>
 
                 <div className="metric-card wait-time">
-                    <div className="metric-icon">⏱️</div>
+                    <div className="metric-icon"><FiClock /></div>
                     <div className="metric-content">
                         <h3>Avg Wait Time</h3>
                         <p className="metric-value">{waitTime.minutes} min</p>
@@ -982,7 +1076,7 @@ const Analytics = () => {
             {filteredOrders.length > 0 && (
                 <div className="analytics-section">
                     <div className="orders-section-header">
-                        <h3>🧾 Orders
+                        <h3><FiFileText /> Orders
                             <span className="orders-period-label">
                                 {timeFilter === 'today' ? 'Today'
                                 : timeFilter === 'week' ? 'Last 7 Days'
@@ -1022,12 +1116,12 @@ const Analytics = () => {
                                             <td className="aot-tip">{order.tip > 0 ? `$${order.tip.toFixed(2)}` : <span className="aot-tip-none">—</span>}</td>
                                             <td>
                                                 <span className={`aot-payment-badge ${order.paid ? (order.paymentId ? 'card' : 'paid') : 'unpaid'}`}>
-                                                    {order.paid ? (order.paymentId ? '💳 Card' : '✅ Cash Paid') : '💵 Cash'}
+                                                    {order.paid ? (order.paymentId ? <><FiCreditCard /> Card</> : <><FiCheckCircle /> Cash Paid</>) : <><FiDollarSign /> Cash</>}
                                                 </span>
                                             </td>
                                             <td>
                                                 <span className={`aot-status-badge aot-badge-${order.status.toLowerCase()}`}>
-                                                    {order.status === 'Completed' ? '✓ ' : order.status === 'Cancelled' ? '✕ ' : '⏳ '}{order.status}
+                                                    {order.status === 'Completed' ? <FiCheck /> : order.status === 'Cancelled' ? <FiX /> : <FiClock />}{' '}{order.status}
                                                 </span>
                                             </td>
                                             <td className="aot-date">
@@ -1042,7 +1136,7 @@ const Analytics = () => {
                     </div>
                     {filteredOrders.length > ORDERS_PER_PAGE && (
                         <div className="analytics-pagination">
-                            <button className="aot-page-btn" disabled={ordersPage === 1} onClick={() => setOrdersPage(p => p - 1)}>← Previous</button>
+                            <button className="aot-page-btn" disabled={ordersPage === 1} onClick={() => setOrdersPage(p => p - 1)}><FiChevronLeft /> Previous</button>
                             <div className="aot-page-dots">
                                 {Array.from({ length: Math.min(5, Math.ceil(filteredOrders.length / ORDERS_PER_PAGE)) }, (_, i) => {
                                     const total = Math.ceil(filteredOrders.length / ORDERS_PER_PAGE);
@@ -1061,7 +1155,7 @@ const Analytics = () => {
                                     );
                                 })}
                             </div>
-                            <button className="aot-page-btn" disabled={ordersPage >= Math.ceil(filteredOrders.length / ORDERS_PER_PAGE)} onClick={() => setOrdersPage(p => p + 1)}>Next →</button>
+                            <button className="aot-page-btn" disabled={ordersPage >= Math.ceil(filteredOrders.length / ORDERS_PER_PAGE)} onClick={() => setOrdersPage(p => p + 1)}>Next <FiChevronRight /></button>
                         </div>
                     )}
                     <div className="aot-pagination-count">Showing {Math.min((ordersPage - 1) * ORDERS_PER_PAGE + 1, filteredOrders.length)}–{Math.min(ordersPage * ORDERS_PER_PAGE, filteredOrders.length)} of {filteredOrders.length} orders</div>
@@ -1070,12 +1164,12 @@ const Analytics = () => {
 
             {/* Payment Breakdown */}
             <div className="analytics-section">
-                <h3>💳 Payment Method Breakdown</h3>
+                <h3><FiCreditCard /> Payment Method Breakdown</h3>
                 <div className="analytics-payment-breakdown-container">
                     <div className="analytics-payment-breakdown">
                         <div className="analytics-payment-item online">
                             <div className="analytics-payment-header">
-                                <span className="analytics-payment-icon">💻</span>
+                                <span className="analytics-payment-icon"><FiMonitor /></span>
                                 <span className="analytics-payment-label">Online Payments</span>
                             </div>
                             <div className="analytics-payment-stats">
@@ -1090,7 +1184,7 @@ const Analytics = () => {
 
                         <div className="analytics-payment-item counter">
                             <div className="analytics-payment-header">
-                                <span className="analytics-payment-icon">🏪</span>
+                                <span className="analytics-payment-icon"><FiDollarSign /></span>
                                 <span className="analytics-payment-label">Cash Payments</span>
                             </div>
                             <div className="analytics-payment-stats">
@@ -1139,27 +1233,35 @@ const Analytics = () => {
 
             {/* Repeat Customers */}
             <div className="analytics-section">
-                <h3>🔄 Repeat Customer Stats</h3>
+                <h3><FiRefreshCw /> Repeat Customer Stats</h3>
                 <div className="rc-stats-grid">
                     <div className="rc-stat-card">
-                        <div className="rc-stat-icon">👥</div>
-                        <div className="rc-stat-value">{repeatStats.uniqueCount}</div>
-                        <div className="rc-stat-label">Unique Customers</div>
+                        <div className="rc-stat-icon"><FiUsers /></div>
+                        <div className="rc-stat-text">
+                            <div className="rc-stat-value">{repeatStats.uniqueCount}</div>
+                            <div className="rc-stat-label">Unique Customers</div>
+                        </div>
                     </div>
                     <div className="rc-stat-card">
-                        <div className="rc-stat-icon">🔁</div>
-                        <div className="rc-stat-value">{repeatStats.repeatCount}</div>
-                        <div className="rc-stat-label">Repeat Customers</div>
+                        <div className="rc-stat-icon"><FiRefreshCw /></div>
+                        <div className="rc-stat-text">
+                            <div className="rc-stat-value">{repeatStats.repeatCount}</div>
+                            <div className="rc-stat-label">Repeat Customers</div>
+                        </div>
                     </div>
                     <div className="rc-stat-card highlight">
-                        <div className="rc-stat-icon">📈</div>
-                        <div className="rc-stat-value">{repeatStats.repeatRate.toFixed(1)}%</div>
-                        <div className="rc-stat-label">Repeat Rate</div>
+                        <div className="rc-stat-icon"><FiTrendingUp /></div>
+                        <div className="rc-stat-text">
+                            <div className="rc-stat-value">{repeatStats.repeatRate.toFixed(1)}%</div>
+                            <div className="rc-stat-label">Repeat Rate</div>
+                        </div>
                     </div>
                     <div className="rc-stat-card">
-                        <div className="rc-stat-icon">🛒</div>
-                        <div className="rc-stat-value">{repeatStats.avgOrdersPerRepeat.toFixed(1)}</div>
-                        <div className="rc-stat-label">Avg Orders / Repeat</div>
+                        <div className="rc-stat-icon"><FiShoppingCart /></div>
+                        <div className="rc-stat-text">
+                            <div className="rc-stat-value">{repeatStats.avgOrdersPerRepeat.toFixed(1)}</div>
+                            <div className="rc-stat-label">Avg Orders / Repeat</div>
+                        </div>
                     </div>
                 </div>
 
@@ -1201,7 +1303,7 @@ const Analytics = () => {
                         </div>
                         {repeatStats.topRepeatCustomers.length > RC_PER_PAGE && (
                             <div className="analytics-pagination">
-                                <button className="aot-page-btn" disabled={rcPage === 1} onClick={() => setRcPage(p => p - 1)}>← Previous</button>
+                                <button className="aot-page-btn" disabled={rcPage === 1} onClick={() => setRcPage(p => p - 1)}><FiChevronLeft /> Previous</button>
                                 <div className="aot-page-dots">
                                     {Array.from({ length: Math.min(5, Math.ceil(repeatStats.topRepeatCustomers.length / RC_PER_PAGE)) }, (_, i) => {
                                         const total = Math.ceil(repeatStats.topRepeatCustomers.length / RC_PER_PAGE);
@@ -1215,7 +1317,7 @@ const Analytics = () => {
                                         );
                                     })}
                                 </div>
-                                <button className="aot-page-btn" disabled={rcPage >= Math.ceil(repeatStats.topRepeatCustomers.length / RC_PER_PAGE)} onClick={() => setRcPage(p => p + 1)}>Next →</button>
+                                <button className="aot-page-btn" disabled={rcPage >= Math.ceil(repeatStats.topRepeatCustomers.length / RC_PER_PAGE)} onClick={() => setRcPage(p => p + 1)}>Next <FiChevronRight /></button>
                             </div>
                         )}
                         <div className="aot-pagination-count">Showing {Math.min((rcPage - 1) * RC_PER_PAGE + 1, repeatStats.topRepeatCustomers.length)}–{Math.min(rcPage * RC_PER_PAGE, repeatStats.topRepeatCustomers.length)} of {repeatStats.topRepeatCustomers.length} repeat customers</div>
@@ -1226,7 +1328,7 @@ const Analytics = () => {
             <div className="analytics-row">
                 {/* Top Selling Items */}
                 <div className="analytics-section chart-section">
-                    <h3>🏆 Top Selling Items</h3>
+                    <h3><FiAward /> Top Selling Items</h3>
                     {topItems.length > 0 ? (
                         <div className="chart-container">
                             {topItems.map((item, index) => (
@@ -1255,7 +1357,7 @@ const Analytics = () => {
 
                 {/* Sales by Category with Pie Chart */}
                 <div className="analytics-section chart-section">
-                    <h3>🍽️ Sales by Category</h3>
+                    <h3><FiPieChart /> Sales by Category</h3>
                     {categoryData.length > 0 ? (
                         <>
                             <div className="category-pie-chart">
@@ -1327,12 +1429,12 @@ const Analytics = () => {
             {/* Revenue Trend with Line Chart */}
             {revenueTrend.length > 0 && (
                 <div className="analytics-section">
-                    <h3>📈 Revenue Trend</h3>
+                    <h3><FiTrendingUp /> Revenue Trend</h3>
                     <div className="revenue-trend-container">
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart
                                 data={revenueTrend}
-                                margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
+                                margin={{ top: 20, right: 10, left: -5, bottom: 5 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis 
@@ -1367,7 +1469,7 @@ const Analytics = () => {
             {/* Peak Hours */}
             {hourlyData.length > 0 && (
                 <div className="analytics-section">
-                    <h3>🕐 Peak Hours</h3>
+                    <h3><FiClock /> Peak Hours</h3>
                     <div className="peak-hours-chart">
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart
@@ -1408,16 +1510,16 @@ const Analytics = () => {
             {/* Heatmap Calendar */}
             <div className="analytics-section">
                 <div className="heatmap-header">
-                    <h3>📅 Order Activity Heatmap</h3>
+                    <h3><FiCalendar /> Order Activity Heatmap</h3>
                     <div className="heatmap-navigation">
                         <button className="nav-btn" onClick={goToPreviousMonth} title="Previous Month">
-                            ← Prev
+                            <FiChevronLeft /> Prev
                         </button>
                         <span className="current-month">
                             {heatmapMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                         </span>
                         <button className="nav-btn" onClick={goToNextMonth} title="Next Month">
-                            Next →
+                            Next <FiChevronRight />
                         </button>
                         {!isCurrentMonth() && (
                             <button className="nav-btn today-btn" onClick={goToCurrentMonth}>
@@ -1525,15 +1627,34 @@ const Analytics = () => {
 
             {/* Monthly Tax Report */}
             <div className="analytics-section">
-                <h3>📄 Monthly Tax Report</h3>
+                <h3><FiFileText /> Monthly Sales Report</h3>
                 <p style={{color: '#666', marginBottom: '20px', fontSize: '14px'}}>
-                    Generate comprehensive monthly sales reports for tax filing and accounting purposes. 
-                    Includes gross sales, net sales, tax breakdown, tips, fees, and payment method details.
+                    Generate a sales summary report for tax filing. Select the payment type, month, and year, then download as PDF or CSV.
                 </p>
                 <div className="tax-report-controls" style={{display: 'flex', gap: '15px', alignItems: 'flex-end', flexWrap: 'wrap'}}>
                     <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                        <label style={{fontWeight: '600', color: '#333', fontSize: '14px'}}>Report Type:</label>
+                        <select
+                            value={reportType}
+                            onChange={(e) => setReportType(e.target.value)}
+                            style={{
+                                padding: '10px 16px',
+                                borderRadius: '8px',
+                                border: '2px solid #e0e0e0',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                color: '#333',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            <option value="card">Card Payments</option>
+                            <option value="cash">Cash Payments</option>
+                            <option value="all">All Payments</option>
+                        </select>
+                    </div>
+                    <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
                         <label style={{fontWeight: '600', color: '#333', fontSize: '14px'}}>Month:</label>
-                        <select 
+                        <select
                             value={reportMonth}
                             onChange={(e) => setReportMonth(parseInt(e.target.value))}
                             style={{
@@ -1543,8 +1664,7 @@ const Analytics = () => {
                                 fontSize: '14px',
                                 fontWeight: '500',
                                 color: '#333',
-                                cursor: 'pointer',
-                                transition: 'border-color 0.3s ease'
+                                cursor: 'pointer'
                             }}
                         >
                             <option value={0}>January</option>
@@ -1563,7 +1683,7 @@ const Analytics = () => {
                     </div>
                     <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
                         <label style={{fontWeight: '600', color: '#333', fontSize: '14px'}}>Year:</label>
-                        <select 
+                        <select
                             value={reportYear}
                             onChange={(e) => setReportYear(parseInt(e.target.value))}
                             style={{
@@ -1573,8 +1693,7 @@ const Analytics = () => {
                                 fontSize: '14px',
                                 fontWeight: '500',
                                 color: '#333',
-                                cursor: 'pointer',
-                                transition: 'border-color 0.3s ease'
+                                cursor: 'pointer'
                             }}
                         >
                             {Array.from({length: 5}, (_, i) => new Date().getFullYear() - i).map(year => (
@@ -1597,12 +1716,10 @@ const Analytics = () => {
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px',
-                                transition: 'all 0.3s ease',
-                                boxShadow: '0 2px 8px rgba(76, 175, 80, 0.3)'
+                                gap: '8px'
                             }}
                         >
-                            📊 CSV Report
+                            <FiBarChart2 /> CSV
                         </button>
                         <button
                             onClick={generateMonthlyTaxReportPDF}
@@ -1618,12 +1735,10 @@ const Analytics = () => {
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px',
-                                transition: 'all 0.3s ease',
-                                boxShadow: '0 2px 8px rgba(33, 150, 243, 0.3)'
+                                gap: '8px'
                             }}
                         >
-                            📄 PDF Report
+                            <FiFileText /> PDF
                         </button>
                     </div>
                 </div>
@@ -1631,7 +1746,7 @@ const Analytics = () => {
 
             {filteredOrders.length === 0 && (
                 <div className="no-orders-message">
-                    <div className="no-orders-icon">📭</div>
+                    <div className="no-orders-icon"><FiPackage /></div>
                     <h3>No Orders Yet</h3>
                     <p>Analytics will appear once you start receiving orders.</p>
                 </div>
@@ -1646,10 +1761,10 @@ const Analytics = () => {
                         <div>
                             <span className="aot-modal-order-num">Order #{selectedOrder.orderNumber}</span>
                             <span className={`aot-status-badge aot-badge-${selectedOrder.status.toLowerCase()} aot-modal-status`}>
-                                {selectedOrder.status === 'Completed' ? '✓ ' : selectedOrder.status === 'Cancelled' ? '✕ ' : '⏳ '}{selectedOrder.status}
+                                {selectedOrder.status === 'Completed' ? <FiCheck /> : selectedOrder.status === 'Cancelled' ? <FiX /> : <FiClock />}{' '}{selectedOrder.status}
                             </span>
                         </div>
-                        <button className="aot-modal-close" onClick={() => setSelectedOrder(null)}>✕</button>
+                        <button className="aot-modal-close" onClick={() => setSelectedOrder(null)}><FiX /></button>
                     </div>
 
                     <div className="aot-modal-body">
@@ -1725,7 +1840,7 @@ const Analytics = () => {
                                 <span className="aot-modal-label">Payment Method</span>
                                 <span className="aot-modal-value">
                                     <span className={`aot-payment-badge ${selectedOrder.paid ? (selectedOrder.paymentId ? 'card' : 'paid') : 'unpaid'}`}>
-                                        {selectedOrder.paid ? (selectedOrder.paymentId ? '💳 Card' : '✅ Cash Paid') : '💵 Cash'}
+                                        {selectedOrder.paid ? (selectedOrder.paymentId ? <><FiCreditCard /> Card</> : <><FiCheckCircle /> Cash Paid</>) : <><FiDollarSign /> Cash</>}
                                     </span>
                                 </span>
                             </div>

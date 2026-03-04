@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
+import { FiCheckCircle, FiXCircle, FiEdit2, FiX, FiCircle, FiMoreHorizontal, FiCreditCard, FiRefreshCw, FiDollarSign, FiMail, FiRotateCcw, FiTrash2, FiCornerUpLeft, FiSmartphone, FiClock, FiClipboard, FiCalendar, FiAlertTriangle } from 'react-icons/fi';
+import { BsCreditCard2Front } from 'react-icons/bs';
 import ConfirmationModal from './ConfirmationModal';
 import ItemSummary from './ItemSummary'; // Import ItemSummary component
 import Toast from './Toast';
@@ -15,6 +17,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
     const [editingOrder, setEditingOrder] = useState(null);
     const [editOrderItems, setEditOrderItems] = useState({});
     const [editItemPrices, setEditItemPrices] = useState({});
+    const [editTip, setEditTip] = useState(0);
     const [editOptionModal, setEditOptionModal] = useState(null);
     const [editItemOptions, setEditItemOptions] = useState({});
     
@@ -189,7 +192,8 @@ const OrderList = ({ currentView, setCurrentView }) => {
         }
     };
 
-    const deleteOrder = async (id) => {
+    const deleteOrder = async (order) => {
+        const id = order._id;
         openModal({
             type: 'danger',
             title: 'Cancel Order',
@@ -199,16 +203,56 @@ const OrderList = ({ currentView, setCurrentView }) => {
             onConfirm: async () => {
                 try {
                     await axios.delete(`/api/orders/${id}`);
-                    setOrders(orders.map(order =>
-                        order._id === id ? { ...order, status: 'Cancelled' } : order
+                    setOrders(orders.map(o =>
+                        o._id === id ? { ...o, status: 'Cancelled' } : o
                     ));
-                    // Clear given items for this order when cancelled
                 } catch (error) {
                     console.error('Error deleting order:', error);
-                    showToast('Failed to delete the order. Please try again.', 'error');
+                    showToast('Failed to cancel the order. Please try again.', 'error');
                 }
             }
         });
+    };
+
+    const undoPayment = async (order) => {
+        const id = order._id;
+        const isStripePaid = !!(order.paid && order.paymentId);
+        const refundAmount = order.stripeTotal != null
+            ? `$${order.stripeTotal.toFixed(2)}`
+            : `$${(order.total + (order.tip || 0)).toFixed(2)}`;
+
+        if (isStripePaid) {
+            openModal({
+                type: 'danger',
+                title: 'Refund Payment',
+                message: `This order was paid via Stripe (${refundAmount}). Issuing a refund will return the full amount to the customer's card and mark the order as unpaid. This cannot be undone.`,
+                confirmText: 'Issue Refund',
+                cancelText: 'Cancel',
+                onConfirm: async () => {
+                    try {
+                        await axios.post(`/api/orders/${id}/refund`);
+                        setOrders(orders.map(o =>
+                            o._id === id ? { ...o, paid: false, paymentId: null, stripeTotal: null, tip: 0, taxAmount: 0, convenienceFee: 0 } : o
+                        ));
+                        showToast('Refund issued — customer will receive funds within 5–10 business days.', 'success');
+                    } catch (error) {
+                        const msg = error.response?.data?.message || 'Refund failed. Please try again.';
+                        showToast(msg, 'error');
+                    }
+                }
+            });
+        } else {
+            // Cash order — simple toggle
+            try {
+                await axios.patch(`/api/orders/${id}/paid`, { paid: false });
+                setOrders(orders.map(o =>
+                    o._id === id ? { ...o, paid: false } : o
+                ));
+            } catch (error) {
+                console.error('Error undoing payment:', error);
+                showToast('Failed to undo payment. Please try again.', 'error');
+            }
+        }
     };
 
     // Revert functions for completed and cancelled orders
@@ -309,6 +353,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
         
         setEditOrderItems(itemCounts);
         setEditItemPrices(itemPrices);
+        setEditTip(order.tip || 0);
         setEditingOrder(order);
     };
 
@@ -316,6 +361,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
         setEditingOrder(null);
         setEditOrderItems({});
         setEditItemPrices({}); // Clear prices too
+        setEditTip(0);
     };
 
     const updateEditItemQuantity = (itemKey, change) => {
@@ -515,17 +561,19 @@ const OrderList = ({ currentView, setCurrentView }) => {
         });
 
         const newTotal = calculateEditOrderTotal();
+        const newTip = parseFloat(editTip) || 0;
 
         try {
             await axios.put(`/api/orders/${editingOrder._id}`, {
                 items: newItems,
-                total: newTotal
+                total: newTotal,
+                tip: newTip
             });
             
             // Update local state
             setOrders(orders.map(order => 
                 order._id === editingOrder._id 
-                    ? { ...order, items: newItems, total: newTotal }
+                    ? { ...order, items: newItems, total: newTotal, tip: newTip }
                     : order
             ));
             
@@ -623,19 +671,19 @@ const OrderList = ({ currentView, setCurrentView }) => {
                             className={`nav-tab-button ${view === 'pending' ? 'active-tab' : ''}`}
                             onClick={() => setView('pending')}
                         >
-                            🔄 Pending Orders ({pendingOrders.length})
+                            <FiRefreshCw /> Pending Orders ({pendingOrders.length})
                         </button>
                         <button
                             className={`nav-tab-button ${view === 'completed' ? 'active-tab' : ''}`}
                             onClick={() => setView('completed')}
                         >
-                            ✅ Completed Orders ({completedOrders.length})
+                            <FiCheckCircle /> Completed Orders ({completedOrders.length})
                         </button>
                         <button
                             className={`nav-tab-button ${view === 'cancelled' ? 'active-tab' : ''}`}
                             onClick={() => setView('cancelled')}
                         >
-                            ❌ Cancelled Orders ({cancelledOrders.length})
+                            <FiXCircle /> Cancelled Orders ({cancelledOrders.length})
                         </button>
                     </div>
                 </div>
@@ -669,10 +717,13 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                         <div className="order-info">
                                             <div className="order-header">
                                                 <div className="order-header-main">
-                                                    Order #{order.orderNumber || order._id.slice(-4)} - {order.customerName}
+                                                    <FiCalendar /> Order #{order.orderNumber || order._id.slice(-4)} - {order.customerName}
                                                     <span className="order-timestamp">
-                                                        {orderAge}
+                                                        <FiClock /> {orderAge}
                                                     </span>
+                                                    {!order.paid && <span className="unpaid-badge"><FiAlertTriangle /> UNPAID</span>}
+                                                    {order.paid && isCounterPayment && <span className="paid-counter-badge"><FiDollarSign /> PAID CASH</span>}
+                                                    {order.paid && !isCounterPayment && <span className="paid-online-badge"><BsCreditCard2Front /> PAID ONLINE</span>}
                                                 </div>
                                             </div>
                                             
@@ -680,7 +731,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                 <div className="order-items">
                                                     <div className="order-items-header">
                                                         <div className="items-header-content">
-                                                            <span>Items to Prepare</span>
+                                                            <span style={{display:'inline-flex', alignItems:'center', gap:'6px'}}><FiClipboard /> Items to Prepare</span>
                                                             {!isBeingEdited && (
                                                                 <button 
                                                                     className={`edit-order-btn${order.paid ? ' disabled-btn' : ''}`}
@@ -688,7 +739,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                                     title={order.paid ? "Cannot edit a paid order" : "Edit order items"}
                                                                     disabled={order.paid}
                                                                 >
-                                                                    ✏️ Edit
+                                                                    <FiEdit2 /> Edit
                                                                 </button>
                                                             )}
                                                         </div>
@@ -749,6 +800,33 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                                 
                                                                 <div className="edit-order-total">
                                                                     New Total: ${calculateEditOrderTotal().toFixed(2)}
+                                                                    {(parseFloat(editTip) || 0) > 0 && (
+                                                                        <span style={{ fontSize: '0.85rem', color: '#555', fontWeight: 500 }}> + ${(parseFloat(editTip) || 0).toFixed(2)} tip</span>
+                                                                    )}
+                                                                </div>
+                                                                
+                                                                <div className="edit-tip-section">
+                                                                    <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#555', marginBottom: 4, display: 'block' }}>Tip Amount ($)</label>
+                                                                    <input
+                                                                        type="number"
+                                                                        min="0"
+                                                                        step="0.01"
+                                                                        value={editTip}
+                                                                        onChange={(e) => setEditTip(e.target.value)}
+                                                                        style={{
+                                                                            width: '100%',
+                                                                            padding: '8px 10px',
+                                                                            border: '2px solid #dee2e6',
+                                                                            borderRadius: 6,
+                                                                            fontSize: '1rem',
+                                                                            fontFamily: 'inherit',
+                                                                            boxSizing: 'border-box',
+                                                                            marginBottom: 12,
+                                                                            outline: 'none'
+                                                                        }}
+                                                                        onFocus={e => e.target.style.borderColor = '#2196F3'}
+                                                                        onBlur={e => e.target.style.borderColor = '#dee2e6'}
+                                                                    />
                                                                 </div>
                                                                 
                                                                 <div className="edit-order-actions">
@@ -778,7 +856,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                                     >
                                                                         <div className="item-content">
                                                                             <span className="item-checkbox">
-                                                                                {isGiven ? '✅' : '⭕'}
+                                                                                {isGiven ? <FiCheckCircle /> : <FiCircle />}
                                                                             </span>
                                                                             <div className="item-details">
                                                                                 <strong>{qty}x</strong> {name}
@@ -818,21 +896,21 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                                 className="control-button cash-pay-button"
                                                                 title="Mark as paid with cash"
                                                             >
-                                                                💵 Cash
+                                                                <FiDollarSign /> Cash
                                                             </button>
                                                             <button
                                                                 onClick={() => handleStripePayForOrder(order)}
                                                                 className="control-button stripe-pay-button"
                                                                 title="Generate Stripe payment link"
                                                             >
-                                                                💳 Stripe
+                                                                <FiCreditCard /> Stripe
                                                             </button>
                                                             <button
-                                                                onClick={() => deleteOrder(order._id)}
+                                                                onClick={() => deleteOrder(order)}
                                                                 className="control-button delete-button"
                                                                 title="Cancel/Delete order"
                                                             >
-                                                                Cancel
+                                                                <FiTrash2 /> Cancel
                                                             </button>
                                                         </div>
                                                     </>
@@ -853,7 +931,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                                 className={`more-options-btn${openMoreMenus[order._id] ? ' more-options-open' : ''}`}
                                                                 title="More options"
                                                             >
-                                                                {openMoreMenus[order._id] ? '✕' : '⋯'}
+                                                                {openMoreMenus[order._id] ? <FiX /> : <FiMoreHorizontal />}
                                                             </button>
                                                         </div>
                                                         {openMoreMenus[order._id] && (
@@ -867,22 +945,21 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                                     title={order.customerEmail ? "Send 'Order Ready' email notification" : "No email address available"}
                                                                     disabled={!order.customerEmail || emailSending[order._id]}
                                                                 >
-                                                                    {emailSending[order._id] ? 'Sending...' : order.customerEmail ? '📧 Send Ready Email' : '📧 No Email Available'}
+                                                                    {emailSending[order._id] ? 'Sending...' : order.customerEmail ? <><FiMail /> Send Ready Email</> : <><FiMail /> No Email Available</>}
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => markAsPaid(order._id)}
-                                                                    className={`control-button undo-payment-button more-menu-item${order.paymentId ? ' disabled-btn' : ''}`}
-                                                                    title={order.paymentId ? "Cannot undo — payment was collected via Stripe" : "Undo payment - mark as unpaid"}
-                                                                    disabled={!!order.paymentId}
+                                                                    onClick={() => undoPayment(order)}
+                                                                    className="control-button undo-payment-button more-menu-item"
+                                                                    title={order.paymentId ? 'Issue Stripe refund and mark as unpaid' : 'Undo payment - mark as unpaid'}
                                                                 >
-                                                                    ↶ Undo Payment
+                                                                    {order.paymentId ? <><FiRotateCcw /> Refund Payment</> : <><FiRotateCcw /> Undo Payment</>}
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => deleteOrder(order._id)}
+                                                                    onClick={() => deleteOrder(order)}
                                                                     className="control-button delete-button more-menu-item"
                                                                     title="Cancel/Delete order"
                                                                 >
-                                                                    🗑 Cancel Order
+                                                                    <FiTrash2 /> Cancel Order
                                                                 </button>
                                                             </div>
                                                         )}
@@ -923,9 +1000,9 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                             <div className="order-header">
                                                 <div className="order-header-with-revert">
                                                     <div className="order-header-main">
-                                                        Order #{order.orderNumber ||order._id.slice(-4)} - {order.customerName}
+                                                        <FiCalendar /> Order #{order.orderNumber ||order._id.slice(-4)} - {order.customerName}
                                                         <span className="order-timestamp">
-                                                            Completed {completedTime}
+                                                            <FiClock /> Completed {completedTime}
                                                         </span>
                                                     </div>
                                                     <button 
@@ -933,8 +1010,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                         onClick={() => revertOrderToPending(order._id)}
                                                         title="Move back to pending"
                                                     >
-                                                        <span>↶</span>
-                                                        <span>Revert</span>
+                                                        <FiCornerUpLeft />
                                                     </button>
                                                 </div>
                                             </div>
@@ -1018,9 +1094,9 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                             <div className="order-header">
                                                 <div className="order-header-with-revert">
                                                     <div className="order-header-main">
-                                                        Order #{order.orderNumber || order._id.slice(-4)} - {order.customerName}
+                                                        <FiCalendar /> Order #{order.orderNumber || order._id.slice(-4)} - {order.customerName}
                                                         <span className="order-timestamp">
-                                                            Cancelled {cancelledTime}
+                                                            <FiClock /> Cancelled {cancelledTime}
                                                         </span>
                                                     </div>
                                                     <button 
@@ -1028,8 +1104,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                                         onClick={() => revertOrderToPending(order._id)}
                                                         title="Move back to pending"
                                                     >
-                                                        <span>↶</span>
-                                                        <span>Revert</span>
+                                                        <FiCornerUpLeft />
                                                     </button>
                                                 </div>
                                             </div>
@@ -1112,7 +1187,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                 className="close-modal-btn" 
                                 onClick={closeEditOptionsModal}
                             >
-                                ×
+                                <FiX />
                             </button>
                         </div>
                         
@@ -1213,8 +1288,8 @@ const OrderList = ({ currentView, setCurrentView }) => {
                 <div className="ol-stripe-modal-overlay" onClick={() => setStripePayModal(null)}>
                     <div className="ol-stripe-modal" onClick={e => e.stopPropagation()}>
                         <div className="ol-stripe-modal-header">
-                            <h3>💳 Stripe Payment</h3>
-                            <button className="ol-stripe-modal-close" onClick={() => setStripePayModal(null)}>×</button>
+                            <h3><FiCreditCard /> Stripe Payment</h3>
+                            <button className="ol-stripe-modal-close" onClick={() => setStripePayModal(null)}><FiX /></button>
                         </div>
                         <div className="ol-stripe-modal-body">
                             <div className="ol-stripe-breakdown">
@@ -1263,7 +1338,7 @@ const OrderList = ({ currentView, setCurrentView }) => {
                                     }
                                 }}
                             >
-                                📱 Share Payment Link
+                                <FiSmartphone /> Share Payment Link
                             </button>
                             <button
                                 className="ol-stripe-close-btn"

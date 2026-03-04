@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FiMapPin, FiPhone, FiMail, FiClock, FiShare2 } from 'react-icons/fi';
 import Toast from './Toast';
 import '../styles/Contact.css';
 
@@ -23,7 +24,7 @@ const Contact = () => {
                 <div className="contact-info">
                     <h2>Chaat Mahal Food Truck</h2>
                     <div className="contact-item">
-                        <h3>📍 Location</h3>
+                        <h3><FiMapPin /> Location</h3>
                         
                         {/* Google Maps Embed */}
                         <div className="map-container">
@@ -45,20 +46,20 @@ const Contact = () => {
                     {/* Contact Information Grid */}
                     <div className="contact-grid">
                         <div className="contact-item">
-                            <h3>📞 Phone</h3>
+                            <h3><FiPhone /> Phone</h3>
                             <p>(704) 418-0330</p>
                         </div>
                         <div className="contact-item">
-                            <h3>✉️ Email</h3>
+                            <h3><FiMail /> Email</h3>
                             <p><a href="mailto:info.chaatmahal@gmail.com">info.chaatmahal@gmail.com</a></p>
                         </div>
                         <div className="contact-item">
-                            <h3>🕐 Hours</h3>
+                            <h3><FiClock /> Hours</h3>
                             <p>Tuesday - Wednesday: Closed</p>
                             <p>Thursday - Monday: 5:30 PM - 10:30 PM</p>
                         </div>
                         <div className="contact-item">
-                            <h3>📱 Follow Us</h3>
+                            <h3><FiShare2 /> Follow Us</h3>
                             <p>Instagram: <a href="https://www.instagram.com/the.chaat.mahal" target="_blank" rel="noopener noreferrer">@the.chaat.mahal</a></p>
                             <p>Facebook: <a href="https://www.facebook.com/the.chaat.mahal" target="_blank" rel="noopener noreferrer">the.chaat.mahal</a></p>
                         </div>

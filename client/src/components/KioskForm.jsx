@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { FiX, FiArrowRight, FiCheckCircle, FiDollarSign, FiShoppingCart } from 'react-icons/fi';
 import PaymentForm from './PaymentForm';
 import Toast from './Toast';
 import '../styles/KioskForm.css';
 
-const KioskForm = ({ initialStep = 1 }) => {
+const KioskForm = ({ initialStep = 1, searchQuery = '' }) => {
     const [menuItems, setMenuItems] = useState([]);
     const [isLoadingMenu, setIsLoadingMenu] = useState(true);
     const [customerName, setCustomerName] = useState('');
@@ -14,6 +15,7 @@ const KioskForm = ({ initialStep = 1 }) => {
     const [orderNumber, setOrderNumber] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [modalItem, setModalItem] = useState(null);
+    const [modalClosing, setModalClosing] = useState(false);
     const [itemOptions, setItemOptions] = useState({});
     const [notes, setNotes] = useState('');
     const [showCartSummary, setShowCartSummary] = useState(false);
@@ -36,13 +38,23 @@ const KioskForm = ({ initialStep = 1 }) => {
     };
     
     // Get ordered categories from settings, filter to only show categories with active items
+    const getActiveItems = () => {
+        const q = searchQuery.trim().toLowerCase();
+        if (!q) return menuItems.filter(item => item.active !== false);
+        return menuItems.filter(item =>
+            item.active !== false &&
+            (item.name.toLowerCase().includes(q) || (item.description || '').toLowerCase().includes(q))
+        );
+    };
+
     const getCategoriesWithItems = () => {
+        const activeItems = getActiveItems();
         if (!settings.categories || settings.categories.length === 0) {
             // Fallback: extract from menu items if settings don't have categories
-            return [...new Set(menuItems.filter(item => item.active !== false).map(item => item.category))];
+            return [...new Set(activeItems.map(item => item.category))];
         }
         // Filter settings categories to only include those with active items
-        const itemCategories = new Set(menuItems.filter(item => item.active !== false).map(item => item.category));
+        const itemCategories = new Set(activeItems.map(item => item.category));
         return settings.categories.filter(cat => itemCategories.has(cat));
     };
     
@@ -259,11 +271,19 @@ const KioskForm = ({ initialStep = 1 }) => {
 
     const closeModal = () => {
         setModalItem(null);
+        setModalClosing(false);
         setItemOptions({
             spiceLevel: null,
             otherOptions: [],
             extraOptions: []
         });
+    };
+
+    const closeModalWithAnimation = () => {
+        setModalClosing(true);
+        setTimeout(() => {
+            closeModal();
+        }, 450);
     };
 
     const handleSpiceChange = (level) => {
@@ -412,6 +432,7 @@ const KioskForm = ({ initialStep = 1 }) => {
     };
 
     const handlePaymentSuccess = async (paymentId, tip = 0) => {
+        if (isSubmitting) return; // Prevent duplicate order creation if called twice
         setPaymentId(paymentId);
         setTipAmount(tip);
         setIsSubmitting(true);
@@ -509,10 +530,10 @@ const KioskForm = ({ initialStep = 1 }) => {
                             className={`floating-cart ${showCartSummary ? 'hidden' : ''}`} 
                             onClick={() => setShowCartSummary(true)}
                         >
-                            <div className="cart-icon">🛒</div>
+                            <div className="cart-icon"><FiShoppingCart /></div>
                             <div className="cart-info">
-                                <span className="cart-count">{getTotalItemsInCart()}</span>
                                 <span className="view-cart-text">View Cart</span>
+                                <span className="cart-count">{getTotalItemsInCart()}</span>
                             </div>
                         </div>
                     )}
@@ -527,7 +548,7 @@ const KioskForm = ({ initialStep = 1 }) => {
                                     onClick={() => setShowCartSummary(false)}
                                     title="Close cart"
                                 >
-                                    ×
+                                    <FiX />
                                 </button>
                             </div>
                             
@@ -589,19 +610,29 @@ const KioskForm = ({ initialStep = 1 }) => {
                                         proceedToCheckout();
                                     }}
                                 >
-                                    Proceed →
+                                    Proceed <FiArrowRight />
                                 </button>
                             </div>
                         </div>
                     )}
 
                     <div className="menu-categories">
+                        {categories.length === 0 && searchQuery.trim() && (
+                            <div className="search-no-results">
+                                <p>No items found for "<strong>{searchQuery}</strong>"</p>
+                            </div>
+                        )}
                         {categories.map(category => (
                             <div key={category} className="category-section" id={`section-${category}`}>
                                 <h2 className="category-title">{category}</h2>
                                 <div className="menu-grid">
                                     {menuItems
-                                        .filter(item => item.category === category && item.active !== false)
+                                        .filter(item => {
+                                            const q = searchQuery.trim().toLowerCase();
+                                            if (item.category !== category || item.active === false) return false;
+                                            if (!q) return true;
+                                            return item.name.toLowerCase().includes(q) || (item.description || '').toLowerCase().includes(q);
+                                        })
                                         .sort((a, b) => (a.order || 0) - (b.order || 0))
                                         .map(item => {
                                         const itemQuantity = Object.entries(selectedItems)
@@ -801,14 +832,14 @@ const KioskForm = ({ initialStep = 1 }) => {
                     {paymentId ? (
                         <div className="confirmation-payment-success">
                             <div className="confirmation-success-heading">
-                                <p>✅ Payment Successful!</p>
+                                <p><FiCheckCircle /> Payment Successful!</p>
                             </div>
                             <p>Your order is now in queue.</p>
                         </div>
                     ) : (
                         <div className="confirmation-payment-counter">
                             <div className="confirmation-counter-heading">
-                                <p>💵 Pay at Counter</p>
+                                <p><FiDollarSign /> Pay at Counter</p>
                             </div>
                             <p>Please pay at the counter to enter preparation queue.</p>
                         </div>
@@ -930,15 +961,15 @@ const KioskForm = ({ initialStep = 1 }) => {
 
             {/* Modal - Enhanced with X close button instead of Cancel button */}
             {modalItem && (
-                <div className="modal-overlay" onClick={closeModal}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className={`kiosk-modal-overlay${modalClosing ? ' closing' : ''}`} onClick={closeModalWithAnimation}>
+                    <div className={`kiosk-modal-content${modalClosing ? ' closing' : ''}`} onClick={(e) => e.stopPropagation()}>
                         <button 
                             type="button"
-                            className="modal-close-btn"
-                            onClick={closeModal}
+                            className="kiosk-modal-close-btn"
+                            onClick={closeModalWithAnimation}
                             aria-label="Close"
                         >
-                            ×
+                            <FiX />
                         </button>
 
                         {modalItem.image && (

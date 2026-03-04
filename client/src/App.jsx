@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FiLogOut, FiPhone, FiMail, FiMapPin, FiInstagram, FiStar, FiInfo, FiSearch, FiX } from 'react-icons/fi';
 import { BrowserRouter as Router, Route, Switch, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import KioskForm from './components/KioskForm';
@@ -40,25 +41,25 @@ const Footer = () => {
             <ul className="footer-links">
               <li>
                 <a href="tel:(704)418-0330">
-                  <span className="icon">📞</span>
+                  <span className="icon"><FiPhone /></span>
                   (704) 418-0330
                 </a>
               </li>
               <li>
                 <a href="mailto:info.chaatmahal@gmail.com">
-                  <span className="icon">✉️</span>
+                  <span className="icon"><FiMail /></span>
                   info.chaatmahal@gmail.com
                 </a>
               </li>
               <li>
                 <a href="https://instagram.com/the.chaat.mahal" target="_blank" rel="noopener noreferrer">
-                  <span className="icon">📷</span>
+                  <span className="icon"><FiInstagram /></span>
                   @the.chaat.mahal
                 </a>
               </li>
               <li>
                 <a href="https://maps.app.goo.gl/2weXbPgSvs6NtCeM6" target="_blank" rel="noopener noreferrer">
-                  <span className="icon">📍</span>
+                  <span className="icon"><FiMapPin /></span>
                   Parking lot, 9311 JW Clay Blvd, Charlotte, NC 28262
                 </a>
               </li>
@@ -84,19 +85,19 @@ const Footer = () => {
             <ul className="footer-links">
               <li>
                 <Link to="/">
-                  <span className="icon">🍛</span>
+                  <span className="icon"><FiStar /></span>
                   Our Menu
                 </Link>
               </li>
               <li>
                 <Link to="/about">
-                  <span className="icon">ℹ️</span>
+                  <span className="icon"><FiInfo /></span>
                   About Us
                 </Link>
               </li>
               <li>
                 <Link to="/contact">
-                  <span className="icon">📧</span>
+                  <span className="icon"><FiMail /></span>
                   Contact
                 </Link>
               </li>
@@ -121,8 +122,9 @@ const Footer = () => {
 };
 
 // Customer Navbar Component
-const CustomerNavbar = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) => {
+const CustomerNavbar = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu, searchQuery, setSearchQuery }) => {
   const location = useLocation();
+  const isMenuPage = location.pathname === '/';
   
   const handleMenuClick = () => {
     if (location.pathname === '/') {
@@ -141,7 +143,7 @@ const CustomerNavbar = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) =
   };
 
   return (
-    <nav className="navbar">
+    <nav className={`navbar${isMenuPage ? ' nav-with-search' : ''}`}>
       <div className="nav-container">
         <div className="nav-logo">
           <Link to="/" onClick={closeMobileMenu}>
@@ -152,6 +154,25 @@ const CustomerNavbar = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) =
             />
           </Link>
         </div>
+
+        {/* Search bar - visible on menu page only */}
+        {isMenuPage && (
+          <div className="nav-search">
+            <FiSearch className="nav-search-icon" />
+            <input
+              type="text"
+              className="nav-search-input"
+              placeholder="Search menu..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button className="nav-search-clear" onClick={() => setSearchQuery('')} aria-label="Clear search">
+                <FiX />
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Mobile hamburger menu */}
         <div className={`hamburger ${mobileMenuOpen ? 'active' : ''}`} onClick={toggleMobileMenu}>
@@ -256,7 +277,7 @@ const AdminNavbar = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu, curren
             <div className="admin-profile-dropdown">
               <div className="admin-profile-role">{adminRole === 'owner' ? 'Owner' : 'Employee'}</div>
               <button className="admin-profile-logout-btn" onClick={handleLogoutClick}>
-                🚪 Logout
+                <FiLogOut /> Logout
               </button>
             </div>
           )}
@@ -291,6 +312,7 @@ const App = () => {
 const AppContent = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) => {
   const location = useLocation();
   const isAdminPage = location.pathname === '/orders';
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Verify Stripe checkout session on return from payment page
   useEffect(() => {
@@ -320,6 +342,8 @@ const AppContent = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) => {
             mobileMenuOpen={mobileMenuOpen}
             toggleMobileMenu={toggleMobileMenu}
             closeMobileMenu={closeMobileMenu}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
           />
           
           <Switch>
@@ -330,7 +354,7 @@ const AppContent = ({ mobileMenuOpen, toggleMobileMenu, closeMobileMenu }) => {
               <Contact />
             </Route>
             <Route path="/" exact>
-              <KioskForm />
+              <KioskForm searchQuery={searchQuery} />
             </Route>
           </Switch>
 

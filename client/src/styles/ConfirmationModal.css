@@ -27,6 +27,7 @@
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     animation: slideIn 0.3s ease;
     overflow: hidden;
+    position: relative;
 }
 
 @keyframes slideIn {
@@ -58,9 +59,12 @@
 }
 
 .modal-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
     background: none;
     border: none;
-    font-size: 2rem;
+    font-size: 1.4rem;
     color: #666;
     cursor: pointer;
     padding: 0;

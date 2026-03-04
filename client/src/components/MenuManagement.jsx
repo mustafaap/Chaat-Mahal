@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { FiPlus, FiCheck, FiX, FiArrowUp, FiArrowDown, FiEdit2, FiCheckCircle, FiXCircle, FiSettings, FiTrash2, FiMove, FiAlertTriangle, FiInfo, FiMinus, FiSliders, FiList, FiTag, FiCamera, FiDollarSign, FiSearch } from 'react-icons/fi';
 import ConfirmationModal from './ConfirmationModal';
 import '../styles/MenuManagement.css';
 import '../styles/Toast.css';
@@ -10,6 +11,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
     const [editingItem, setEditingItem] = useState(null);
     const [showAddForm, setShowAddForm] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [itemSearchQuery, setItemSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState(() => {
         return propActiveTab || localStorage.getItem('menuManagementTab') || 'items';
     }); // 'items' or 'categories'
@@ -56,7 +58,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
         extraOptions: {},
         noModal: false,
         active: true,
-        includeSpice: false,
+        includeSpice: true,
         singleSelect: false
     });
 
@@ -291,7 +293,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
             extraOptions: {},
             noModal: false,
             active: true,
-            includeSpice: false,
+            includeSpice: true,
             singleSelect: false
         });
         setEditingItem(null);
@@ -447,6 +449,16 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
         } else if (selectedCategory !== 'All') {
             // Filter by category
             items = items.filter(item => item.category === selectedCategory);
+        }
+
+        // Filter by search query
+        const q = itemSearchQuery.trim().toLowerCase();
+        if (q) {
+            items = items.filter(item =>
+                item.name.toLowerCase().includes(q) ||
+                (item.description || '').toLowerCase().includes(q) ||
+                (item.category || '').toLowerCase().includes(q)
+            );
         }
         
         return items;
@@ -749,7 +761,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
     return (
         <div className="menu-management-container">
             <div className="menu-management-header">
-                <h2>{activeTab === 'items' ? '🍽️ Menu Items' : '🗂️ Category Management'}</h2>
+                <h2>{activeTab === 'items' ? <><FiList /> Menu Items</> : <><FiTag /> Category Management</>}</h2>
                 <p className="menu-subtitle">
                     {activeTab === 'items' 
                         ? 'Add, edit, or remove menu items and manage their availability' 
@@ -763,13 +775,13 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                             className={`tab-btn ${activeTab === 'items' ? 'active' : ''}`}
                             onClick={() => setActiveTab('items')}
                         >
-                            📋 Menu Items
+                            <FiList /> Menu Items
                         </button>
                         <button 
                             className={`tab-btn ${activeTab === 'categories' ? 'active' : ''}`}
                             onClick={() => setActiveTab('categories')}
                         >
-                            🗂️ Categories
+                            <FiTag /> Categories
                         </button>
                     </div>
                 )}
@@ -781,9 +793,25 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                             className="add-item-btn"
                             onClick={handleAddNew}
                         >
-                            <span className="btn-icon">➕</span>
+                            <span className="btn-icon"><FiPlus /></span>
                             Add New Item
                         </button>
+
+                        <div className="admin-item-search">
+                            <FiSearch className="admin-item-search-icon" />
+                            <input
+                                type="text"
+                                className="admin-item-search-input"
+                                placeholder="Search items..."
+                                value={itemSearchQuery}
+                                onChange={e => setItemSearchQuery(e.target.value)}
+                            />
+                            {itemSearchQuery && (
+                                <button className="admin-item-search-clear" onClick={() => setItemSearchQuery('')}>
+                                    <FiX />
+                                </button>
+                            )}
+                        </div>
                         
                         <select 
                             className="category-filter"
@@ -806,7 +834,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                     {/* Add New Category */}
                     <div className="add-category-section">
                         <div className="add-category-card">
-                            <h3>➕ Add New Category</h3>
+                            <h3><FiPlus /> Add New Category</h3>
                             <div className="add-category-form">
                                 <input
                                     type="text"
@@ -857,7 +885,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                                         className="confirm-rename-btn"
                                                         onClick={confirmRenameCategory}
                                                     >
-                                                        ✓
+                                                        <FiCheck />
                                                     </button>
                                                     <button 
                                                         className="cancel-rename-btn"
@@ -866,7 +894,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                                             setRenamingCategory('');
                                                         }}
                                                     >
-                                                        ✕
+                                                        <FiX />
                                                     </button>
                                                 </div>
                                             </div>
@@ -882,7 +910,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                                     disabled={categories.indexOf(category) === 0}
                                                     title="Move category up"
                                                 >
-                                                    ⬆️
+                                                    <FiArrowUp />
                                                 </button>
                                                 <button 
                                                     className="move-category-btn"
@@ -890,21 +918,21 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                                     disabled={categories.indexOf(category) === categories.length - 1}
                                                     title="Move category down"
                                                 >
-                                                    ⬇️
+                                                    <FiArrowDown />
                                                 </button>
                                                 <button 
                                                     className="rename-category-btn"
                                                     onClick={() => handleRenameCategory(category)}
                                                     title="Rename category"
                                                 >
-                                                    ✏️
+                                                    <FiEdit2 />
                                                 </button>
                                                 <button 
                                                     className="delete-category-btn"
                                                     onClick={() => handleDeleteCategory(category)}
                                                     title="Delete category"
                                                 >
-                                                    🗑️
+                                                    <FiTrash2 />
                                                 </button>
                                             </div>
                                         )}
@@ -912,11 +940,11 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
 
                                     <div className="category-stats">
                                         <div className="stat-item available">
-                                            <span className="stat-icon">✅</span>
+                                            <span className="stat-icon"><FiCheckCircle /></span>
                                             <span>{availableItems.length} Available</span>
                                         </div>
                                         <div className="stat-item unavailable">
-                                            <span className="stat-icon">❌</span>
+                                            <span className="stat-icon"><FiXCircle /></span>
                                             <span>{unavailableItems.length} Unavailable</span>
                                         </div>
                                     </div>
@@ -943,7 +971,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                         }}
                                         title={`Add new item to ${category}`}
                                     >
-                                        ➕ Add Item to {category}
+                                        <FiPlus /> Add Item to {category}
                                     </button>
 
                                     {/* Items in Category */}
@@ -973,7 +1001,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                                             onClick={() => toggleItemStatus(item)}
                                                             title={item.active ? 'Click to make unavailable' : 'Click to make available'}
                                                         >
-                                                            {item.active ? '✓' : '✕'}
+                                                            {item.active ? <FiCheck /> : <FiX />}
                                                         </button>
                                                     </div>
                                                     
@@ -984,7 +1012,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                                             disabled={categoryItems.indexOf(item) === 0}
                                                             title="Move item up"
                                                         >
-                                                            ⬆️
+                                                            <FiArrowUp />
                                                         </button>
                                                         <button 
                                                             className="move-order-btn"
@@ -992,28 +1020,28 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                                             disabled={categoryItems.indexOf(item) === categoryItems.length - 1}
                                                             title="Move item down"
                                                         >
-                                                            ⬇️
+                                                            <FiArrowDown />
                                                         </button>
                                                         <button 
                                                             className="move-item-btn"
                                                             onClick={() => handleMoveItem(item)}
                                                             title="Move to another category"
                                                         >
-                                                            ↔️
+                                                            <FiMove />
                                                         </button>
                                                         <button 
                                                             className="edit-item-mini-btn"
                                                             onClick={() => handleEdit(item)}
                                                             title="Edit item"
                                                         >
-                                                            ✏️
+                                                            <FiEdit2 />
                                                         </button>
                                                         <button 
                                                             className="delete-item-mini-btn"
                                                             onClick={() => handleDeleteItemFromCategory(item)}
                                                             title="Delete item"
                                                         >
-                                                            🗑️
+                                                            <FiTrash2 />
                                                         </button>
                                                     </div>
                                                 </div>
@@ -1038,7 +1066,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                             setTargetCategory('');
                                         }}
                                     >
-                                        ×
+                                        <FiX />
                                     </button>
                                 </div>
                                 
@@ -1097,7 +1125,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                     <div className="item-form-container">
                         <div className="form-header">
                             <h2>{editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}</h2>
-                            <button className="form-close-btn" onClick={() => resetForm(true)}>×</button>
+                            <button className="form-close-btn" onClick={() => resetForm(true)}><FiX /></button>
                         </div>
                         
                         <form onSubmit={handleSubmit} className="item-form">
@@ -1177,7 +1205,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                                     onClick={removeUploadedImage}
                                                     title="Remove image"
                                                 >
-                                                    ×
+                                                    <FiX />
                                                 </button>
                                             </div>
                                         )}
@@ -1207,8 +1235,8 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                 <div className="spice-level-info-box">
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
                                         <div>
-                                            <h4 style={{ margin: 0 }}>🌶️ Spice Level Slider</h4>
-                                            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>
+                                            <h4><FiSliders /> Spice Level Slider</h4>
+                                            <p>
                                                 {formData.includeSpice
                                                     ? 'Customer will see Mild / Medium / Spicy options'
                                                     : 'No spice slider — customer will not be asked about spice'}
@@ -1216,20 +1244,10 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                         </div>
                                         <button
                                             type="button"
+                                            className={`form-toggle-btn${formData.includeSpice ? ' form-toggle-btn--active' : ''}`}
                                             onClick={() => setFormData(prev => ({ ...prev, includeSpice: !prev.includeSpice }))}
-                                            style={{
-                                                padding: '8px 18px',
-                                                borderRadius: '20px',
-                                                border: 'none',
-                                                cursor: 'pointer',
-                                                fontWeight: '600',
-                                                fontSize: '0.9rem',
-                                                background: formData.includeSpice ? '#e53e3e' : '#48bb78',
-                                                color: '#fff',
-                                                whiteSpace: 'nowrap'
-                                            }}
                                         >
-                                            {formData.includeSpice ? '✕ Remove Spice Slider' : '+ Add Spice Slider'}
+                                            {formData.includeSpice ? <><FiMinus /> Remove Spice Slider</> : <><FiPlus /> Add Spice Slider</>}
                                         </button>
                                     </div>
                                 </div>
@@ -1240,8 +1258,8 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                 <div className="spice-level-info-box">
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
                                         <div>
-                                            <h4 style={{ margin: 0 }}>🔘 Single Select Options</h4>
-                                            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>
+                                            <h4><FiSliders /> Single Select Options</h4>
+                                            <p>
                                                 {formData.singleSelect
                                                     ? 'Customer can only pick one option (e.g. Chips flavor, Soda type)'
                                                     : 'Customer can pick multiple options (checkboxes)'}
@@ -1249,20 +1267,10 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                         </div>
                                         <button
                                             type="button"
+                                            className={`form-toggle-btn${formData.singleSelect ? ' form-toggle-btn--active' : ''}`}
                                             onClick={() => setFormData(prev => ({ ...prev, singleSelect: !prev.singleSelect }))}
-                                            style={{
-                                                padding: '8px 18px',
-                                                borderRadius: '20px',
-                                                border: 'none',
-                                                cursor: 'pointer',
-                                                fontWeight: '600',
-                                                fontSize: '0.9rem',
-                                                background: formData.singleSelect ? '#e53e3e' : '#48bb78',
-                                                color: '#fff',
-                                                whiteSpace: 'nowrap'
-                                            }}
                                         >
-                                            {formData.singleSelect ? '✕ Disable Single Select' : '+ Enable Single Select'}
+                                            {formData.singleSelect ? <><FiMinus /> Disable Single Select</> : <><FiPlus /> Enable Single Select</>}
                                         </button>
                                     </div>
                                 </div>
@@ -1273,8 +1281,8 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                 <div className="spice-level-info-box">
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
                                         <div>
-                                            <h4 style={{ margin: 0 }}>✅ Available for Customers</h4>
-                                            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>
+                                            <h4><FiCheckCircle /> Available for Customers</h4>
+                                            <p>
                                                 {formData.active
                                                     ? 'Item is visible and orderable in the customer menu'
                                                     : 'Item is hidden from customers (not deleted)'}
@@ -1282,20 +1290,10 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                         </div>
                                         <button
                                             type="button"
+                                            className={`form-toggle-btn${formData.active ? ' form-toggle-btn--active' : ''}`}
                                             onClick={() => setFormData(prev => ({ ...prev, active: !prev.active }))}
-                                            style={{
-                                                padding: '8px 18px',
-                                                borderRadius: '20px',
-                                                border: 'none',
-                                                cursor: 'pointer',
-                                                fontWeight: '600',
-                                                fontSize: '0.9rem',
-                                                background: formData.active ? '#e53e3e' : '#48bb78',
-                                                color: '#fff',
-                                                whiteSpace: 'nowrap'
-                                            }}
                                         >
-                                            {formData.active ? '✕ Make Unavailable' : '+ Make Available'}
+                                            {formData.active ? <><FiMinus /> Make Unavailable</> : <><FiPlus /> Make Available</>}
                                         </button>
                                     </div>
                                 </div>
@@ -1310,7 +1308,6 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                 <div className="options-container other-options">
                                     {formData.otherOptions.map((option, index) => (
                                         <div key={index} className="option-input-group other-option-group">
-                                            <span className="option-icon">⚙️</span>
                                             <input
                                                 type="text"
                                                 value={option}
@@ -1322,7 +1319,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                                 className="remove-option-btn"
                                                 onClick={() => removeOtherOption(index)}
                                             >
-                                                ×
+                                                <FiX />
                                             </button>
                                         </div>
                                     ))}
@@ -1331,7 +1328,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                         className="add-option-btn other-add-btn"
                                         onClick={addOtherOption}
                                     >
-                                        ⚙️ Add Customization Option
+                                        <FiSettings /> Add Customization Option
                                     </button>
                                 </div>
                             </div>
@@ -1344,7 +1341,6 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                 <div className="extra-options-container">
                                     {Object.entries(formData.extraOptions).map(([option, price], index) => (
                                         <div key={index} className="extra-option-input-group">
-                                            <span className="premium-icon">💰</span>
                                             <input
                                                 type="text"
                                                 value={option}
@@ -1364,29 +1360,33 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                                 }}
                                                 placeholder="e.g., Extra Meat"
                                             />
-                                            <input
-                                                type="number"
-                                                value={price}
-                                                onChange={(e) => {
-                                                    const newPrice = parseFloat(e.target.value) || 0;
-                                                    setFormData(prev => ({
-                                                        ...prev,
-                                                        extraOptions: {
-                                                            ...prev.extraOptions,
-                                                            [option]: newPrice
-                                                        }
-                                                    }));
-                                                }}
-                                                placeholder="Extra cost"
-                                                step="0.5"
-                                                min="0"
-                                            />
+                                            <div className="price-input-wrapper">
+                                                <span className="price-prefix">$</span>
+                                                <input
+                                                    type="number"
+                                                    value={price}
+                                                    onFocus={(e) => e.target.select()}
+                                                    onChange={(e) => {
+                                                        const newPrice = parseFloat(e.target.value) || 0;
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            extraOptions: {
+                                                                ...prev.extraOptions,
+                                                                [option]: newPrice
+                                                            }
+                                                        }));
+                                                    }}
+                                                    placeholder="0.00"
+                                                    step="0.5"
+                                                    min="0"
+                                                />
+                                            </div>
                                             <button
                                                 type="button"
                                                 className="remove-option-btn"
                                                 onClick={() => removeExtraOption(option)}
                                             >
-                                                ×
+                                                <FiX />
                                             </button>
                                         </div>
                                     ))}
@@ -1404,7 +1404,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                             }));
                                         }}
                                     >
-                                        💰 Add Premium Option
+                                        <FiPlus /> Add Premium Option
                                     </button>
                                 </div>
                             </div>
@@ -1455,7 +1455,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                             }}
                                         />
                                         <div className="placeholder-overlay">
-                                            <span>📷</span>
+                                            <span><FiCamera /></span>
                                             <p>Default Image</p>
                                         </div>
                                     </div>
@@ -1499,7 +1499,7 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                     onClick={() => toggleItemStatus(item)}
                                     title={item.active ? 'Click to make unavailable' : 'Click to make available'}
                                 >
-                                    {item.active ? '🔴 Make Unavailable' : '🟢 Make Available'}
+                                    {item.active ? <><FiXCircle style={{color:'#e74c3c'}} /> Make Unavailable</> : <><FiCheckCircle style={{color:'#27ae60'}} /> Make Available</>}
                                 </button>
                             </div>
                             
@@ -1508,13 +1508,13 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
                                     className="edit-btn"
                                     onClick={() => handleEdit(item)}
                                 >
-                                    ✏️ Edit
+                                    <FiEdit2 /> Edit
                                 </button>
                                 <button 
                                     className="delete-btn"
                                     onClick={() => handleDelete(item)}
                                 >
-                                    🗑️ Delete
+                                    <FiTrash2 /> Delete
                                 </button>
                             </div>
                         </div>
@@ -1527,10 +1527,10 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
             {toast.show && (
                 <div className={`toast-notification toast-${toast.type}`}>
                     <div className="toast-icon">
-                        {toast.type === 'success' && '✓'}
-                        {toast.type === 'error' && '✕'}
-                        {toast.type === 'warning' && '⚠'}
-                        {toast.type === 'info' && 'ℹ'}
+                        {toast.type === 'success' && <FiCheck />}
+                        {toast.type === 'error' && <FiX />}
+                        {toast.type === 'warning' && <FiAlertTriangle />}
+                        {toast.type === 'info' && <FiInfo />}
                     </div>
                     <div className="toast-message">{toast.message}</div>
                 </div>
