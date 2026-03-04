@@ -237,6 +237,12 @@
     min-height: 40px; /* Ensure consistent height */
 }
 
+.order-header-main > svg:first-child {
+    flex-shrink: 0;
+    position: relative;
+    top: -1px;
+}
+
 .order-timestamp {
     font-family: 'Inter', sans-serif;
     font-size: 0.8rem;

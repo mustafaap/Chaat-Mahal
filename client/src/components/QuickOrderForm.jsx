@@ -104,6 +104,15 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
     const handleOptionSubmit = () => {
         const { itemName, menuItem } = optionsModal;
         const options = selectedOptions[itemName] || [];
+
+        // Enforce mandatory selection for singleSelect items
+        if (menuItem.singleSelect) {
+            const nonSpiceOptions = options.filter(o => !['Mild', 'Medium', 'Spicy'].includes(o));
+            if (nonSpiceOptions.length === 0) {
+                showToast('Please select an option to continue.', 'warning');
+                return;
+            }
+        }
         
         // Calculate price with options
         let itemPrice = menuItem.price;
@@ -763,6 +772,11 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                             )}
 
                             {/* Other Options */}
+                            {optionsModal.menuItem.singleSelect && optionsModal.menuItem.options?.some(opt => !['Mild', 'Medium', 'Spicy'].includes(opt)) && (
+                                <p style={{ margin: '0 0 6px', fontSize: '0.85rem', color: '#e53e3e', fontWeight: 600 }}>
+                                    Select 1 option (required)
+                                </p>
+                            )}
                             {optionsModal.menuItem.options?.filter(opt => !['Mild', 'Medium', 'Spicy'].includes(opt)).map(option => (
                                 <div key={option} className="qof-option-container">
                                     <label className="qof-option-label">
@@ -800,6 +814,7 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                                 className="qof-modal-confirm"
                                 onClick={handleOptionSubmit}
                                 type="button"
+                                disabled={optionsModal.menuItem.singleSelect && !(selectedOptions[optionsModal.itemName]?.filter(o => !['Mild','Medium','Spicy'].includes(o)).length > 0)}
                             >
                                 Add Item
                             </button>

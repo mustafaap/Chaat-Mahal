@@ -1510,12 +1510,18 @@
 
 /* Payment badges */
 .aot-payment-badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     padding: 4px 10px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
+}
+
+.aot-payment-badge svg {
+    flex-shrink: 0;
 }
 
 .aot-payment-badge.card   { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
@@ -1524,12 +1530,18 @@
 
 /* Status badges */
 .aot-status-badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     padding: 4px 10px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
+}
+
+.aot-status-badge svg {
+    flex-shrink: 0;
 }
 
 .aot-badge-completed { background: #e8f5e9; color: #1b5e20; border: 1px solid #c8e6c9; }
@@ -1645,7 +1657,7 @@
 .aot-modal {
     background: #fff;
     border-radius: 16px;
-    border: 1.5px solid #e2e8f0;
+    border: 2px solid #94a3b8;
     width: 100%;
     max-width: 520px;
     max-height: 90vh;
@@ -1771,6 +1783,14 @@
     font-family: monospace;
     font-size: 12px;
     color: #888;
+    word-break: break-all;
+    text-align: left;
+}
+
+.aot-modal-row-stack {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
 }
 
 /* Items list in modal */

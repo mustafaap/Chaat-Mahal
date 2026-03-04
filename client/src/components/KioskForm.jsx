@@ -280,10 +280,15 @@ const KioskForm = ({ initialStep = 1, searchQuery = '' }) => {
     };
 
     const closeModalWithAnimation = () => {
-        setModalClosing(true);
-        setTimeout(() => {
+        const isMobile = window.innerWidth <= 480;
+        if (isMobile) {
+            setModalClosing(true);
+            setTimeout(() => {
+                closeModal();
+            }, 450);
+        } else {
             closeModal();
-        }, 450);
+        }
     };
 
     const handleSpiceChange = (level) => {
@@ -319,6 +324,12 @@ const KioskForm = ({ initialStep = 1, searchQuery = '' }) => {
 
     const handleOptionSubmit = () => {
         if (!modalItem) return;
+
+        // Enforce mandatory selection for singleSelect items
+        if (modalItem.singleSelect && itemOptions.otherOptions.length === 0) {
+            showToast('Please select an option to continue.', 'warning');
+            return;
+        }
         
         // Combine all selected options
         const allOptions = [];
@@ -1021,7 +1032,9 @@ const KioskForm = ({ initialStep = 1, searchQuery = '' }) => {
                             
                             return otherOptions.length > 0 && (
                                 <div className="modal-section">
-                                    <label className="modal-section-label">Customizations:</label>
+                                    <label className="modal-section-label">
+                                        {modalItem.singleSelect ? <span>Select 1 <span style={{color:'#e53e3e', fontWeight:700}}>*</span></span> : 'Customizations:'}
+                                    </label>
                                     <div className="option-pills">
                                         {otherOptions.map((option) => (
                                             <button
@@ -1073,6 +1086,7 @@ const KioskForm = ({ initialStep = 1, searchQuery = '' }) => {
                                 type="button"
                                 onClick={handleOptionSubmit}
                                 className="modal-add-button"
+                                disabled={modalItem.singleSelect && itemOptions.otherOptions.length === 0}
                             >
                                 Add to Order
                             </button>

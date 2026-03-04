@@ -77,6 +77,8 @@
 
 .footer-links .icon {
     font-size: 1rem; /* Reduced from 1.1rem */
+    position: relative;
+    top: -1.5px;
 }
 
 .social-links {

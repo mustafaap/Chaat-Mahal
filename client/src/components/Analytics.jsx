@@ -1774,12 +1774,12 @@ const Analytics = () => {
                                 <span className="aot-modal-label">Customer</span>
                                 <span className="aot-modal-value">{selectedOrder.customerName}</span>
                             </div>
-                            {selectedOrder.customerEmail && (
-                                <div className="aot-modal-row">
-                                    <span className="aot-modal-label">Email</span>
-                                    <span className="aot-modal-value">{selectedOrder.customerEmail}</span>
-                                </div>
-                            )}
+                            <div className="aot-modal-row">
+                                <span className="aot-modal-label">Email</span>
+                                <span className="aot-modal-value" style={!selectedOrder.customerEmail ? { color: '#aaa', fontStyle: 'italic' } : {}}>
+                                    {selectedOrder.customerEmail || 'Not provided'}
+                                </span>
+                            </div>
                             <div className="aot-modal-row">
                                 <span className="aot-modal-label">Date &amp; Time</span>
                                 <span className="aot-modal-value">
@@ -1788,6 +1788,34 @@ const Analytics = () => {
                                     {new Date(selectedOrder.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                                 </span>
                             </div>
+                            {(() => {
+                                if (selectedOrder.status === 'Completed' && selectedOrder.updatedAt) {
+                                    const created = new Date(selectedOrder.createdAt);
+                                    const completed = new Date(selectedOrder.updatedAt);
+                                    const diffMs = completed - created;
+                                    const diffMins = Math.floor(diffMs / 60000);
+                                    const diffHrs = Math.floor(diffMins / 60);
+                                    const remMins = diffMins % 60;
+                                    const duration = diffHrs > 0
+                                        ? `${diffHrs}h ${remMins}m`
+                                        : diffMins > 0 ? `${diffMins}m` : 'under a minute';
+                                    return (
+                                        <div className="aot-modal-row">
+                                            <span className="aot-modal-label">Completed Time</span>
+                                            <span className="aot-modal-value">
+                                                {completed.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                                                <span style={{ color: '#888', fontSize: '0.85em', marginLeft: '6px' }}>({duration})</span>
+                                            </span>
+                                        </div>
+                                    );
+                                }
+                                return (
+                                    <div className="aot-modal-row">
+                                        <span className="aot-modal-label">Completed Time</span>
+                                        <span className="aot-modal-value" style={{ color: '#aaa', fontStyle: 'italic' }}>Not completed</span>
+                                    </div>
+                                );
+                            })()}
                         </div>
 
                         {/* Items */}
@@ -1845,7 +1873,7 @@ const Analytics = () => {
                                 </span>
                             </div>
                             {selectedOrder.paymentId && (
-                                <div className="aot-modal-row">
+                                <div className="aot-modal-row aot-modal-row-stack">
                                     <span className="aot-modal-label">Payment ID</span>
                                     <span className="aot-modal-value aot-modal-payment-id">{selectedOrder.paymentId}</span>
                                 </div>

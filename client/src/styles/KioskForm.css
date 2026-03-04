@@ -910,7 +910,16 @@ h1, h2, h3{
     color: white;
 }
 
-.modal-add-button:hover {
+.modal-add-button:disabled {
+    background: #c8c8c8;
+    color: #6b6b6b;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 1;
+}
+
+.modal-add-button:hover:not(:disabled) {
     background: #218838;
     transform: translateY(-1px);
 }

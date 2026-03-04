@@ -174,9 +174,10 @@
     border-radius: 12px;
     width: 100%;
     max-width: 800px;
-    max-height: 90vh;
+    max-height: 82vh;
     overflow-y: auto;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    border: 2px solid #94a3b8;
 }
 
 .form-header {
@@ -1034,16 +1035,18 @@
     
     .form-grid {
         grid-template-columns: 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
     }
     
     .item-form-container {
         margin: 10px;
-        max-height: 88vh;
+        max-height: 80vh;
         width: calc(100% - 20px);
     }
 
     .item-form {
-        padding: 20px;
+        padding: 14px 16px;
     }
 
     .form-group input:not([type="checkbox"]),
@@ -1071,29 +1074,44 @@
 
 @media (max-width: 480px) {
     .item-form {
-        padding: 16px;
+        padding: 10px 12px;
     }
     
     .form-header {
-        padding: 14px 16px;
+        padding: 10px 14px;
     }
 
     .form-header h2 {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
     }
 
     .item-form-container {
-        margin: 8px;
-        max-height: 90vh;
-        width: calc(100% - 16px);
+        margin: 6px;
+        max-height: 85vh;
+        width: calc(100% - 12px);
     }
 
     .item-form-overlay {
-        padding: 8px;
+        padding: 6px;
+        align-items: flex-start;
+        padding-top: 10px;
     }
 
     .form-group {
-        margin-bottom: 10px;
+        margin-bottom: 6px;
+    }
+
+    .form-group textarea {
+        min-height: 60px;
+    }
+
+    .form-group.full-width {
+        margin-bottom: 8px;
+    }
+
+    .form-actions {
+        margin-top: 12px;
+        padding-top: 12px;
     }
 
     .form-group input:not([type="checkbox"]),

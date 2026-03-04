@@ -536,12 +536,10 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
 }
 
 .qof-submit-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
 }
 
 .qof-submit-btn:disabled {
@@ -561,12 +559,10 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(127, 140, 141, 0.3);
 }
 
 .qof-cancel-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(127, 140, 141, 0.4);
 }
 
 .qof-cancel-btn:disabled {
@@ -827,9 +823,18 @@
     transition: all 0.3s ease;
 }
 
-.qof-modal-confirm:hover {
+.qof-modal-confirm:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+}
+
+.qof-modal-confirm:disabled {
+    background: #c8c8c8;
+    color: #6b6b6b;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 1;
 }
 
 .qof-modal-cancel {
@@ -965,7 +970,6 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(127, 140, 141, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -980,7 +984,6 @@
 
 .qof-create-order-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(127, 140, 141, 0.45);
 }
 
 .qof-create-order-btn:disabled {
@@ -1000,7 +1003,6 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1009,7 +1011,6 @@
 
 .qof-cash-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(39, 174, 96, 0.45);
 }
 
 .qof-cash-btn:disabled {
@@ -1029,7 +1030,6 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(99, 91, 255, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1038,7 +1038,6 @@
 
 .qof-stripe-pay-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(99, 91, 255, 0.45);
 }
 
 .qof-stripe-pay-btn:disabled {
