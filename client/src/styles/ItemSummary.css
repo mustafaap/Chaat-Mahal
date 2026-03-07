@@ -55,6 +55,7 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    gap: 8px;
 }
 
 .item-name {
@@ -69,6 +70,19 @@
 .item-count {
     display: flex;
     align-items: center;
+    gap: 6px;
+}
+
+.expand-arrow {
+    font-size: 1rem;
+    color: #ff9500;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.expand-arrow.expanded {
+    transform: rotate(180deg);
 }
 
 .pending-count {

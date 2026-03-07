@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { FaChevronDown } from 'react-icons/fa';
 import '../styles/ItemSummary.css';
 
 const ItemSummary = ({ orders }) => {
@@ -73,7 +74,15 @@ const ItemSummary = ({ orders }) => {
 
     const itemSummary = calculateItemSummary();
 
-    const toggleExpanded = (itemName) => {
+    useEffect(() => {
+        if (!expandedItem) return;
+        const handleClickOutside = () => setExpandedItem(null);
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [expandedItem]);
+
+    const toggleExpanded = (itemName, e) => {
+        e.stopPropagation();
         setExpandedItem(expandedItem === itemName ? null : itemName);
     };
 
@@ -88,15 +97,13 @@ const ItemSummary = ({ orders }) => {
                         <div key={itemName} className="summary-card">
                             <div 
                                 className="summary-header"
-                                onClick={() => toggleExpanded(itemName)}
+                                onClick={(e) => toggleExpanded(itemName, e)}
                             >
                                 <div className="item-info">
+                                    <span className="pending-count">{data.pending}</span>
                                     <h3 className="item-name">{itemName}</h3>
-                                    <div className="item-count">
-                                        <span className="pending-count">{data.pending}</span>
-                                    </div>
+                                    <FaChevronDown className={`expand-arrow${expandedItem === itemName ? ' expanded' : ''}`} />
                                 </div>
-                                {/* Remove the expand button completely - just show count */}
                             </div>
 
                             {expandedItem === itemName && (
