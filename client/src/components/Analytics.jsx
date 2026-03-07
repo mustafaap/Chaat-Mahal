@@ -12,8 +12,12 @@ const Analytics = () => {
     const [orders, setOrders] = useState([]);
     const [menuItems, setMenuItems] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [timeFilter, setTimeFilter] = useState('month');
-    const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
+    const [timeFilter, setTimeFilter] = useState(() => localStorage.getItem('analyticsTimeFilter') || 'month');
+    const [customDateRange, setCustomDateRange] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem('analyticsCustomDateRange')) || { start: '', end: '' };
+        } catch { return { start: '', end: '' }; }
+    });
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [compareMode, setCompareMode] = useState(false);
     const [heatmapMonth, setHeatmapMonth] = useState(new Date());
@@ -29,6 +33,15 @@ const Analytics = () => {
     useEffect(() => {
         fetchData();
     }, []);
+
+    // Persist time filter selections
+    useEffect(() => {
+        localStorage.setItem('analyticsTimeFilter', timeFilter);
+    }, [timeFilter]);
+
+    useEffect(() => {
+        localStorage.setItem('analyticsCustomDateRange', JSON.stringify(customDateRange));
+    }, [customDateRange]);
 
     // Reset orders page when filter changes
     useEffect(() => {
@@ -125,6 +138,7 @@ const Analytics = () => {
         const nonCancelledOrders = orders.filter(o => o.status !== 'Cancelled');
         const totalRevenue = nonCancelledOrders.reduce((sum, order) => sum + orderRevenue(order), 0);
         const totalTips = nonCancelledOrders.reduce((sum, order) => sum + (order.tip || 0), 0);
+        const tippedOrdersCount = nonCancelledOrders.filter(order => (order.tip || 0) > 0).length;
         const totalOrders = orders.length;
         const avgOrderValue = nonCancelledOrders.length > 0 ? totalRevenue / nonCancelledOrders.length : 0;
         const completionRate = totalOrders > 0 ? (completedOrders.length / totalOrders) * 100 : 0;
@@ -143,6 +157,7 @@ const Analytics = () => {
         return {
             totalRevenue,
             totalTips,
+            tippedOrdersCount,
             totalOrders,
             avgOrderValue,
             completionRate,
@@ -870,30 +885,35 @@ const Analytics = () => {
                     <div className="time-filter">
                         <button 
                             className={timeFilter === 'today' ? 'active' : ''} 
+                            onTouchEnd={(e) => { e.preventDefault(); setTimeFilter('today'); setShowDatePicker(false); }}
                             onClick={() => { setTimeFilter('today'); setShowDatePicker(false); }}
                         >
                             Today
                         </button>
                         <button 
                             className={timeFilter === 'week' ? 'active' : ''} 
+                            onTouchEnd={(e) => { e.preventDefault(); setTimeFilter('week'); setShowDatePicker(false); }}
                             onClick={() => { setTimeFilter('week'); setShowDatePicker(false); }}
                         >
                             Last 7 Days
                         </button>
                         <button 
                             className={timeFilter === 'month' ? 'active' : ''} 
+                            onTouchEnd={(e) => { e.preventDefault(); setTimeFilter('month'); setShowDatePicker(false); }}
                             onClick={() => { setTimeFilter('month'); setShowDatePicker(false); }}
                         >
                             This Month
                         </button>
                         <button 
                             className={timeFilter === 'all' ? 'active' : ''} 
+                            onTouchEnd={(e) => { e.preventDefault(); setTimeFilter('all'); setShowDatePicker(false); }}
                             onClick={() => { setTimeFilter('all'); setShowDatePicker(false); }}
                         >
                             All Time
                         </button>
                         <button 
                             className={timeFilter === 'custom' ? 'active' : ''} 
+                            onTouchEnd={(e) => { e.preventDefault(); setShowDatePicker(!showDatePicker); setTimeFilter('custom'); }}
                             onClick={() => { setShowDatePicker(!showDatePicker); setTimeFilter('custom'); }}
                         >
                             <FiCalendar /> Custom
@@ -902,6 +922,7 @@ const Analytics = () => {
                     <div className="header-controls">
                         <button 
                             className={`control-btn ${compareMode ? 'active' : ''}`}
+                            onTouchEnd={(e) => { e.preventDefault(); setCompareMode(!compareMode); }}
                             onClick={() => setCompareMode(!compareMode)}
                             title="Compare with previous period"
                         >
@@ -909,6 +930,7 @@ const Analytics = () => {
                         </button>
                         <button 
                             className="control-btn export"
+                            onTouchEnd={(e) => { e.preventDefault(); exportToCSV(filteredOrders); }}
                             onClick={() => exportToCSV(filteredOrders)}
                             title="Export data to CSV"
                         >
@@ -1000,7 +1022,7 @@ const Analytics = () => {
                     <div className="metric-content">
                         <h3>Total Tips</h3>
                         <p className="metric-value">${metrics.totalTips.toFixed(2)}</p>
-                        <span className="metric-sublabel">{metrics.netSubtotal > 0 ? ((metrics.totalTips / metrics.netSubtotal) * 100).toFixed(1) : '0.0'}% of food sales</span>
+                        <span className="metric-sublabel">{metrics.netSubtotal > 0 ? ((metrics.totalTips / metrics.netSubtotal) * 100).toFixed(1) : '0.0'}% of food sales &middot; {metrics.tippedOrdersCount} {metrics.tippedOrdersCount === 1 ? 'order' : 'orders'}</span>
                     </div>
                 </div>
 

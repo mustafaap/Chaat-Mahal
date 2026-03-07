@@ -1121,8 +1121,8 @@ const MenuManagement = ({ activeTab: propActiveTab }) => {
 
             {/* Add/Edit Form */}
             {showAddForm && (
-                <div className="item-form-overlay">
-                    <div className="item-form-container">
+                <div className="item-form-overlay" onClick={() => resetForm(true)}>
+                    <div className="item-form-container" onClick={(e) => e.stopPropagation()}>
                         <div className="form-header">
                             <h2>{editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}</h2>
                             <button className="form-close-btn" onClick={() => resetForm(true)}><FiX /></button>

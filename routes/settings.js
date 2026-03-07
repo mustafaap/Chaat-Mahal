@@ -18,9 +18,9 @@ const ensureSettingsFile = async () => {
                 "Puri Chaat",
                 "Street Chaat",
                 "Wraps",
-                "Drinks",
                 "Burgers",
-                "Rice Bowls"
+                "Rice Bowls",
+                "Drinks"
             ]
         };
         await fs.mkdir(path.dirname(settingsFilePath), { recursive: true });
@@ -44,9 +44,9 @@ router.get('/', async (req, res) => {
                 "Puri Chaat",
                 "Street Chaat",
                 "Wraps",
-                "Drinks",
                 "Burgers",
-                "Rice Bowls"
+                "Rice Bowls",
+                "Drinks"
             ]
         };
         

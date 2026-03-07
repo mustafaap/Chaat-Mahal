@@ -13,9 +13,9 @@ const ensureDataDirectory = async () => {
     }
 };
 
-// Get current date as string (YYYY-MM-DD)
+// Get current date as string (YYYY-MM-DD) in Eastern Time
 const getCurrentDateString = () => {
-    return new Date().toISOString().split('T')[0];
+    return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 };
 
 // Read counter data

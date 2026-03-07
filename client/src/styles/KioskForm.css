@@ -7,6 +7,12 @@ svg {
     vertical-align: middle;
 }
 
+/* Global: eliminate 300ms tap delay on all interactive elements for mobile */
+button, a, [role="button"], input, select, textarea {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
 /* Global styles for KioskForm */
 body {
     font-family: 'Inter', 'Segoe UI', Arial, sans-serif;

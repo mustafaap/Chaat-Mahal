@@ -20,6 +20,13 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
     const [stripeCheckoutUrl, setStripeCheckoutUrl] = useState('');
     const [isGeneratingLink, setIsGeneratingLink] = useState(false);
     const [linkCopied, setLinkCopied] = useState(false);
+    const [categoryOrder, setCategoryOrder] = useState([]);
+
+    useEffect(() => {
+        axios.get('/api/settings').then(res => {
+            if (res.data.categories) setCategoryOrder(res.data.categories);
+        }).catch(() => {});
+    }, []);
 
     const calculateTotal = () => {
         return Object.entries(orderItems).reduce((total, [itemKey, quantity]) => {
@@ -413,25 +420,43 @@ const QuickOrderForm = ({ menuItems, onOrderCreated, showToast }) => {
                             <div className="qof-items-section">
                                 <label className="qof-label">Add Items</label>
                                 <div className="qof-menu-grid">
-                                    {menuItems.map(item => {
-                                        const isInCart = Object.keys(orderItems).some(key => key === item.name || key.startsWith(item.name + ' ('));
-                                        const itemCount = Object.entries(orderItems)
-                                            .filter(([key]) => key === item.name || key.startsWith(item.name + ' ('))
-                                            .reduce((sum, [, qty]) => sum + qty, 0);
-                                        return (
-                                        <button
-                                            key={item.id}
-                                            type="button"
-                                            className={`qof-menu-item-btn${isInCart ? ' qof-item-in-cart' : ''}`}
-                                            onClick={() => addItem(item.name)}
-                                            disabled={isSubmitting}
-                                        >
-                                            {itemCount > 0 && <span className="qof-item-count-badge">{itemCount}</span>}
-                                            <span className="qof-item-name">{item.name}</span>
-                                            <span className="qof-item-price">${item.price}</span>
-                                        </button>
-                                        );
-                                    })}
+                                    {(() => {
+                                        const availableItems = menuItems.filter(i => i.available !== false);
+                                        // Build ordered category list: known categories first, then any extras
+                                        const itemCategories = [...new Set(availableItems.map(i => i.category || 'Other'))];
+                                        const orderedCats = [
+                                            ...categoryOrder.filter(c => itemCategories.includes(c)),
+                                            ...itemCategories.filter(c => !categoryOrder.includes(c))
+                                        ];
+                                        return orderedCats.map(cat => {
+                                            const catItems = availableItems.filter(i => (i.category || 'Other') === cat);
+                                            if (!catItems.length) return null;
+                                            return (
+                                                <React.Fragment key={cat}>
+                                                    <div className="qof-category-header">{cat}</div>
+                                                    {catItems.map(item => {
+                                                        const isInCart = Object.keys(orderItems).some(key => key === item.name || key.startsWith(item.name + ' ('));
+                                                        const itemCount = Object.entries(orderItems)
+                                                            .filter(([key]) => key === item.name || key.startsWith(item.name + ' ('))
+                                                            .reduce((sum, [, qty]) => sum + qty, 0);
+                                                        return (
+                                                            <button
+                                                                key={item.id}
+                                                                type="button"
+                                                                className={`qof-menu-item-btn${isInCart ? ' qof-item-in-cart' : ''}`}
+                                                                onClick={() => addItem(item.name)}
+                                                                disabled={isSubmitting}
+                                                            >
+                                                                {itemCount > 0 && <span className="qof-item-count-badge">{itemCount}</span>}
+                                                                <span className="qof-item-name">{item.name}</span>
+                                                                <span className="qof-item-price">${item.price}</span>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </React.Fragment>
+                                            );
+                                        });
+                                    })()}
                                 </div>
                             </div>
 

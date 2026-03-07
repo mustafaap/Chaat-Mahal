@@ -287,6 +287,7 @@ const AdminControls = ({ adminRole }) => {
                 <nav className="sidebar-nav">
                     <button 
                         className={`nav-item ${currentView === 'menu' ? 'active' : ''}`}
+                        onTouchEnd={(e) => { e.preventDefault(); setCurrentView('menu'); }}
                         onClick={() => setCurrentView('menu')}
                     >
                         <span className="nav-icon"><FiList /></span>
@@ -295,6 +296,7 @@ const AdminControls = ({ adminRole }) => {
                     
                     <button 
                         className={`nav-item ${currentView === 'categories' ? 'active' : ''}`}
+                        onTouchEnd={(e) => { e.preventDefault(); setCurrentView('categories'); }}
                         onClick={() => setCurrentView('categories')}
                     >
                         <span className="nav-icon"><FiTag /></span>
@@ -304,6 +306,7 @@ const AdminControls = ({ adminRole }) => {
                     {adminRole === 'owner' && (
                     <button 
                         className={`nav-item ${currentView === 'analytics' ? 'active' : ''}`}
+                        onTouchEnd={(e) => { e.preventDefault(); setCurrentView('analytics'); }}
                         onClick={() => setCurrentView('analytics')}
                     >
                         <span className="nav-icon"><FiBarChart2 /></span>
@@ -313,6 +316,7 @@ const AdminControls = ({ adminRole }) => {
                     
                     <button 
                         className={`nav-item ${currentView === 'settings' ? 'active' : ''}`}
+                        onTouchEnd={(e) => { e.preventDefault(); setCurrentView('settings'); }}
                         onClick={() => setCurrentView('settings')}
                     >
                         <span className="nav-icon"><FiSettings /></span>
